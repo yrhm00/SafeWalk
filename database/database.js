@@ -1,15 +1,27 @@
-import pkg from "pg";
+import pg from "pg";
 import dotenv from "dotenv";
 dotenv.config();
 
-const { Pool } = pkg;
-
-const pool = new Pool({
+const pgPool = new pg.Pool({
     user: process.env.PGUSER,
     host: process.env.PGHOST,
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
-    port: process.env.PGPORT
+    port: process.env.PGPORT,
 });
 
-export default pool;
+export const pool = {
+    query: async (query, params) => {
+        try {
+            return await pgPool.query(query, params);
+        } catch (err) {
+            console.error("Erreur SQL :", err.message);
+            throw err;
+        }
+    },
+    end: () => pgPool.end()
+};
+
+process.on("exit", () => {
+    pgPool.end().then(() => console.log("Connexion PostgreSQL fermée."));
+});
