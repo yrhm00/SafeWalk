@@ -6,6 +6,7 @@ CREATE TYPE report_status AS ENUM ('pending', 'validated', 'resolved');
 CREATE TYPE severity_level AS ENUM ('low','medium','high');
 
 -- ========== TABLE USERS ==========
+DROP TABLE IF EXISTS users CASCADE ;
 CREATE TABLE users (
                        id              BIGSERIAL PRIMARY KEY,
                        name            VARCHAR(120)        NOT NULL,
@@ -17,12 +18,14 @@ CREATE TABLE users (
 );
 
 -- ========== TABLE REPORT_TYPES ==========
+DROP TABLE IF EXISTS report_types CASCADE ;
 CREATE TABLE report_types (
                               id          SERIAL PRIMARY KEY,
                               label       VARCHAR(80) NOT NULL UNIQUE
 );
 
 -- ========== TABLE ZONES ==========
+DROP TABLE IF EXISTS zones CASCADE ;
 CREATE TABLE zones (
                        id          SERIAL PRIMARY KEY,
                        name        VARCHAR(120) NOT NULL,
@@ -31,6 +34,7 @@ CREATE TABLE zones (
 );
 
 -- ========== TABLE REPORTS ==========
+DROP TABLE IF EXISTS reports CASCADE ;
 CREATE TABLE reports (
                          id             BIGSERIAL PRIMARY KEY,
                          user_id        BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -46,6 +50,7 @@ CREATE TABLE reports (
 );
 
 -- ========== TABLE COMMENTS ==========
+DROP TABLE IF EXISTS comments CASCADE ;
 CREATE TABLE comments (
                           id          BIGSERIAL PRIMARY KEY,
                           report_id   BIGINT      NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
@@ -55,6 +60,7 @@ CREATE TABLE comments (
 );
 
 -- ========== TABLE VOTES ==========
+DROP TABLE IF EXISTS votes CASCADE ;
 CREATE TABLE votes (
                        id          BIGSERIAL PRIMARY KEY,
                        report_id   BIGINT      NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
