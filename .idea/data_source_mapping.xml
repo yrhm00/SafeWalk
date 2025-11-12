@@ -2,6 +2,7 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$PROJECT_DIR$/model/reportModel.js" value="ff00b85e-db61-45c1-a19b-7c81c90970a1" />
+    <file url="file://$PROJECT_DIR$/scripts/SQL/initDB.sql" value="ff00b85e-db61-45c1-a19b-7c81c90970a1" />
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/ff00b85e-db61-45c1-a19b-7c81c90970a1/console.sql" value="ff00b85e-db61-45c1-a19b-7c81c90970a1" />
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/ff00b85e-db61-45c1-a19b-7c81c90970a1/console_1.sql" value="ff00b85e-db61-45c1-a19b-7c81c90970a1" />
   </component>
