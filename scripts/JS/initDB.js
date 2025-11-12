@@ -6,7 +6,6 @@ const requests = readFileSync(
     {encoding: "utf-8"}
 );
 
-
 try {
     await pool.query(requests, []);
     console.log("done");

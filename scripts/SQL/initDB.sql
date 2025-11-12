@@ -1,9 +1,17 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- ========== ENUM ==========
-CREATE TYPE user_role AS ENUM ('admin', 'citizen');
-CREATE TYPE report_status AS ENUM ('pending', 'validated', 'resolved');
-CREATE TYPE severity_level AS ENUM ('low','medium','high');
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'citizen');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE report_status AS ENUM ('pending', 'validated', 'resolved');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+    CREATE TYPE severity_level AS ENUM ('low','medium','high');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ========== TABLE USERS ==========
 DROP TABLE IF EXISTS users CASCADE ;
