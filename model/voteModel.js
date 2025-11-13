@@ -1,9 +1,6 @@
-import pool from "../database/database.js";
-
-// Met/Change le vote de l'utilisateur pour un report (1 vote/user/report)
-export async function setVote({ report_id, user_id, value }) {
+export async function setVote(SQLClient, { report_id, user_id, value }) {
     // Essaye d'update, sinon insert
-    const up = await pool.query(
+    const up = await SQLClient.query(
         `
     UPDATE votes
     SET value = $3, created_at = NOW()
@@ -14,7 +11,7 @@ export async function setVote({ report_id, user_id, value }) {
     );
     if (up.rows[0]) return up.rows[0];
 
-    const ins = await pool.query(
+    const ins = await SQLClient.query(
         `
     INSERT INTO votes (report_id, user_id, value)
     VALUES ($1,$2,$3)
@@ -25,12 +22,12 @@ export async function setVote({ report_id, user_id, value }) {
     return ins.rows[0];
 }
 
-export async function removeMyVote({ report_id, user_id }) {
-    await pool.query(`DELETE FROM votes WHERE report_id = $1 AND user_id = $2`, [report_id, user_id]);
+export async function removeMyVote(SQLClient, { report_id, user_id }) {
+    await SQLClient.query(`DELETE FROM votes WHERE report_id = $1 AND user_id = $2`, [report_id, user_id]);
 }
 
-export async function countByReport(report_id) {
-    const r = await pool.query(
+export async function countByReport(SQLClient, report_id) {
+    const r = await SQLClient.query(
         `
     SELECT
       SUM(CASE WHEN value = TRUE THEN 1 ELSE 0 END)::int AS upvotes,

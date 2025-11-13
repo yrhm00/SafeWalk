@@ -1,7 +1,5 @@
-import pool from "../database/database.js";
-
-export async function listForReport(report_id) {
-    const r = await pool.query(
+export async function listForReport(SQLClient, report_id) {
+    const r = await SQLClient.query(
         `
     SELECT c.id, c.content, c.created_at, c.user_id, u.name AS user_name
     FROM comments c
@@ -14,18 +12,20 @@ export async function listForReport(report_id) {
     return r.rows;
 }
 
-export async function create({ report_id, user_id, content }) {
-    const r = await pool.query(
+export async function createReport(SQLClient, { report_id, user_id, content }) {
+    const { rows } = await SQLClient.query(
         `
     INSERT INTO comments (report_id, user_id, content)
     VALUES ($1,$2,$3)
-    RETURNING id, report_id, user_id, content, created_at
+    RETURNING id
     `,
         [report_id, user_id, content]
     );
-    return r.rows[0];
+    return rows[0]?.id ?? null;
 }
 
-export async function remove(id) {
-    await pool.query(`DELETE FROM comments WHERE id = $1`, [id]);
+export async function removeReport(SQLClient, { id }) {
+    if (id === undefined || id === null) throw new Error('id manquant');
+    const { rows } = await SQLClient.query(`DELETE FROM comments WHERE id = $1 RETURNING id`, [id]);
+    return rows[0]?.id ?? null;
 }

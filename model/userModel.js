@@ -1,69 +1,62 @@
-import pool from "../database/database.js";
+export const readUser = async (SQLClient, { id }) => {
+    const { rows } = await SQLClient.query('SELECT id, name, username, email, role, created_at FROM users WHERE id = $1', [id]);
+    return rows[0];
+};
+export const updateUser = async (SQLClient, { name, username, email, password_hash, role, id }) => {
+    let query = "UPDATE users SET ";
 
-// Liste avec recherche + pagination
-export async function list({ page = 1, size = 10, q = "" } = {}) {
-    const offset = (page - 1) * size;
-    const where = q ? `WHERE LOWER(name) LIKE LOWER($1) OR LOWER(email) LIKE LOWER($1)` : "";
-    const params = q ? [`%${q}%`, size, offset] : [size, offset];
+    const querySet = [];
+    const queryValues = [];
 
-    const items = await pool.query(
-        `
-    SELECT id, name, username, email, role, created_at
-    FROM users
-    ${where}
-    ORDER BY id
-    LIMIT $${q ? 2 : 1} OFFSET $${q ? 3 : 2}
-    `,
-        params
-    );
-    const count = await pool.query(
-        `
-    SELECT COUNT(*)::int AS total
-    FROM users
-    ${where}
-    `,
-        q ? [`%${q}%`] : []
-    );
-    return { items: items.rows, total: count.rows[0].total, page, size };
-}
+    if (name) {
+        queryValues.push(name);
+        querySet.push(`name = $${queryValues.length}`);
+    }
+    if (username) {
+        queryValues.push(username);
+        querySet.push(`username = $${queryValues.length}`);
+    }
+    if (email) {
+        queryValues.push(email);
+        querySet.push(`email = $${queryValues.length}`);
+    }
+    if (password_hash) {
+        queryValues.push(password_hash);
+        querySet.push(`password_hash = $${queryValues.length}`);
+    }
+    if (role) {
+        queryValues.push(role);
+        querySet.push(`role = $${queryValues.length}`);
+    }
 
-export async function findById(id) {
-    const r = await pool.query(
-        `SELECT id, name, username, email, role, created_at FROM users WHERE id = $1`,
-        [id]
-    );
-    return r.rows[0] || null;
-}
+    if (queryValues.length > 0) {
+        queryValues.push(id);
+        query +=  `${querySet.join(', ')} WHERE id = $${queryValues.length}`;
+        return await SQLClient.query(query, queryValues);
+    } else {
+        throw new Error("No field given");
+    }
+};
+export const createUser = async (SQLClient, { name = null, username, email, password_hash, role = 'citizen' }) => {
+    const { rows } = await SQLClient.query('INSERT INTO users (name, username, email, password_hash, role) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        [name, username, email, password_hash, role]);
+    return rows[0]?.id ?? null;
+};
+export const deleteUser = async (SQLClient, { id }) => {
+    const { rows } = await SQLClient.query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);
+};
 
-export async function create({ name, username, email, password_hash, role = "citizen" }) {
-    const r = await pool.query(
-        `
-    INSERT INTO users (name, username, email, password_hash, role)
-    VALUES ($1,$2,$3,$4,$5)
-    RETURNING id, name, username, email, role, created_at
-    `,
-        [name, username, email, password_hash, role]
-    );
-    return r.rows[0];
-}
 
-export async function update(id, { name, username, email, role }) {
-    const r = await pool.query(
-        `
-    UPDATE users
-    SET name = COALESCE($2, name),
-        username = COALESCE($3, username),
-        email = COALESCE($4, email),
-        role = COALESCE($5, role)
-    WHERE id = $1
-    RETURNING id, name, username, email, role, created_at
-    `,
-        [id, name, username, email, role]
-    );
-    return r.rows[0] || null;
-}
-
-export async function remove(id) {
-    // Si tu veux la transaction “T1 cascade logique”, fais-la côté service.
-    await pool.query(`DELETE FROM users WHERE id = $1`, [id]);
-}
+export const readUserByUsername = async (SQLClient, { username }) => {
+    if (!username) throw new Error('username manquant');
+    const { rows } = await SQLClient.query('SELECT id, name, username, email, role, created_at FROM users WHERE username = $1', [username]);
+    return rows[0] ?? null;
+};
+export const listUsers = async (SQLClient, { limit = 100, offset = 0 } = {}) => {
+    // protège contre des valeurs dangereuses
+    limit = Math.min(1000, Math.max(1, Number(limit) || 100));
+    offset = Math.max(0, Number(offset) || 0);
+    const query = 'SELECT id, name, username, email, role, created_at FROM users ORDER BY id DESC LIMIT $1 OFFSET $2';
+    const { rows } = await SQLClient.query(query, [limit, offset]);
+    return rows;
+};
