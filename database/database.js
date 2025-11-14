@@ -1,26 +1,52 @@
-import pg from "pg";
-import "dotenv/config";
+import 'dotenv/config';
+import pg from 'pg';
 
 const pgPool = new pg.Pool({
-    user: process.env.PGUSER,
-    host: process.env.PGHOST,
-    database: process.env.PGDATABASE,
-    password: process.env.PGPASSWORD,
-    port: process.env.PGPORT,
+    host: process.env.HOSTDB,
+    user: process.env.USERDB,
+    password: process.env.PASSWORDDB,
+    database: process.env.DBNAME
 });
 
+/* ----- Deuxième partie ----- */
 export const pool = {
+    connect: async () => {
+        try {
+            const client = await pgPool.connect();
+            return {
+                query : async (query, params) => {
+                    try {
+                        return await client.query(query, params);
+                    } catch (e) {
+                        console.error(e);
+                        throw e;
+                    }
+                },
+                release : () => {
+                    return client.release();
+                }
+            };
+        } catch (e){
+            console.error(e);
+            throw e;
+        }
+    },
     query: async (query, params) => {
         try {
             return await pgPool.query(query, params);
-        } catch (err) {
-            console.error("Erreur SQL :", err.message);
-            throw err;
+        } catch (e) {
+            console.error(e);
+            throw e;
         }
     },
-    end: () => pgPool.end()
+    end : () => {
+        return pgPool.end();
+    }
 };
 
-process.on("exit", () => {
-    pgPool.end().then(() => console.log("Connexion PostgreSQL fermée."));
+
+/* ----- Troisième partie ----- */
+// Si nous fermons notre processus, nous fermerons automatiquement toutes les connexions ouvertes à la base de données
+process.on('exit', () => {
+    pgPool.end().then(() => console.log('pool closed'));
 });
