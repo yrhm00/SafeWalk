@@ -9,7 +9,7 @@ export async function getUser(req, res) {
             return res.status(400).json({ error: 'ID invalide' });
         }
         const { rows } = await pool.query(
-            'SELECT id, username, email, role FROM "user" WHERE id = $1',
+            'SELECT id, username, email, role FROM "users" WHERE id = $1',
             [id]
         );
         if (!rows.length) {

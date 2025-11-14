@@ -13,9 +13,9 @@ DO $$ BEGIN
     CREATE TYPE severity_level AS ENUM ('low','medium','high');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- ========== TABLE user ==========
-DROP TABLE IF EXISTS user CASCADE ;
-CREATE TABLE user (
+-- ========== TABLE users (renamed from 'user')
+DROP TABLE IF EXISTS users CASCADE ;
+CREATE TABLE users (
                        id              BIGSERIAL PRIMARY KEY,
                        name            VARCHAR(120)        NOT NULL,
                        username        VARCHAR(60)         UNIQUE,
@@ -45,7 +45,7 @@ CREATE TABLE zone (
 DROP TABLE IF EXISTS report CASCADE ;
 CREATE TABLE report (
                          id             BIGSERIAL PRIMARY KEY,
-                         user_id        BIGINT       NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+                         user_id        BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                          type_id        INT          NOT NULL REFERENCES report_type(id),
                          zone_id        INT          REFERENCES zone(id) ON DELETE SET NULL,
                          title          VARCHAR(140) NOT NULL,
@@ -62,7 +62,7 @@ DROP TABLE IF EXISTS comment CASCADE ;
 CREATE TABLE comment (
                           id          BIGSERIAL PRIMARY KEY,
                           report_id   BIGINT      NOT NULL REFERENCES report(id) ON DELETE CASCADE,
-                          user_id     BIGINT      NOT NULL REFERENCES user(id)   ON DELETE CASCADE,
+                          user_id     BIGINT      NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
                           content     TEXT        NOT NULL,
                           created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -72,7 +72,7 @@ DROP TABLE IF EXISTS vote CASCADE ;
 CREATE TABLE vote (
                        id          BIGSERIAL PRIMARY KEY,
                        report_id   BIGINT      NOT NULL REFERENCES report(id) ON DELETE CASCADE,
-                       user_id     BIGINT      NOT NULL REFERENCES user(id)   ON DELETE CASCADE,
+                       user_id     BIGINT      NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
                        value       BOOLEAN     NOT NULL,
                        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                        CONSTRAINT vote_unique_by_user UNIQUE (report_id, user_id)
@@ -86,8 +86,8 @@ CREATE TABLE vote (
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
--- user
-INSERT INTO user (name, username, email, password_hash, role) VALUES
+-- users
+INSERT INTO users (name, username, email, password_hash, role) VALUES
                                                                    ('Admin SafeWalk', 'admin', 'admin@safewalk.local', 'hash_admin', 'admin'),
                                                                    ('Yassin Rhouma', 'yassin', 'yassin@mail.com', 'hash_yassin', 'citizen'),
                                                                    ('Florian Dupont', 'florian', 'florian@mail.com', 'hash_florian', 'citizen'),

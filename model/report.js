@@ -42,7 +42,7 @@ export async function list(SQLClient, { page = 1, size = 10, q = "", status, typ
         'r.type_id, t.label AS type_label, ' +
         'r.zone_id ' +
         'FROM report r ' +
-        'JOIN "user" u ON u.id = r.user_id ' +
+        'JOIN "users" u ON u.id = r.user_id ' +
         'JOIN report_type t ON t.id = r.type_id ' +
         (where ? where + ' ' : '') +
         'ORDER BY r.created_at DESC ' +
@@ -73,7 +73,7 @@ export async function findById(SQLClient, id) {
         `
     SELECT r.*, u.name AS user_name, t.label AS type_label
     FROM report r
-    JOIN "user" u ON u.id = r.user_id
+    JOIN "users" u ON u.id = r.user_id
     JOIN report_type t ON t.id = r.type_id
     WHERE r.id = $1
     `,

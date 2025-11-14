@@ -3,7 +3,7 @@ export async function listForReport(SQLClient, { id }) {
         `
     SELECT c.id, c.content, c.created_at, c.user_id, u.name AS user_name
     FROM comment c
-    JOIN "user" u ON u.id = c.user_id
+    JOIN "users" u ON u.id = c.user_id
     WHERE c.report_id = $1
     ORDER BY c.created_at DESC
     `,
