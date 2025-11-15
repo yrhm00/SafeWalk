@@ -4,13 +4,19 @@ import { createReportWithInitialVote } from "../database/transaction.js";
 
 export const getReport = async (req, res)=> {
     try {
-        const report = await reportModel.list(pool, req.params);
+        const rawId = req.params.id;
+        const id = Number(rawId);
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({ error: 'ID invalide' });
+        }
+        const report = await reportModel.findById(pool, id);
         if (report) {
             res.json(report);
         } else {
             res.sendStatus(404);
         }
     } catch (err) {
+        console.error(err);
         res.sendStatus(500);
     }
 };
@@ -45,18 +51,26 @@ export const addReportWithVote = async (req, res) => {
 
 export const updateReport = async (req, res) => {
     try {
+        if (!req.body || req.body.id == null) {
+            return res.status(400).json({ error: 'id manquant pour la mise à jour du report' });
+        }
         await reportModel.update(pool, req.body);
         res.sendStatus(204);
     } catch (err) {
+        console.error(err);
         res.sendStatus(500);
     }
 };
 
 export const deleteReport = async (req, res) => {
     try {
+        if (!req.params || req.params.id == null) {
+            return res.status(400).json({ error: 'id manquant pour la suppression du report' });
+        }
         await reportModel.remove(pool, req.params);
         res.sendStatus(204);
     } catch (err) {
+        console.error(err);
         res.sendStatus(500);
     }
 };

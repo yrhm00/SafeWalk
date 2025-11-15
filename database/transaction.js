@@ -7,7 +7,7 @@ export async function createReportWithInitialVote(pool, reportData, userId) {
 
         const insertReportQuery = `
       INSERT INTO report (user_id, type_id, zone_id, title, description, point, image_url, status, severity)
-      VALUES ($1, $2, $3, $4, $5, ST_SetSRID(ST_MakePoint($6, $7), 4326), $8, 'new', $9)
+      VALUES ($1, $2, $3, $4, $5, ST_SetSRID(ST_MakePoint($6, $7), 4326), $8, 'pending', $9)
       RETURNING *;
     `;
         const reportValues = [

@@ -27,22 +27,31 @@ export const addUser = async (req, res) => {
         const id = await userModel.createUser(pool, req.body);
         res.status(201).json({id});
     } catch (err) {
+        console.error(err);
         res.sendStatus(500);
     }
 };
 export const updateUser = async (req, res) => {
     try {
+        if (!req.body || req.body.id == null) {
+            return res.status(400).json({ error: 'id manquant pour la mise à jour de l\'utilisateur' });
+        }
         await userModel.updateUser(pool, req.body);
         res.sendStatus(204);
     } catch (err) {
+        console.error(err);
         res.sendStatus(500);
     }
 };
 export const deleteUser = async (req, res) => {
     try {
+        if (!req.params || req.params.id == null) {
+            return res.status(400).json({ error: 'id manquant pour la suppression de l\'utilisateur' });
+        }
         await userModel.deleteUser(pool, req.params);
         res.sendStatus(204);
     } catch (err) {
+        console.error(err);
         res.sendStatus(500);
     }
 };
