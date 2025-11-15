@@ -1,6 +1,6 @@
 import {pool} from "../database/database.js";
 import * as reportModel from "../model/report.js";
-import * as userModel from "../model/user.js";
+import { createReportWithInitialVote } from "../database/transaction.js";
 
 export const getReport = async (req, res)=> {
     try {
@@ -15,12 +15,31 @@ export const getReport = async (req, res)=> {
     }
 };
 
+// Méthode existante : crée un report simple via le modèle
 export const addReport = async (req, res) => {
     try {
-        const id = await reportModel.create(pool, req.body);
-        res.status(201).json({id});
+        const report = await reportModel.create(pool, req.body);
+        if (!report) {
+            return res.status(400).json({ error: "Création du report impossible" });
+        }
+        res.status(201).json(report);
     } catch (err) {
-        res.sendStatus(500);
+        console.error(err);
+        res.status(500).json({ error: "Erreur lors de la création du report" });
+    }
+};
+
+// Nouvelle méthode : crée un report + vote initial dans une transaction
+export const addReportWithVote = async (req, res) => {
+    try {
+        // Remplacer par l'ID réel extrait du token/auth en production
+        const userId = req.user?.id ?? 1;
+
+        const newReport = await createReportWithInitialVote(pool, req.body, userId);
+        res.status(201).json(newReport);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erreur lors de la création du report avec vote" });
     }
 };
 

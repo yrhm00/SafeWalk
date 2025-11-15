@@ -73,7 +73,7 @@ export async function findById(SQLClient, id) {
         `
     SELECT r.*, u.name AS user_name, t.label AS type_label
     FROM report r
-    JOIN "users" u ON u.id = r.user_id
+    JOIN users u ON u.id = r.user_id
     JOIN report_type t ON t.id = r.type_id
     WHERE r.id = $1
     `,
