@@ -55,3 +55,35 @@ export const deleteUser = async (req, res) => {
         res.sendStatus(500);
     }
 };
+
+// Mise a jour du citizen connecte via Basic Auth (exercice 1 du labo)
+export const updateSelfUser = async (req, res) => {
+    try {
+        const citizen = req.citizen;
+        if (!citizen || !citizen.id) {
+            return res.status(401).json({ error: 'Non authentifie' });
+        }
+
+        const { name, username, email, password_hash } = req.body || {};
+
+        // si aucun champ autorise n'est fourni, on signale une erreur claire
+        if (!name && !username && !email && !password_hash) {
+            return res.status(400).json({ error: 'Aucun champ a mettre a jour' });
+        }
+
+        await userModel.updateUser(pool, {
+            id: citizen.id,
+            name,
+            username,
+            email,
+            password_hash,
+            // on ne permet PAS de changer le role via cette route
+            role: undefined
+        });
+
+        return res.sendStatus(204);
+    } catch (err) {
+        console.error('updateSelfUser error:', err);
+        return res.sendStatus(500);
+    }
+};
