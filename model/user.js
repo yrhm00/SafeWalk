@@ -46,6 +46,11 @@ export const deleteUser = async (SQLClient, { id }) => {
     const { rows } = await SQLClient.query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);
 };
 
+export const readClientByEmail = async (SQLClient, {email}) => {
+    let query = 'SELECT * FROM users WHERE email = $1';
+    const {rows} = await SQLClient.query(query, [email]);
+    return rows[0];
+};
 
 export const readUserByUsername = async (SQLClient, { username }) => {
     if (!username) throw new Error('username manquant');
