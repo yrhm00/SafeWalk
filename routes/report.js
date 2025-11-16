@@ -6,12 +6,14 @@ import {
     deleteReport,
     addReportWithVote,
 } from "../controler/report.js";
+import { validate } from "../middleware/validation/validate.js";
+import { createReportSchema, updateReportSchema } from "../validation/reportSchemas.js";
 
 const router = Router();
 
-router.post("/", addReport);
-router.post("/with-vote", addReportWithVote);
-router.patch("/", updateReport);
+router.post("/", validate(createReportSchema), addReport);
+router.post("/with-vote", validate(createReportSchema), addReportWithVote);
+router.patch("/", validate(updateReportSchema), updateReport);
 router.get("/:id", getReport);
 router.delete("/:id", deleteReport);
 

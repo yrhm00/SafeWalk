@@ -5,11 +5,13 @@ import {
     getReportType,
     deleteReportType
 } from "../controler/reportType.js";
+import { validate } from "../middleware/validation/validate.js";
+import { createReportTypeSchema, updateReportTypeSchema } from "../validation/reportTypeSchemas.js";
 
 const router = Router();
 
-router.post("/", addReportType);
-router.patch("/", updateReportType);
+router.post("/", validate(createReportTypeSchema), addReportType);
+router.patch("/", validate(updateReportTypeSchema), updateReportType);
 router.get("/", getReportType);
 router.get("/:id", getReportType);
 router.delete("/:id", deleteReportType);
