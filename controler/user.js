@@ -59,8 +59,8 @@ export const deleteUser = async (req, res) => {
 // Mise a jour du citizen connecte via Basic Auth (exercice 1 du labo)
 export const updateSelfUser = async (req, res) => {
     try {
-        const citizen = req.citizen;
-        if (!citizen || !citizen.id) {
+        const user = req.user;
+        if (!user || !user.id) {
             return res.status(401).json({ error: 'Non authentifie' });
         }
 
@@ -72,7 +72,7 @@ export const updateSelfUser = async (req, res) => {
         }
 
         await userModel.updateUser(pool, {
-            id: citizen.id,
+            id: user.id,
             name,
             username,
             email,
