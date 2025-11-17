@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Alert from '../../components/Alert.jsx';
+import { apiRequest } from '../../services/apiClient.js';
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // email ou username
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -12,32 +13,30 @@ function LoginPage() {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
-      setError('Email et mot de passe requis');
+    if (!identifier || !password) {
+      setError('Email ou username et mot de passe requis');
       return;
     }
 
-    // On stocke les identifiants pour Basic Auth, ils seront utilisés par apiClient
-    localStorage.setItem('basic_email', email);
+    // Pour le moment, le backend Basic Auth ne connaît que l'email.
+    // On stocke quand même l'identifiant tel quel ; si c'est un username,
+    // il faudra adapter le middleware plus tard.
+    localStorage.setItem('basic_email', identifier);
     localStorage.setItem('basic_password', password);
 
-    // On peut faire un petit ping pour vérifier que les identifiants sont corrects
     try {
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/users/1', {
-        headers: {
-          Authorization: 'Basic ' + btoa(`${email}:${password}`),
-        },
-      });
+      const me = await apiRequest('/users/me');
 
-      if (res.status === 401 || res.status === 403) {
-        setError('Identifiants invalides ou accès refusé');
+      if (!me || me.role !== 'admin') {
+        setError('Seuls les administrateurs peuvent accéder au backoffice');
         return;
       }
 
-      // Si ça passe (200 ou autre 2xx), on considère le login OK
+      localStorage.setItem('role', me.role);
       navigate('/admin');
-    } catch (e) {
-      setError('Connexion au serveur impossible');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message || 'Connexion au serveur impossible');
     }
   };
 
@@ -47,8 +46,8 @@ function LoginPage() {
         <h1>Connexion admin</h1>
         <Alert type="error" message={error} />
         <label>
-          Email
-          <input value={email} onChange={e => setEmail(e.target.value)} />
+          Email / username
+          <input value={identifier} onChange={e => setIdentifier(e.target.value)} />
         </label>
         <label>
           Mot de passe

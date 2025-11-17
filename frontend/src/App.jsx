@@ -10,11 +10,38 @@ import ZonesListPage from './pages/zones/ZonesListPage.jsx';
 import ZoneFormPage from './pages/zones/ZoneFormPage.jsx';
 import LoginPage from './pages/auth/LoginPage.jsx';
 
+// Petit helper pour savoir si on est connecté et admin
+function isAuthenticatedAdmin() {
+  const email = localStorage.getItem('basic_email');
+  const password = localStorage.getItem('basic_password');
+  const role = localStorage.getItem('role');
+  return !!email && !!password && role === 'admin';
+}
+
+function RequireAdmin({ children }) {
+  if (!isAuthenticatedAdmin()) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
 function App() {
   return (
     <Routes>
+      {/* Quand on arrive sur la racine, on va directement sur /login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/admin" element={<AdminLayout />}>
+
+      {/* Toutes les routes d'admin sont protégées */}
+      <Route
+        path="/admin"
+        element={
+          <RequireAdmin>
+            <AdminLayout />
+          </RequireAdmin>
+        }
+      >
         <Route index element={<Navigate to="users" replace />} />
         <Route path="users" element={<UsersListPage />} />
         <Route path="users/new" element={<UserFormPage mode="create" />} />
@@ -28,7 +55,9 @@ function App() {
         <Route path="zones/new" element={<ZoneFormPage mode="create" />} />
         <Route path="zones/:id/edit" element={<ZoneFormPage mode="edit" />} />
       </Route>
-      <Route path="*" element={<Navigate to="/admin" replace />} />
+
+      {/* Toute autre URL redirige vers /login */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

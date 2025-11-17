@@ -4,7 +4,10 @@ function AdminLayout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    // On nettoie toutes les infos d'auth utilisées par le backoffice
+    localStorage.removeItem('basic_email');
+    localStorage.removeItem('basic_password');
+    localStorage.removeItem('role');
     navigate('/login');
   };
 
@@ -35,4 +38,3 @@ function AdminLayout() {
 }
 
 export default AdminLayout;
-
