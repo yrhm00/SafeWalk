@@ -5,11 +5,15 @@ import {
     getReport,
     deleteReport,
     addReportWithVote,
+    getReports
 } from "../controler/report.js";
 import { validate } from "../middleware/validation/validate.js";
 import { createReportSchema, updateReportSchema } from "../validation/reportSchemas.js";
 
 const router = Router();
+
+// Liste paginée des reports
+router.get("/", getReports);
 
 router.post("/", validate(createReportSchema), addReport);
 router.post("/with-vote", validate(createReportSchema), addReportWithVote);

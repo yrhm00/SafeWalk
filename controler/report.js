@@ -2,6 +2,25 @@ import {pool} from "../database/database.js";
 import * as reportModel from "../model/report.js";
 import { createReportWithInitialVote } from "../database/transaction.js";
 
+export const getReports = async (req, res) => {
+    try {
+        const { page = 1, size = 20, q = "", status, type_id, from, to } = req.query;
+        const result = await reportModel.list(pool, {
+            page: Number(page) || 1,
+            size: Number(size) || 20,
+            q,
+            status,
+            type_id: type_id ? Number(type_id) : undefined,
+            from,
+            to,
+        });
+        return res.json(result);
+    } catch (err) {
+        console.error('GET /reports error:', err);
+        return res.status(500).json({ error: 'Erreur interne' });
+    }
+};
+
 export const getReport = async (req, res)=> {
     try {
         const rawId = req.params.id;

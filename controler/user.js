@@ -2,6 +2,16 @@ import {pool} from "../database/database.js";
 import * as userModel from "../model/user.js";
 import { hashPassword } from "../utils/password.js";
 
+export async function getUsers(req, res) {
+    try {
+        const users = await userModel.getUsers(pool);
+        return res.json(users);
+    } catch (e) {
+        console.error('GET /users error:', e);
+        return res.status(500).json({ error: 'Erreur interne' });
+    }
+}
+
 export async function getUser(req, res) {
     try {
         const rawId = req.params.id;

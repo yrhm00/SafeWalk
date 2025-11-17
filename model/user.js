@@ -65,3 +65,8 @@ export const listuser = async (SQLClient, { limit = 100, offset = 0 } = {}) => {
     const { rows } = await SQLClient.query(query, [limit, offset]);
     return rows;
 };
+
+// Raccourci simple pour récupérer tous les users sans pagination
+export const getUsers = async (SQLClient) => {
+    return await listuser(SQLClient, {});
+};
