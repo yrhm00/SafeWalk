@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";                 // <-- ajouter ça
-import userRoutes from "./routes/user.js";
-import reportRoutes from "./routes/report.js";
-import commentRoutes from "./routes/comment.js";
-import zoneRoutes from "./routes/zone.js";
-import voteRoutes from "./routes/vote.js";
-import reportTypeRoutes from "./routes/reportType.js";
+import userRoutes from "./src/routes/user.js";
+import reportRoutes from "./src/routes/report.js";
+import commentRoutes from "./src/routes/comment.js";
+import zoneRoutes from "./src/routes/zone.js";
+import voteRoutes from "./src/routes/vote.js";
+import reportTypeRoutes from "./src/routes/reportType.js";
 
 const app = express();
 const port = 3001;
