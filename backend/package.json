@@ -1,0 +1,7 @@
+{
+  "name": "safewalk-backend-placeholder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Placeholder, le backend est configuré via le package.json à la racine.",
+  "scripts": {}
+}
