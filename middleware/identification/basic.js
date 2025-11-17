@@ -1,6 +1,7 @@
 // javascript
 import { pool } from '../../database/database.js';
 import { readClientByEmail } from '../../model/user.js';
+import { verifyPassword } from '../../utils/password.js';
 
 export const authBasic = (allowedRoles = []) => {
     return async (req, res, next) => {
@@ -19,7 +20,12 @@ export const authBasic = (allowedRoles = []) => {
             }
 
             const user = await readClientByEmail(pool, { email });
-            if (!user || user.password_hash !== password) {
+            if (!user) {
+                return res.status(401).send('Invalid credentials');
+            }
+
+            const ok = await verifyPassword(password, user.password_hash);
+            if (!ok) {
                 return res.status(401).send('Invalid credentials');
             }
 

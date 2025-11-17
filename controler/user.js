@@ -1,5 +1,6 @@
 import {pool} from "../database/database.js";
 import * as userModel from "../model/user.js";
+import { hashPassword } from "../utils/password.js";
 
 export async function getUser(req, res) {
     try {
@@ -24,7 +25,17 @@ export async function getUser(req, res) {
 
 export const addUser = async (req, res) => {
     try {
-        const id = await userModel.createUser(pool, req.body);
+        const { password, ...rest } = req.body || {};
+        if (!password) {
+            return res.status(400).json({ error: 'Mot de passe manquant' });
+        }
+
+        const password_hash = await hashPassword(password);
+
+        const id = await userModel.createUser(pool, {
+            ...rest,
+            password_hash,
+        });
         res.status(201).json({id});
     } catch (err) {
         console.error(err);
@@ -36,7 +47,17 @@ export const updateUser = async (req, res) => {
         if (!req.body || req.body.id == null) {
             return res.status(400).json({ error: 'id manquant pour la mise à jour de l\'utilisateur' });
         }
-        await userModel.updateUser(pool, req.body);
+
+        const { password, ...rest } = req.body;
+        let password_hash;
+        if (password) {
+            password_hash = await hashPassword(password);
+        }
+
+        await userModel.updateUser(pool, {
+            ...rest,
+            password_hash,
+        });
         res.sendStatus(204);
     } catch (err) {
         console.error(err);
@@ -64,11 +85,16 @@ export const updateSelfUser = async (req, res) => {
             return res.status(401).json({ error: 'Non authentifie' });
         }
 
-        const { name, username, email, password_hash } = req.body || {};
+        const { name, username, email, password } = req.body || {};
 
         // si aucun champ autorise n'est fourni, on signale une erreur claire
-        if (!name && !username && !email && !password_hash) {
+        if (!name && !username && !email && !password) {
             return res.status(400).json({ error: 'Aucun champ a mettre a jour' });
+        }
+
+        let password_hash;
+        if (password) {
+            password_hash = await hashPassword(password);
         }
 
         await userModel.updateUser(pool, {
