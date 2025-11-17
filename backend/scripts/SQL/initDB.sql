@@ -92,7 +92,8 @@ INSERT INTO users (name, username, email, password_hash, role) VALUES
                                                                    ('Yassin Rhouma', 'yassin', 'yassin@mail.com', 'hash_yassin', 'citizen'),
                                                                    ('Florian Dupont', 'florian', 'florian@mail.com', 'hash_florian', 'citizen'),
                                                                    ('Abou Bakar', 'aboub', 'aboub@mail.com', 'hash_aboub', 'citizen'),
-                                                                   ('Emmanuel Lemoine', 'emma', 'emma@mail.com', 'hash_emma', 'citizen');
+                                                                   ('Emmanuel Lemoine', 'emma', 'emma@mail.com', 'hash_emma', 'citizen'),
+                                                                   ('Yassin Rhouma', 'yassrh', 'yassinadmin@admin.com', '$2b$10$tgzU0dC/W4Tlaa1m2eVKBs0WgyMMejlzhSs1ijAJhf3wOVRdre', 'admin');
 
 -- Report_Types
 INSERT INTO report_type (label) VALUES
