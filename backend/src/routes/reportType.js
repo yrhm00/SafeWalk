@@ -5,8 +5,8 @@ import {
     getReportType,
     deleteReportType
 } from "../controler/reportType.js";
-import { validate } from "../middleware/validation/validate.js";
-import { createReportTypeSchema, updateReportTypeSchema } from "../validation/reportTypeSchemas.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { createReportTypeSchema, updateReportTypeSchema } from "../../validation/reportTypeSchemas.js";
 
 const router = Router();
 

@@ -7,8 +7,8 @@ import {
     addReportWithVote,
     getReports
 } from "../controler/report.js";
-import { validate } from "../middleware/validation/validate.js";
-import { createReportSchema, updateReportSchema } from "../validation/reportSchemas.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { createReportSchema, updateReportSchema } from "../../validation/reportSchemas.js";
 
 const router = Router();
 

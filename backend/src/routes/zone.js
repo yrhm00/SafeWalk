@@ -5,8 +5,8 @@ import {
     getZone,
     deleteZone
 } from "../controler/zone.js";
-import { validate } from "../middleware/validation/validate.js";
-import { createZoneSchema, updateZoneSchema } from "../validation/zoneSchemas.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { createZoneSchema, updateZoneSchema } from "../../validation/zoneSchemas.js";
 
 const router = Router();
 

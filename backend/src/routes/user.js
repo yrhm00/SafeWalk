@@ -6,9 +6,9 @@ import {
     updateSelfUser,
     getUsers
 } from "../controler/user.js";
-import { authBasic } from "../middleware/identification/basic.js";
-import { validate } from "../middleware/validation/validate.js";
-import { createUserSchema, updateUserSchema, updateSelfUserSchema } from "../validation/userSchemas.js";
+import { authBasic } from "../../middleware/identification/basic.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { createUserSchema, updateUserSchema, updateSelfUserSchema } from "../../validation/userSchemas.js";
 
 const router = Router();
 

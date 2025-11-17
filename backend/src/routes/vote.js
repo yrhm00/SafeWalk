@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { setVote, removeVote, countVote } from "../controler/vote.js";
-import { validate } from "../middleware/validation/validate.js";
-import { setVoteSchema, removeVoteSchema } from "../validation/voteSchemas.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { setVoteSchema, removeVoteSchema } from "../../validation/voteSchemas.js";
 
 const router = Router();
 

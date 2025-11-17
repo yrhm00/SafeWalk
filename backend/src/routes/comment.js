@@ -4,8 +4,8 @@ import {
     updateComment,
     getComment, deleteComment
 } from "../controler/comment.js";
-import { validate } from "../middleware/validation/validate.js";
-import { createCommentSchema, updateCommentSchema } from "../validation/commentSchemas.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { createCommentSchema, updateCommentSchema } from "../../validation/commentSchemas.js";
 
 const router = Router();
 
