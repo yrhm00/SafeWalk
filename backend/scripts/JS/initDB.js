@@ -1,5 +1,5 @@
 import {readFileSync} from "node:fs";
-import {pool} from "../../database/database.js";
+import {pool} from "../../backend/database/database.js";
 
 const requests = readFileSync(
     './scripts/SQL/initDB.sql',

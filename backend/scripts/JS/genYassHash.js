@@ -1,5 +1,5 @@
 // scripts/JS/genYassHash.js
-import { hashPassword } from '../../utils/password.js';
+import { hashPassword } from '../../backend/utils/password.js';
 
 const run = async () => {
   const hash = await hashPassword('YassinMoi');
