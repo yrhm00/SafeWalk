@@ -1,6 +1,6 @@
 // javascript
 import { pool } from '../../database/database.js';
-import { readClientByEmail } from '../../model/user.js';
+import { readClientByEmail } from '../../src/model/user.js';
 import { verifyPassword } from '../../utils/password.js';
 
 export const authBasic = (allowedRoles = []) => {
