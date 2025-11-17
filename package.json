@@ -13,10 +13,12 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@vinejs/vine": "^1.0.0",
+    "argon2": "^0.44.0",
+    "bcrypt": "^5.1.1",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "pg": "^8.16.3",
-    "@vinejs/vine": "^1.0.0"
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
