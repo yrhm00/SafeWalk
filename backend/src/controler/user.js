@@ -1,6 +1,6 @@
-import {pool} from "../database/database.js";
+import {pool} from "../../database/database.js";
 import * as userModel from "../model/user.js";
-import { hashPassword } from "../utils/password.js";
+import { hashPassword } from "../../utils/password.js";
 
 export async function getUsers(req, res) {
     try {

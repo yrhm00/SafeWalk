@@ -1,4 +1,4 @@
-import {pool} from "../database/database.js";
+import {pool} from "../../database/database.js";
 import * as voteModel from "../model/vote.js";
 
 export const setVote = async (req, res) => {

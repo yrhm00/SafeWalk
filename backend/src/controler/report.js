@@ -1,6 +1,6 @@
-import {pool} from "../database/database.js";
+import {pool} from "../../database/database.js";
 import * as reportModel from "../model/report.js";
-import { createReportWithInitialVote } from "../database/transaction.js";
+import { createReportWithInitialVote } from "../../database/transaction.js";
 
 export const getReports = async (req, res) => {
     try {

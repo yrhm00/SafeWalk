@@ -1,4 +1,4 @@
-import {pool} from "../database/database.js";
+import {pool} from "../../database/database.js";
 import * as reportTypeModel from "../model/reportType.js";
 
 export const getReportType = async (req, res) => {

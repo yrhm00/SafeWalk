@@ -1,4 +1,4 @@
-import {pool} from "../database/database.js";
+import {pool} from "../../database/database.js";
 import * as commentModel from "../model/comment.js";
 
 export const getComment = async (req, res)=> {

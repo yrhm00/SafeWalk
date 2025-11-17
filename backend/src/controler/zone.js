@@ -1,4 +1,4 @@
-import { pool } from "../database/database.js";
+import { pool } from "../../database/database.js";
 import * as zoneModel from "../model/zone.js";
 
 // GET /zones  ou GET /zones/:id
