@@ -1,11 +1,11 @@
+import "dotenv/config"
 import pg from "pg";
 
 const pgPool = new pg.Pool({
-    user: 'flo',
-    host: 'localhost',
-    database: 'safewalk',
-    password: 'password',
-    port: 5432
+    host: process.env.HOSTDB,
+    user: process.env.USERDB,
+    password: process.env.PASSWORDDB,
+    database: process.env.DBNAME
 });
 
 /* ----- Deuxième partie ----- */
