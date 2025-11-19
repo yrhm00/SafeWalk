@@ -13,6 +13,7 @@ const port = 3001;
 // CORS : autoriser le front Vite
 app.use(cors({
     origin: 'http://localhost:5173',
+    credentials: true
 }));
 
 app.use(express.json());

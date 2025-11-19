@@ -3,6 +3,7 @@ import pg from 'pg';
 
 const pgPool = new pg.Pool({
     host: process.env.HOSTDB,
+    port: process.env.PORTDB || 5454,
     user: process.env.USERDB,
     password: process.env.PASSWORDDB,
     database: process.env.DBNAME
@@ -14,7 +15,7 @@ export const pool = {
         try {
             const client = await pgPool.connect();
             return {
-                query : async (query, params) => {
+                query: async (query, params) => {
                     try {
                         return await client.query(query, params);
                     } catch (e) {
@@ -22,11 +23,11 @@ export const pool = {
                         throw e;
                     }
                 },
-                release : () => {
+                release: () => {
                     return client.release();
                 }
             };
-        } catch (e){
+        } catch (e) {
             console.error(e);
             throw e;
         }
@@ -39,7 +40,7 @@ export const pool = {
             throw e;
         }
     },
-    end : () => {
+    end: () => {
         return pgPool.end();
     }
 };

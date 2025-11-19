@@ -4,9 +4,13 @@
     "slug": "safewalk-mobile",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
-    "platforms": ["android", "ios", "web"],
+    "platforms": [
+      "android",
+      "ios",
+      "web"
+    ],
     "extra": {
-      "apiBaseUrl": "http://192.168.0.189:3001"
+      "apiBaseUrl": "http://192.168.65.147:3001"
     }
   }
 }

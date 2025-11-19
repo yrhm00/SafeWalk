@@ -1,7 +1,7 @@
-import {readFileSync} from "node:fs";
-import {fileURLToPath} from 'node:url';
-import {dirname, join} from 'node:path';
-import {pool} from "../../backend/database/database.js";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { pool } from "../../backend/database/database.js";
 
 // Résolution du chemin du fichier SQL par rapport à ce fichier, pas par rapport à process.cwd()
 const __filename = fileURLToPath(import.meta.url);
@@ -9,7 +9,7 @@ const __dirname = dirname(__filename);
 
 const requests = readFileSync(
     join(__dirname, '../SQL/initDB.sql'),
-    {encoding: "utf-8"}
+    { encoding: "utf-8" }
 );
 
 // NOTE: les valeurs de `password_hash` dans initDB.sql doivent être de vrais hash bcrypt.
