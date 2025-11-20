@@ -1,4 +1,4 @@
-import {pool} from "../database/database.js";
+import {pool} from "../../database/database.js";
 import * as productModel from "../model/productDB.js";
 
 export const getProduct = async (req, res)=> {

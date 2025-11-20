@@ -1,80 +1,104 @@
 # SafeWalk
 
-📦 1. Cloner le projet
+Application SafeWalk composée de trois parties :
 
-Ouvrez un terminal, puis :
+- **Backend** : API Node.js/Express + PostgreSQL (PostGIS)
+- **Frontend** : interface web (React + Vite)
+- **Mobile** : application mobile (React Native / Expo)
 
-git clone https://github.com/<ton-repo>/SafeWalk.git
-cd SafeWalk
+---
 
-🐘 2. Lancer PostgreSQL (Docker)
+## 1. Prérequis
+
+- **Node.js** (version récente, ex. ≥ 18)
+- **npm**
+- **PostgreSQL** avec **PostGIS**
+- (Mobile) **Expo** / émulateur Android ou iOS installés
+
+---
+## 2. Installation générale du projet
+
+Depuis la racine du projet (`SafeWalk`) :
+
+```bash
+# A faire plus tard
+```
+
+---
+
+## 3. Lancer PostgreSQL (Docker)
 
 Le BackEnd utilise une base PostgreSQL exécutée dans Docker.
-
-Depuis la racine du projet :
-
+```bash
+# Depuis la racine du projet :
 docker compose up -d
 
 
-Vérifier que le conteneur tourne :
-
+# Vérifier que le conteneur tourne :
 docker ps
 
 
-Vous devez voir un conteneur nommé :
-
+# Vous devez voir un conteneur nommé :
 safewalk-db
+```
 
-⚙️ 3. Configuration du BackEnd
+---
 
-Entrer dans le dossier du BackEnd :
 
+## 4. Configuration du BackEnd
+
+```bash
+# Entrer dans le dossier du BackEnd :
 cd BackEnd
 
 
-Créer votre fichier .env :
-
+# Créer votre fichier .env :
 cp .env.example .env
 
 
-Installer les dépendances :
-
+# Installer les dépendances :
 npm install
+```
 
-🧱 4. Initialiser la base de données
+---
 
-Ce script crée toutes les tables et insère les données de test.
 
+## 5. Initialiser la base de données
+
+```bash
+# Ce script crée toutes les tables et insère les données de test.
 npm run initDB
 
-🧪 5. Tester la connexion à la base
+# Tester la connexion à la base
 npm run testDB
 
+#Vous devriez voir un résultat du type :
+'{ now: '2025-11-20T12:41:26.214Z' }'
+```
 
-Vous devriez voir un résultat du type :
-
-{ now: '2025-11-20T12:41:26.214Z' }
-
-🚀 6. Lancer le serveur BackEnd
+## 6. Lancer le serveur BackEnd
+```bash
 npm run dev
-
+```
 
 L’API tourne maintenant sur :
 
 http://localhost:3000
 
-📡 7. Accéder à PostgreSQL en ligne de commande (optionnel)
+## 7. Accéder à PostgreSQL en ligne de commande (optionnel)
+```bash
 docker exec -it safewalk-db psql -U postgres -d safewalk
 
 
-Commandes utiles :
+# Commandes utiles :
 
 \dt                  -- liste des tables
 SELECT * FROM "user";
 SELECT * FROM report;
 \q                    -- quitter
+```
 
-📍 À venir
+## 📍 À venir
 
 Documentation de la partie Web
 
