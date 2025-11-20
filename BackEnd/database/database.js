@@ -1,11 +1,13 @@
-import "dotenv/config"
+import "dotenv/config";
 import pg from "pg";
 
+// Création du pool
 const pgPool = new pg.Pool({
-    host: process.env.HOSTDB,
-    user: process.env.USERDB,
-    password: process.env.PASSWORDDB,
-    database: process.env.DBNAME
+    host: process.env.PGHOST,       
+    port: process.env.PGPORT,       
+    user: process.env.PGUSER,       
+    password: process.env.PGPASSWORD, 
+    database: process.env.PGDATABASE 
 });
 
 /* ----- Deuxième partie ----- */
@@ -14,17 +16,34 @@ export const pool = {
         try {
             return await pgPool.query(query, params);
         } catch (e) {
-            console.error(e);
+            console.error("❌ Erreur DB:", e);
             throw e;
         }
     },
-    end : () => {
+    end: () => {
         return pgPool.end();
     }
 };
 
 /* ----- Troisième partie ----- */
-// Si nous fermons notre processus, nous fermerons automatiquement toutes les connexions ouvertes à la base de données
-process.on("exit", () => {
-   pgPool.end().then(() => console.log("pool closed"));
+// Ferme proprement le pool quand le processus s'arrête
+
+// -------------------------------------------------
+// 📌 FERMETURE DU POOL LORSQUE LE PROCESS S'ARRÊTE
+// -------------------------------------------------
+
+// CTRL + C
+process.on("SIGINT", async () => {
+    console.log("\n🔌 CTRL+C détecté : fermeture du pool...");
+    await pgPool.end();
+    console.log("✔️ Pool fermé");
+    process.exit(0);
+});
+
+// kill / docker stop / pm2 stop / shutdown propre
+process.on("SIGTERM", async () => {
+    console.log("\n🛑 SIGTERM détecté : fermeture du pool...");
+    await pgPool.end();
+    console.log("✔️ Pool fermé");
+    process.exit(0);
 });

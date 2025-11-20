@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "initDB": "node scripts/JS/initDB.js"
+    "initDB": "node scripts/JS/initDB.js",
+    "testDB": "node scripts/JS/testDB.js",
+    "seedDB": "node scripts/JS/seedDB.js",
+    "resetDB": "node scripts/JS/resetDB.js"
   },
   "keywords": [],
   "author": "",
