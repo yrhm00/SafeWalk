@@ -1,50 +1,73 @@
-import {pool} from "../../database/database.js";
+import { pool } from "../../database/database.js";
 import * as commentModel from "../model/comment.js";
 
-export const getComment = async (req, res)=> {
+/**
+ * Obtenir tous les commentaires d'un rapport
+ */
+export const getCommentsByReport = async (req, res) => {
     try {
-        const comments = await commentModel.listForReport(pool, req.params);
-        // listForReport renvoie toujours un tableau (eventuellement vide)
-        // On renvoie 200 avec [] plutot que 404 si aucun commentaire
+        const report_id = parseInt(req.params.reportId);
+        if (isNaN(report_id)) {
+            return res.sendStatus(400);
+        }
+
+        const comments = await commentModel.readCommentsByReportId(pool, report_id);
         res.json(comments);
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.error(error);
         res.sendStatus(500);
     }
 };
 
-export const addComment = async (req, res) => {
+/**
+ * Créer un nouveau commentaire
+ */
+export const createComment = async (req, res) => {
     try {
-        const id = await commentModel.createReport(pool, req.body);
-        res.status(201).json({id});
-    } catch (err) {
-        console.error(err);
+        const { report_id, content } = req.body;
+
+        const newComment = await commentModel.createComment(pool, {
+            report_id,
+            user_id: req.session.id,
+            content
+        });
+
+        res.status(201).json(newComment);
+    } catch (error) {
+        console.error(error);
         res.sendStatus(500);
     }
 };
 
+/**
+ * Supprimer un commentaire
+ */
 export const deleteComment = async (req, res) => {
     try {
-        if (!req.params || req.params.id == null) {
-            return res.status(400).json({ error: 'id manquant pour la suppression du commentaire' });
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
         }
-        await commentModel.removeReport(pool, req.params);
-        res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
-        res.sendStatus(500);
-    }
-};
 
-export const updateComment = async (req, res) => {
-    try {
-        if (!req.body || req.body.id == null) {
-            return res.status(400).json({ error: 'id manquant pour la mise à jour du commentaire' });
+        // Vérifier que le commentaire appartient à l'utilisateur ou que l'utilisateur est admin
+        const comment = await commentModel.readCommentById(pool, id);
+
+        if (!comment) {
+            return res.sendStatus(404);
         }
-        await commentModel.updateReport(pool, req.body);
-        res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
+
+        if (comment.user_id !== req.session.id && req.session.role !== 'admin') {
+            return res.sendStatus(403);
+        }
+
+        const deleted = await commentModel.deleteComment(pool, id);
+        if (deleted) {
+            res.sendStatus(204);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
         res.sendStatus(500);
     }
 };

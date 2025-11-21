@@ -1,42 +1,67 @@
-export async function setVote(SQLClient, { report_id, user_id, value }) {
-    // Essaye d'update, sinon insert
-    const up = await SQLClient.query(
-        `
-    UPDATE vote
-    SET value = $3, created_at = NOW()
-    WHERE report_id = $1 AND user_id = $2
-    RETURNING id, report_id, user_id, value, created_at
-    `,
-        [report_id, user_id, value]
-    );
-    if (up.rows[0]) return up.rows[0];
+/**
+ * Lire tous les votes d'un rapport
+ */
+export const readVotesByReportId = async (SQLClient, report_id) => {
+    const query = `
+        SELECT v.*, u.name as user_name
+        FROM vote v
+        LEFT JOIN users u ON v.user_id = u.id
+        WHERE v.report_id = $1
+        ORDER BY v.created_at DESC
+    `;
+    const { rows } = await SQLClient.query(query, [report_id]);
+    return rows;
+};
 
-    const ins = await SQLClient.query(
-        `
-    INSERT INTO vote (report_id, user_id, value)
-    VALUES ($1,$2,$3)
-    RETURNING id, report_id, user_id, value, created_at
-    `,
-        [report_id, user_id, value]
-    );
-    return ins.rows[0];
-}
+/**
+ * Obtenir le résumé des votes pour un rapport
+ */
+export const getVoteSummary = async (SQLClient, report_id) => {
+    const query = `
+        SELECT 
+            COUNT(CASE WHEN value = TRUE THEN 1 END) as upvotes,
+            COUNT(CASE WHEN value = FALSE THEN 1 END) as downvotes,
+            COUNT(*) as total_votes
+        FROM vote
+        WHERE report_id = $1
+    `;
+    const { rows } = await SQLClient.query(query, [report_id]);
+    return rows[0];
+};
 
-export async function removeMyVote(SQLClient, { report_id, user_id }) {
-    await SQLClient.query(`DELETE FROM vote WHERE report_id = $1 AND user_id = $2`, [report_id, user_id]);
-}
+/**
+ * Créer ou mettre à jour un vote
+ */
+export const createOrUpdateVote = async (SQLClient, { report_id, user_id, value }) => {
+    const query = `
+        INSERT INTO vote (report_id, user_id, value)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (report_id, user_id) 
+        DO UPDATE SET value = EXCLUDED.value, created_at = NOW()
+        RETURNING id, report_id, user_id, value, created_at
+    `;
+    const { rows } = await SQLClient.query(query, [report_id, user_id, value]);
+    return rows[0];
+};
 
-export async function countByReport(SQLClient, report_id) {
-    const r = await SQLClient.query(
-        `
-    SELECT
-      SUM(CASE WHEN value = TRUE THEN 1 ELSE 0 END)::int AS upvote,
-      SUM(CASE WHEN value = FALSE THEN 1 ELSE 0 END)::int AS downvote,
-      COUNT(*)::int AS total
-    FROM vote
-    WHERE report_id = $1
-    `,
-        [report_id]
-    );
-    return r.rows[0];
-}
+/**
+ * Supprimer un vote
+ */
+export const deleteVote = async (SQLClient, { report_id, user_id }) => {
+    const query = "DELETE FROM vote WHERE report_id = $1 AND user_id = $2";
+    const result = await SQLClient.query(query, [report_id, user_id]);
+    return result.rowCount > 0;
+};
+
+/**
+ * Vérifier si un utilisateur a voté pour un rapport
+ */
+export const getUserVote = async (SQLClient, { report_id, user_id }) => {
+    const query = `
+        SELECT value
+        FROM vote
+        WHERE report_id = $1 AND user_id = $2
+    `;
+    const { rows } = await SQLClient.query(query, [report_id, user_id]);
+    return rows[0];
+};

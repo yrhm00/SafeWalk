@@ -1,12 +1,15 @@
-import { Router } from 'express';
-import { setVote, removeVote, countVote } from "../controler/vote.js";
-import { validate } from "../../middleware/validation/validate.js";
-import { setVoteSchema, removeVoteSchema } from "../../validation/voteSchemas.js";
+import express from "express";
+import * as controler from "../controler/vote.js";
+import { checkJWT } from "../../middleware/identification/jwt.js";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/", validate(setVoteSchema), setVote);
-router.delete("/", validate(removeVoteSchema), removeVote);
-router.get("/:report_id", countVote);
+// Routes publiques
+router.get('/report/:reportId', controler.getVotesByReport);
+
+// Routes protégées (utilisateur connecté)
+router.get('/report/:reportId/me', checkJWT, controler.getMyVote);
+router.post('/', checkJWT, controler.addVote);
+router.delete('/', checkJWT, controler.removeVote);
 
 export default router;

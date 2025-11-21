@@ -1,19 +1,16 @@
-import { Router } from 'express';
-import {
-    addReportType,
-    updateReportType,
-    getReportType,
-    deleteReportType
-} from "../controler/reportType.js";
-import { validate } from "../../middleware/validation/validate.js";
-import { createReportTypeSchema, updateReportTypeSchema } from "../../validation/reportTypeSchemas.js";
+import express from "express";
+import * as controler from "../controler/reportType.js";
+import { checkJWT } from "../../middleware/identification/jwt.js";
+import { checkRole } from "../../middleware/autorisation/checkRole.js";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/", validate(createReportTypeSchema), addReportType);
-router.patch("/", validate(updateReportTypeSchema), updateReportType);
-router.get("/", getReportType);
-router.get("/:id", getReportType);
-router.delete("/:id", deleteReportType);
+// Routes publiques
+router.get('/', controler.getAllReportTypes);
+router.get('/:id', controler.getReportTypeById);
+
+// Routes admin uniquement
+router.post('/', checkJWT, checkRole(['admin']), controler.createReportType);
+router.delete('/:id', checkJWT, checkRole(['admin']), controler.deleteReportType);
 
 export default router;

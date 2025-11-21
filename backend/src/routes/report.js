@@ -1,24 +1,22 @@
-import { Router } from 'express';
-import {
-    addReport,
-    updateReport,
-    getReport,
-    deleteReport,
-    addReportWithVote,
-    getReports
-} from "../controler/report.js";
-import { validate } from "../../middleware/validation/validate.js";
-import { createReportSchema, updateReportSchema } from "../../validation/reportSchemas.js";
+import express from "express";
+import * as controler from "../controler/report.js";
+import { checkJWT } from "../../middleware/identification/jwt.js";
+import { checkRole } from "../../middleware/autorisation/checkRole.js";
 
-const router = Router();
+const router = express.Router();
 
-// Liste paginée des reports
-router.get("/", getReports);
 
-router.post("/", validate(createReportSchema), addReport);
-router.post("/with-vote", validate(createReportSchema), addReportWithVote);
-router.patch("/", validate(updateReportSchema), updateReport);
-router.get("/:id", getReport);
-router.delete("/:id", deleteReport);
+// Routes publiques
+router.get('/', controler.getAllReports);
+router.get('/nearby', controler.searchReportsNearby); // IMPORTANT: avant /:id
+router.get('/:id', controler.getReportById);
+
+// Routes protégées (utilisateur connecté)
+router.get('/user/me', checkJWT, controler.getMyReports);
+router.post('/', checkJWT, controler.createReport);
+
+// Routes admin ou propriétaire
+router.patch('/:id', checkJWT, checkRole(['admin']), controler.updateReport);
+router.delete('/:id', checkJWT, checkRole(['admin']), controler.deleteReport);
 
 export default router;

@@ -1,17 +1,14 @@
-import { Router } from 'express';
-import {
-    addComment,
-    updateComment,
-    getComment, deleteComment
-} from "../controler/comment.js";
-import { validate } from "../../middleware/validation/validate.js";
-import { createCommentSchema, updateCommentSchema } from "../../validation/commentSchemas.js";
+import express from "express";
+import * as controler from "../controler/comment.js";
+import { checkJWT } from "../../middleware/identification/jwt.js";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/", validate(createCommentSchema), addComment);
-router.patch("/", validate(updateCommentSchema), updateComment);
-router.get("/:id", getComment);
-router.delete("/:id", deleteComment);
+// Routes publiques
+router.get('/report/:reportId', controler.getCommentsByReport);
+
+// Routes protégées (utilisateur connecté)
+router.post('/', checkJWT, controler.createComment);
+router.delete('/:id', checkJWT, controler.deleteComment);
 
 export default router;

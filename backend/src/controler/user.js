@@ -1,125 +1,173 @@
-import {pool} from "../../database/database.js";
+import { pool } from "../../database/database.js";
 import * as userModel from "../model/user.js";
-import { hashPassword } from "../../utils/password.js";
+import * as personModel from "../model/person.js";
+import argon2 from "argon2";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-export async function getUsers(req, res) {
+dotenv.config();
+
+/**
+ * Login - génère un JWT
+ */
+export const login = async (req, res) => {
     try {
-        const users = await userModel.getUsers(pool);
-        return res.json(users);
-    } catch (e) {
-        console.error('GET /users error:', e);
-        return res.status(500).json({ error: 'Erreur interne' });
-    }
-}
+        const { email, password } = req.body;
 
-export async function getUser(req, res) {
-    try {
-        const rawId = req.params.id;
-        const id = Number(rawId);
-        if (!Number.isInteger(id) || id <= 0) {
-            return res.status(400).json({ error: 'ID invalide' });
-        }
-        const { rows } = await pool.query(
-            'SELECT id, username, email, role FROM "users" WHERE id = $1',
-            [id]
-        );
-        if (!rows.length) {
-            return res.status(404).json({ error: 'User introuvable' });
-        }
-        return res.json(rows[0]);
-    } catch (e) {
-        console.error('GET /users/:id error:', e);
-        return res.status(500).json({ error: 'Erreur interne' });
-    }
-}
-
-export const addUser = async (req, res) => {
-    try {
-        const { password, ...rest } = req.body || {};
-        if (!password) {
-            return res.status(400).json({ error: 'Mot de passe manquant' });
+        if (!email || !password) {
+            return res.status(400).json({ error: "Email and password required" });
         }
 
-        const password_hash = await hashPassword(password);
+        const person = await personModel.readPerson(pool, { email, password });
 
-        const id = await userModel.createUser(pool, {
-            ...rest,
-            password_hash,
-        });
-        res.status(201).json({id});
-    } catch (err) {
-        console.error(err);
-        res.sendStatus(500);
-    }
-};
-export const updateUser = async (req, res) => {
-    try {
-        if (!req.body || req.body.id == null) {
-            return res.status(400).json({ error: 'id manquant pour la mise à jour de l\'utilisateur' });
-        }
+        if (person.id && person.role) {
+            // Créer le JWT
+            const token = jwt.sign(
+                {
+                    id: person.id,
+                    role: person.role
+                },
+                process.env.JWT_SECRET || "your_secret_key_here",
+                {
+                    expiresIn: process.env.JWT_EXPIRATION || "24h"
+                }
+            );
 
-        const { password, ...rest } = req.body;
-        let password_hash;
-        if (password) {
-            password_hash = await hashPassword(password);
+            res.json({ token });
+        } else {
+            res.sendStatus(401);
         }
-
-        await userModel.updateUser(pool, {
-            ...rest,
-            password_hash,
-        });
-        res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
-        res.sendStatus(500);
-    }
-};
-export const deleteUser = async (req, res) => {
-    try {
-        if (!req.params || req.params.id == null) {
-            return res.status(400).json({ error: 'id manquant pour la suppression de l\'utilisateur' });
-        }
-        await userModel.deleteUser(pool, req.params);
-        res.sendStatus(204);
     } catch (err) {
         console.error(err);
         res.sendStatus(500);
     }
 };
 
-// Mise a jour du citizen connecte via Basic Auth (exercice 1 du labo)
-export const updateSelfUser = async (req, res) => {
+/**
+ * Obtenir tous les utilisateurs (admin uniquement)
+ */
+export const getAllUsers = async (req, res) => {
     try {
-        const user = req.user;
-        if (!user || !user.id) {
-            return res.status(401).json({ error: 'Non authentifie' });
+        const users = await userModel.readAllUsers(pool);
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Obtenir un utilisateur par ID
+ */
+export const getUserById = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
         }
 
-        const { name, username, email, password } = req.body || {};
-
-        // si aucun champ autorise n'est fourni, on signale une erreur claire
-        if (!name && !username && !email && !password) {
-            return res.status(400).json({ error: 'Aucun champ a mettre a jour' });
+        const user = await userModel.readUserById(pool, id);
+        if (user) {
+            res.json(user);
+        } else {
+            res.sendStatus(404);
         }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
 
-        let password_hash;
-        if (password) {
-            password_hash = await hashPassword(password);
-        }
+/**
+ * Créer un nouvel utilisateur (inscription)
+ */
+export const createUser = async (req, res) => {
+    try {
+        const { name, username, email, password, role } = req.body;
 
-        await userModel.updateUser(pool, {
-            id: user.id,
+        // Hash du mot de passe avec argon2
+        const password_hash = await argon2.hash(password);
+
+        const newUser = await userModel.createUser(pool, {
             name,
             username,
             email,
             password_hash,
-            // on ne permet PAS de changer le role via cette route
-            role: undefined
+            role: role || 'citizen'
         });
 
-        return res.sendStatus(204);
-    } catch (err) {
-        console.error('updateSelfUser error:', err);
-        return res.sendStatus(500);
+        res.status(201).json(newUser);
+    } catch (error) {
+        console.error(error);
+        if (error.code === '23505') { // Violation de contrainte unique
+            res.status(409).json({ error: "Email or username already exists" });
+        } else {
+            res.sendStatus(500);
+        }
+    }
+};
+
+/**
+ * Mettre à jour l'utilisateur connecté
+ */
+export const updateUser = async (req, res) => {
+    try {
+        let updateData = { ...req.body };
+
+        // Si un nouveau mot de passe est fourni, le hasher
+        if (updateData.password) {
+            updateData.password_hash = await argon2.hash(updateData.password);
+            delete updateData.password;
+        }
+
+        const updatedUser = await userModel.updateUser(pool, req.session.id, updateData);
+
+        if (updatedUser) {
+            res.json(updatedUser);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Supprimer un utilisateur (admin uniquement)
+ */
+export const deleteUser = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        const deleted = await userModel.deleteUser(pool, id);
+        if (deleted) {
+            res.sendStatus(204);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Obtenir le profil de l'utilisateur connecté
+ */
+export const getMyProfile = async (req, res) => {
+    try {
+        const user = await userModel.readUserById(pool, req.session.id);
+        if (user) {
+            res.json(user);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };

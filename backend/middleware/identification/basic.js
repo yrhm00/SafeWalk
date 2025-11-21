@@ -1,51 +1,44 @@
-// javascript
-import { pool } from '../../database/database.js';
-import { readClientByEmail } from '../../src/model/user.js';
-import { verifyPassword } from '../../utils/password.js';
+import { pool } from "../../database/database.js";
+import { readPerson } from "../../src/model/person.js";
 
-export const authBasic = (allowedRoles = []) => {
-    return async (req, res, next) => {
-        try {
-            const authorize = req.get('authorization');
-            if (!authorize || !authorize.includes('Basic ')) {
-                return res.status(401).send('No basic authorization given');
-            }
+/**
+ * Middleware d'identification Basic
+ * Extrait les credentials du header Authorization: Basic ...
+ * Vérifie l'email et le mot de passe
+ * Ajoute req.session = {id, role} si succès
+ */
+export const checkBasic = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
 
-            const basicEncoded = authorize.split(' ')[1];
-            const authString = Buffer.from(basicEncoded, 'base64').toString('utf-8');
-            const [email, password] = authString.split(':');
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+        return res.sendStatus(401);
+    }
 
-            if (!email || !password) {
-                return res.status(401).send('Invalid basic authorization format');
-            }
+    try {
+        // Extraire et décoder le token Basic
+        const base64Credentials = authHeader.split(' ')[1];
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+        const [email, password] = credentials.split(':');
 
-            const user = await readClientByEmail(pool, { email });
-            if (!user) {
-                return res.status(401).send('Invalid credentials');
-            }
-
-            const ok = await verifyPassword(password, user.password_hash);
-            if (!ok) {
-                return res.status(401).send('Invalid credentials');
-            }
-
-            if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-                return res.status(403).send('Forbidden: role not allowed');
-            }
-
-            req.user = {
-                id: user.id,
-                name: user.name,
-                username: user.username,
-                email: user.email,
-                role: user.role,
-                created_at: user.created_at
-            };
-
-            next();
-        } catch (err) {
-            console.error('authBasic error:', err);
-            res.sendStatus(500);
+        if (!email || !password) {
+            return res.sendStatus(401);
         }
-    };
+
+        // Vérifier les credentials
+        const person = await readPerson(pool, { email, password });
+
+        if (person.id && person.role) {
+            // Ajouter les informations de session
+            req.session = {
+                id: person.id,
+                role: person.role
+            };
+            next();
+        } else {
+            res.sendStatus(401);
+        }
+    } catch (error) {
+        console.error("Error in checkBasic middleware:", error);
+        res.sendStatus(401);
+    }
 };

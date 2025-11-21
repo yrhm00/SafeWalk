@@ -1,34 +1,66 @@
-export async function list(SQLClient) {
-    const { rows } = await SQLClient.query(`SELECT id, name, description, geom FROM zone ORDER BY id`);
+/**
+ * Lire toutes les zones
+ */
+export const readAllZones = async (SQLClient) => {
+    const query = "SELECT * FROM zone ORDER BY id";
+    const { rows } = await SQLClient.query(query);
     return rows;
-}
+};
 
-export async function create(SQLClient, { name, description, geom }) {
-    const { rows } = await SQLClient.query(
-        `INSERT INTO zone (name, description, geom) VALUES ($1,$2,$3) RETURNING id`,
-        [name, description, geom]
-    );
-    return rows[0]?.id ?? null;
-}
+/**
+ * Lire une zone par ID
+ */
+export const readZoneById = async (SQLClient, id) => {
+    const query = "SELECT * FROM zone WHERE id = $1";
+    const { rows } = await SQLClient.query(query, [id]);
+    return rows[0];
+};
 
-export async function update(SQLClient, { id, name, description, geom }) {
-    if (id === undefined || id === null) throw new Error('id manquant');
-    const { rows } = await SQLClient.query(
-        `
-    UPDATE zone
-    SET name = COALESCE($2, name),
-        description = COALESCE($3, description),
-        geom = COALESCE($4, geom)
-    WHERE id = $1
-    RETURNING id
-    `,
-        [id, name, description, geom]
-    );
-    return rows[0]?.id ?? null;
-}
+/**
+ * Créer une nouvelle zone (sans géométrie)
+ */
+export const createZone = async (SQLClient, { name, description }) => {
+    const query = `
+        INSERT INTO zone (name, description)
+        VALUES ($1, $2)
+        RETURNING *
+    `;
+    const { rows } = await SQLClient.query(query, [name, description]);
+    return rows[0];
+};
 
-export async function remove(SQLClient, { id }) {
-    if (id === undefined || id === null) throw new Error('id manquant');
-    const { rows } = await SQLClient.query(`DELETE FROM zone WHERE id = $1 RETURNING id`, [id]);
-    return rows[0]?.id ?? null;
-}
+/**
+ * Mettre à jour une zone (mise à jour partielle)
+ */
+export const updateZone = async (SQLClient, id, { name, description }) => {
+    let query = "UPDATE zone SET ";
+    const querySet = [];
+    const queryValues = [];
+
+    if (name !== undefined) {
+        queryValues.push(name);
+        querySet.push(`name = $${queryValues.length}`);
+    }
+    if (description !== undefined) {
+        queryValues.push(description);
+        querySet.push(`description = $${queryValues.length}`);
+    }
+
+    if (queryValues.length > 0) {
+        queryValues.push(id);
+        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING *`;
+        const { rows } = await SQLClient.query(query, queryValues);
+        return rows[0];
+    } else {
+        throw new Error("No field given");
+    }
+};
+
+/**
+ * Supprimer une zone
+ */
+export const deleteZone = async (SQLClient, id) => {
+    const query = "DELETE FROM zone WHERE id = $1";
+    const result = await SQLClient.query(query, [id]);
+    return result.rowCount > 0;
+};

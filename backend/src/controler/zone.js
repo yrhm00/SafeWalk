@@ -1,52 +1,102 @@
 import { pool } from "../../database/database.js";
 import * as zoneModel from "../model/zone.js";
 
-// GET /zones  ou GET /zones/:id
-export const getZone = async (req, res) => {
+/**
+ * Obtenir toutes les zones
+ */
+export const getAllZones = async (req, res) => {
     try {
-        if (req.params.id) {
-            const zones = await zoneModel.list(pool);
-            const zone = zones.find(z => String(z.id) === String(req.params.id));
-            if (!zone) return res.sendStatus(404);
-            return res.json(zone);
+        const zones = await zoneModel.readAllZones(pool);
+        res.json(zones);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Obtenir une zone par ID
+ */
+export const getZoneById = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
         }
-        const zones = await zoneModel.list(pool);
-        return res.json(zones);
-    } catch (err) {
-        console.error(err);
-        return res.sendStatus(500);
+
+        const zone = await zoneModel.readZoneById(pool, id);
+        if (zone) {
+            res.json(zone);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };
 
-// POST /zones
-export const addZone = async (req, res) => {
+/**
+ * Créer une nouvelle zone (admin uniquement)
+ */
+export const createZone = async (req, res) => {
     try {
-        const id = await zoneModel.create(pool, req.body);
-        return res.status(201).json({ id });
-    } catch (err) {
-        console.error(err);
-        return res.sendStatus(500);
+        const { name, description, geom } = req.body;
+
+        const newZone = await zoneModel.createZone(pool, {
+            name,
+            description,
+            geom
+        });
+
+        res.status(201).json(newZone);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };
 
-// PATCH /zones  (body doit contenir id)
+/**
+ * Mettre à jour une zone (admin uniquement)
+ */
 export const updateZone = async (req, res) => {
     try {
-        await zoneModel.update(pool, req.body);
-        return res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
-        return res.sendStatus(500);
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        const updatedZone = await zoneModel.updateZone(pool, id, req.body);
+
+        if (updatedZone) {
+            res.json(updatedZone);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };
 
-// DELETE /zones/:id
+/**
+ * Supprimer une zone (admin uniquement)
+ */
 export const deleteZone = async (req, res) => {
     try {
-        await zoneModel.remove(pool, req.params);
-        return res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
-        return res.sendStatus(500);
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        const deleted = await zoneModel.deleteZone(pool, id);
+        if (deleted) {
+            res.sendStatus(204);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };

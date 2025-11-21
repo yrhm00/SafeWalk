@@ -1,27 +1,39 @@
-export async function list(SQLClient) {
-    const r = await SQLClient.query(`SELECT id, label FROM report_type ORDER BY label`);
-    return r.rows;
-}
+/**
+ * Lire tous les types de rapports
+ */
+export const readAllReportTypes = async (SQLClient) => {
+    const query = "SELECT * FROM report_type ORDER BY label";
+    const { rows } = await SQLClient.query(query);
+    return rows;
+};
 
-export async function create(SQLClient, { label }) {
-    const r = await SQLClient.query(
-        `INSERT INTO report_type (label) VALUES ($1) RETURNING id, label`,
-        [label]
-    );
-    return r.rows[0] || null;
-}
+/**
+ * Lire un type de rapport par ID
+ */
+export const readReportTypeById = async (SQLClient, id) => {
+    const query = "SELECT * FROM report_type WHERE id = $1";
+    const { rows } = await SQLClient.query(query, [id]);
+    return rows[0];
+};
 
-export async function update(SQLClient, { id, label }) {
-    if (id === undefined || id === null) throw new Error('id manquant');
-    const r = await SQLClient.query(
-        `UPDATE report_type SET label = COALESCE($2, label) WHERE id = $1 RETURNING id, label`,
-        [id, label]
-    );
-    return r.rows[0] || null;
-}
+/**
+ * Créer un nouveau type de rapport
+ */
+export const createReportType = async (SQLClient, { label }) => {
+    const query = `
+        INSERT INTO report_type (label)
+        VALUES ($1)
+        RETURNING id, label
+    `;
+    const { rows } = await SQLClient.query(query, [label]);
+    return rows[0];
+};
 
-export async function remove(SQLClient, { id }) {
-    if (id === undefined || id === null) throw new Error('id manquant');
-    const { rows } = await SQLClient.query(`DELETE FROM report_type WHERE id = $1 RETURNING id`, [id]);
-    return rows[0]?.id ?? null;
-}
+/**
+ * Supprimer un type de rapport
+ */
+export const deleteReportType = async (SQLClient, id) => {
+    const query = "DELETE FROM report_type WHERE id = $1";
+    const result = await SQLClient.query(query, [id]);
+    return result.rowCount > 0;
+};

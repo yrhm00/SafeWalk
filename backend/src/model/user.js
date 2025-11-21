@@ -1,72 +1,83 @@
-export const readUser = async (SQLClient, { id }) => {
-    const { rows } = await SQLClient.query('SELECT id, name, username, email, role, created_at FROM users WHERE id = $1', [id]);
+/**
+ * Lire un utilisateur par son email
+ */
+export const readUserByEmail = async (SQLClient, { email }) => {
+    const query = "SELECT * FROM users WHERE email = $1";
+    const { rows } = await SQLClient.query(query, [email]);
     return rows[0];
 };
-export const updateUser = async (SQLClient, { name, username, email, password_hash, role, id }) => {
-    let query = "UPDATE users SET ";
 
+/**
+ * Lire tous les utilisateurs
+ */
+export const readAllUsers = async (SQLClient) => {
+    const query = "SELECT id, name, username, email, role, created_at FROM users";
+    const { rows } = await SQLClient.query(query);
+    return rows;
+};
+
+/**
+ * Lire un utilisateur par ID
+ */
+export const readUserById = async (SQLClient, id) => {
+    const query = "SELECT id, name, username, email, role, created_at FROM users WHERE id = $1";
+    const { rows } = await SQLClient.query(query, [id]);
+    return rows[0];
+};
+
+/**
+ * Créer un nouvel utilisateur
+ */
+export const createUser = async (SQLClient, { name, username, email, password_hash, role = 'citizen' }) => {
+    const query = `
+        INSERT INTO users (name, username, email, password_hash, role)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, name, username, email, role, created_at
+    `;
+    const { rows } = await SQLClient.query(query, [name, username, email, password_hash, role]);
+    return rows[0];
+};
+
+/**
+ * Mettre à jour un utilisateur (mise à jour partielle)
+ */
+export const updateUser = async (SQLClient, id, { name, username, email, password_hash }) => {
+    let query = "UPDATE users SET ";
     const querySet = [];
     const queryValues = [];
 
-    if (name) {
+    if (name !== undefined) {
         queryValues.push(name);
         querySet.push(`name = $${queryValues.length}`);
     }
-    if (username) {
+    if (username !== undefined) {
         queryValues.push(username);
         querySet.push(`username = $${queryValues.length}`);
     }
-    if (email) {
+    if (email !== undefined) {
         queryValues.push(email);
         querySet.push(`email = $${queryValues.length}`);
     }
-    if (password_hash) {
+    if (password_hash !== undefined) {
         queryValues.push(password_hash);
         querySet.push(`password_hash = $${queryValues.length}`);
-    }
-    if (role) {
-        queryValues.push(role);
-        querySet.push(`role = $${queryValues.length}`);
     }
 
     if (queryValues.length > 0) {
         queryValues.push(id);
-        query +=  `${querySet.join(', ')} WHERE id = $${queryValues.length}`;
-        return await SQLClient.query(query, queryValues);
+        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING id, name, username, email, role`;
+        const { rows } = await SQLClient.query(query, queryValues);
+        return rows[0];
     } else {
         throw new Error("No field given");
     }
 };
-export const createUser = async (SQLClient, { name = null, username, email, password_hash, role = 'citizen' }) => {
-    const { rows } = await SQLClient.query('INSERT INTO users (name, username, email, password_hash, role) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-        [name, username, email, password_hash, role]);
-    return rows[0]?.id ?? null;
-};
-export const deleteUser = async (SQLClient, { id }) => {
-    const { rows } = await SQLClient.query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);
-};
 
-export const readClientByEmail = async (SQLClient, {email}) => {
-    let query = 'SELECT * FROM users WHERE email = $1';
-    const {rows} = await SQLClient.query(query, [email]);
-    return rows[0];
-};
-
-export const readUserByUsername = async (SQLClient, { username }) => {
-    if (!username) throw new Error('username manquant');
-    const { rows } = await SQLClient.query('SELECT id, name, username, email, role, created_at FROM users WHERE username = $1', [username]);
-    return rows[0] ?? null;
-};
-export const listuser = async (SQLClient, { limit = 100, offset = 0 } = {}) => {
-    // protège contre des valeurs dangereuses
-    limit = Math.min(1000, Math.max(1, Number(limit) || 100));
-    offset = Math.max(0, Number(offset) || 0);
-    const query = 'SELECT id, name, username, email, role, created_at FROM users ORDER BY id DESC LIMIT $1 OFFSET $2';
-    const { rows } = await SQLClient.query(query, [limit, offset]);
-    return rows;
-};
-
-// Raccourci simple pour récupérer tous les users sans pagination
-export const getUsers = async (SQLClient) => {
-    return await listuser(SQLClient, {});
+/**
+ * Supprimer un utilisateur
+ */
+export const deleteUser = async (SQLClient, id) => {
+    const query = "DELETE FROM users WHERE id = $1";
+    const result = await SQLClient.query(query, [id]);
+    return result.rowCount > 0;
 };

@@ -1,19 +1,17 @@
-import { Router } from 'express';
-import {
-    addZone,
-    updateZone,
-    getZone,
-    deleteZone
-} from "../controler/zone.js";
-import { validate } from "../../middleware/validation/validate.js";
-import { createZoneSchema, updateZoneSchema } from "../../validation/zoneSchemas.js";
+import express from "express";
+import * as controler from "../controler/zone.js";
+import { checkJWT } from "../../middleware/identification/jwt.js";
+import { checkRole } from "../../middleware/autorisation/checkRole.js";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/", validate(createZoneSchema), addZone);
-router.patch("/", validate(updateZoneSchema), updateZone);
-router.get("/", getZone);
-router.get("/:id", getZone);
-router.delete("/:id", deleteZone);
+// Routes publiques
+router.get('/', controler.getAllZones);
+router.get('/:id', controler.getZoneById);
+
+// Routes admin uniquement
+router.post('/', checkJWT, checkRole(['admin']), controler.createZone);
+router.patch('/:id', checkJWT, checkRole(['admin']), controler.updateZone);
+router.delete('/:id', checkJWT, checkRole(['admin']), controler.deleteZone);
 
 export default router;

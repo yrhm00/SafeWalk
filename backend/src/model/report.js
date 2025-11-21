@@ -1,110 +1,138 @@
-export async function list(SQLClient, { page = 1, size = 10, q = "", status, type_id, from, to } = {}) {
-    const offset = (page - 1) * size;
-    const clauses = [];
-    const params = [];
-    let i = 1;
+/**
+ * Lire tous les rapports
+ */
+export const readAllReports = async (SQLClient) => {
+    const query = `
+        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name
+        FROM report r
+        LEFT JOIN users u ON r.user_id = u.id
+        LEFT JOIN report_type rt ON r.type_id = rt.id
+        LEFT JOIN zone z ON r.zone_id = z.id
+        ORDER BY r.created_at DESC
+    `;
+    const { rows } = await SQLClient.query(query);
+    return rows;
+};
 
-    if (q) {
-        clauses.push(`(LOWER(title) LIKE LOWER($${i}) OR LOWER(description) LIKE LOWER($${i}))`);
-        params.push(`%${q}%`);
-        i++;
+/**
+ * Lire un rapport par ID
+ */
+export const readReportById = async (SQLClient, id) => {
+    const query = `
+        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name
+        FROM report r
+        LEFT JOIN users u ON r.user_id = u.id
+        LEFT JOIN report_type rt ON r.type_id = rt.id
+        LEFT JOIN zone z ON r.zone_id = z.id
+        WHERE r.id = $1
+    `;
+    const { rows } = await SQLClient.query(query, [id]);
+    return rows[0];
+};
+
+/**
+ * Créer un nouveau rapport
+ */
+export const createReport = async (SQLClient, { user_id, type_id, zone_id, title, description, latitude, longitude, image_url, severity = 'medium' }) => {
+    const query = `
+        INSERT INTO report (user_id, type_id, zone_id, title, description, latitude, longitude, image_url, severity)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING *
+    `;
+    const { rows } = await SQLClient.query(query, [user_id, type_id, zone_id, title, description, latitude, longitude, image_url, severity]);
+    return rows[0];
+};
+
+/**
+ * Mettre à jour un rapport (mise à jour partielle)
+ */
+export const updateReport = async (SQLClient, id, { title, description, status, severity, type_id, zone_id }) => {
+    let query = "UPDATE report SET ";
+    const querySet = [];
+    const queryValues = [];
+
+    if (title !== undefined) {
+        queryValues.push(title);
+        querySet.push(`title = $${queryValues.length}`);
     }
-    if (status) {
-        clauses.push(`status = $${i}`);
-        params.push(status);
-        i++;
+    if (description !== undefined) {
+        queryValues.push(description);
+        querySet.push(`description = $${queryValues.length}`);
     }
-    if (type_id) {
-        clauses.push(`type_id = $${i}`);
-        params.push(type_id);
-        i++;
+    if (status !== undefined) {
+        queryValues.push(status);
+        querySet.push(`status = $${queryValues.length}`);
     }
-    if (from) {
-        clauses.push(`created_at >= $${i}`);
-        params.push(from);
-        i++;
+    if (severity !== undefined) {
+        queryValues.push(severity);
+        querySet.push(`severity = $${queryValues.length}`);
     }
-    if (to) {
-        clauses.push(`created_at <= $${i}`);
-        params.push(to);
-        i++;
+    if (type_id !== undefined) {
+        queryValues.push(type_id);
+        querySet.push(`type_id = $${queryValues.length}`);
+    }
+    if (zone_id !== undefined) {
+        queryValues.push(zone_id);
+        querySet.push(`zone_id = $${queryValues.length}`);
     }
 
-    const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+    if (queryValues.length > 0) {
+        queryValues.push(id);
+        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING *`;
+        const { rows } = await SQLClient.query(query, queryValues);
+        return rows[0];
+    } else {
+        throw new Error("No field given");
+    }
+};
 
-    // Construire la requête SQL par concaténation pour éviter des template literals complexes
-    const limitPlaceholder = `$${i}`;
-    const offsetPlaceholder = `$${i + 1}`;
+/**
+ * Supprimer un rapport
+ */
+export const deleteReport = async (SQLClient, id) => {
+    const query = "DELETE FROM report WHERE id = $1";
+    const result = await SQLClient.query(query, [id]);
+    return result.rowCount > 0;
+};
 
-    const sql =
-        'SELECT r.id, r.title, r.description, r.point, r.image_url, r.status, r.severity, r.created_at, ' +
-        'r.user_id, u.name AS user_name, ' +
-        'r.type_id, t.label AS type_label, ' +
-        'r.zone_id ' +
-        'FROM report r ' +
-        'JOIN "users" u ON u.id = r.user_id ' +
-        'JOIN report_type t ON t.id = r.type_id ' +
-        (where ? where + ' ' : '') +
-        'ORDER BY r.created_at DESC ' +
-        'LIMIT ' + limitPlaceholder + ' OFFSET ' + offsetPlaceholder;
+/**
+ * Lire les rapports par utilisateur
+ */
+export const readReportsByUserId = async (SQLClient, user_id) => {
+    const query = `
+        SELECT r.*, rt.label as type_label, z.name as zone_name
+        FROM report r
+        LEFT JOIN report_type rt ON r.type_id = rt.id
+        LEFT JOIN zone z ON r.zone_id = z.id
+        WHERE r.user_id = $1
+        ORDER BY r.created_at DESC
+    `;
+    const { rows } = await SQLClient.query(query, [user_id]);
+    return rows;
+};
 
-    const items = await SQLClient.query(sql, [...params, size, offset]);
-
-    const countSql = 'SELECT COUNT(*)::int AS total FROM report r ' + (where ? where : '');
-    const count = await SQLClient.query(countSql, params);
-
-    return { items: items.rows, total: count.rows[0].total, page, size };
-}
-
-export async function create(SQLClient, { user_id, type_id, zone_id = null, title, description, point, image_url = null, status = "pending", severity = "medium" }) {
-    const r = await SQLClient.query(
-        `
-    INSERT INTO report (user_id, type_id, zone_id, title, description, point, image_url, status, severity)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-    RETURNING *
-    `,
-        [user_id, type_id, zone_id, title, description, point, image_url, status, severity]
-    );
-    return r.rows[0] || null;
-}
-
-export async function findById(SQLClient, id) {
-    const r = await SQLClient.query(
-        `
-    SELECT r.*, u.name AS user_name, t.label AS type_label
-    FROM report r
-    JOIN users u ON u.id = r.user_id
-    JOIN report_type t ON t.id = r.type_id
-    WHERE r.id = $1
-    `,
-        [id]
-    );
-    return r.rows[0] || null;
-}
-
-export async function update(SQLClient, { id, title, description, point, image_url, status, severity, type_id, zone_id }) {
-    if (id === undefined || id === null) throw new Error('id manquant');
-    const r = await SQLClient.query(
-        `
-    UPDATE report
-    SET title = COALESCE($2, title),
-        description = COALESCE($3, description),
-        point = COALESCE($4, point),
-        image_url = COALESCE($5, image_url),
-        status = COALESCE($6, status),
-        severity = COALESCE($7, severity),
-        type_id = COALESCE($8, type_id),
-        zone_id = COALESCE($9, zone_id)
-    WHERE id = $1
-    RETURNING *
-    `,
-        [id, title, description, point, image_url, status, severity, type_id, zone_id]
-    );
-    return r.rows[0] || null;
-}
-
-export async function remove(SQLClient, { id }) {
-    if (id === undefined || id === null) throw new Error('id manquant');
-    const { rows } = await SQLClient.query(`DELETE FROM report WHERE id = $1 RETURNING id`, [id]);
-    return rows[0]?.id ?? null;
-}
+/**
+ * Rechercher les rapports dans un rayon donné (en mètres)
+ * Utilise PostGIS pour calculer la distance
+ */
+export const searchReportsNearby = async (SQLClient, { latitude, longitude, radiusMeters = 5000 }) => {
+    const query = `
+        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name,
+               ST_Distance(
+                   r.point::geography,
+                   ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography
+               ) as distance_meters
+        FROM report r
+        LEFT JOIN users u ON r.user_id = u.id
+        LEFT JOIN report_type rt ON r.type_id = rt.id
+        LEFT JOIN zone z ON r.zone_id = z.id
+        WHERE ST_DWithin(
+            r.point::geography,
+            ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,
+            $3
+        )
+        ORDER BY distance_meters ASC
+    `;
+    const { rows } = await SQLClient.query(query, [latitude, longitude, radiusMeters]);
+    return rows;
+};

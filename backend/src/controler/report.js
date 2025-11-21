@@ -1,95 +1,154 @@
-import {pool} from "../../database/database.js";
+import { pool } from "../../database/database.js";
 import * as reportModel from "../model/report.js";
-import { createReportWithInitialVote } from "../../database/transaction.js";
 
-export const getReports = async (req, res) => {
+/**
+ * Obtenir tous les rapports
+ */
+export const getAllReports = async (req, res) => {
     try {
-        const { page = 1, size = 20, q = "", status, type_id, from, to } = req.query;
-        const result = await reportModel.list(pool, {
-            page: Number(page) || 1,
-            size: Number(size) || 20,
-            q,
-            status,
-            type_id: type_id ? Number(type_id) : undefined,
-            from,
-            to,
-        });
-        return res.json(result);
-    } catch (err) {
-        console.error('GET /reports error:', err);
-        return res.status(500).json({ error: 'Erreur interne' });
+        const reports = await reportModel.readAllReports(pool);
+        res.json(reports);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };
 
-export const getReport = async (req, res)=> {
+/**
+ * Obtenir un rapport par ID
+ */
+export const getReportById = async (req, res) => {
     try {
-        const rawId = req.params.id;
-        const id = Number(rawId);
-        if (!Number.isInteger(id) || id <= 0) {
-            return res.status(400).json({ error: 'ID invalide' });
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
         }
-        const report = await reportModel.findById(pool, id);
+
+        const report = await reportModel.readReportById(pool, id);
         if (report) {
             res.json(report);
         } else {
             res.sendStatus(404);
         }
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.error(error);
         res.sendStatus(500);
     }
 };
 
-// Méthode existante : crée un report simple via le modèle
-export const addReport = async (req, res) => {
+/**
+ * Créer un nouveau rapport
+ */
+export const createReport = async (req, res) => {
     try {
-        const report = await reportModel.create(pool, req.body);
-        if (!report) {
-            return res.status(400).json({ error: "Création du report impossible" });
-        }
-        res.status(201).json(report);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Erreur lors de la création du report" });
-    }
-};
+        const { type_id, zone_id, title, description, latitude, longitude, image_url, severity } = req.body;
 
-// Nouvelle méthode : crée un report + vote initial dans une transaction
-export const addReportWithVote = async (req, res) => {
-    try {
-        // Remplacer par l'ID réel extrait du token/auth en production
-        const userId = req.user?.id ?? 1;
+        const newReport = await reportModel.createReport(pool, {
+            user_id: req.session.id,
+            type_id,
+            zone_id,
+            title,
+            description,
+            latitude,
+            longitude,
+            image_url,
+            severity
+        });
 
-        const newReport = await createReportWithInitialVote(pool, req.body, userId);
         res.status(201).json(newReport);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Erreur lors de la création du report avec vote" });
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };
 
+/**
+ * Mettre à jour un rapport
+ */
 export const updateReport = async (req, res) => {
     try {
-        if (!req.body || req.body.id == null) {
-            return res.status(400).json({ error: 'id manquant pour la mise à jour du report' });
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
         }
-        await reportModel.update(pool, req.body);
-        res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
+
+        const updatedReport = await reportModel.updateReport(pool, id, req.body);
+
+        if (updatedReport) {
+            res.json(updatedReport);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
         res.sendStatus(500);
     }
 };
 
+/**
+ * Supprimer un rapport
+ */
 export const deleteReport = async (req, res) => {
     try {
-        if (!req.params || req.params.id == null) {
-            return res.status(400).json({ error: 'id manquant pour la suppression du report' });
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
         }
-        await reportModel.remove(pool, req.params);
-        res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
+
+        const deleted = await reportModel.deleteReport(pool, id);
+        if (deleted) {
+            res.sendStatus(204);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
         res.sendStatus(500);
+    }
+};
+
+/**
+ * Obtenir les rapports de l'utilisateur connecté
+ */
+export const getMyReports = async (req, res) => {
+    try {
+        const reports = await reportModel.readReportsByUserId(pool, req.session.id);
+        res.json(reports);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Rechercher les rapports à proximité (dans un rayon donné)
+ * Query params: ?latitude=50.845&longitude=4.355&radius=5000
+ */
+export const searchReportsNearby = async (req, res) => {
+    try {
+        const { latitude, longitude, radius } = req.query;
+
+        if (!latitude || !longitude) {
+            return res.status(400).json({ error: 'Latitude and longitude are required' });
+        }
+
+        const lat = parseFloat(latitude);
+        const lon = parseFloat(longitude);
+        const radiusMeters = radius ? parseInt(radius) : 5000; // 5km par défaut
+
+        if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            return res.status(400).json({ error: 'Invalid coordinates' });
+        }
+
+        const reports = await reportModel.searchReportsNearby(pool, {
+            latitude: lat,
+            longitude: lon,
+            radiusMeters
+        });
+
+        res.json(reports);
+    } catch (error) {
+        console.error('Error searching nearby reports:', error);
+        res.status(500).json({ error: 'Failed to search nearby reports' });
     }
 };

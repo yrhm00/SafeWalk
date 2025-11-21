@@ -1,36 +1,25 @@
-import { Router } from 'express';
-import {
-    addUser,
-    updateUser,
-    getUser, deleteUser,
-    updateSelfUser,
-    getUsers
-} from "../controler/user.js";
-import { authBasic } from "../../middleware/identification/basic.js";
-import { validate } from "../../middleware/validation/validate.js";
-import { createUserSchema, updateUserSchema, updateSelfUserSchema } from "../../validation/userSchemas.js";
+import express from "express";
+import * as controler from "../controler/user.js";
+import { checkJWT } from "../../middleware/identification/jwt.js";
+import { checkRole } from "../../middleware/autorisation/checkRole.js";
 
-const router = Router();
+const router = express.Router();
 
-// Endpoint d'auto-identification : retourne l'utilisateur authentifié
-router.get("/me", authBasic(['admin', 'citizen']), (req, res) => {
-    const { password_hash, ...safeUser } = req.user || {};
-    return res.json(safeUser);
-});
+// Routes publiques
+router.post('/login', controler.login);
+router.post('/register', controler.createUser);
 
-// Creation d'un utilisateur avec validation Vine
-router.post("/", validate(createUserSchema), addUser);
+// Routes protégées (utilisateur connecté)
+router.get('/me', checkJWT, controler.getMyProfile);
+router.patch('/me', checkJWT, controler.updateUser);
 
-// Liste de tous les utilisateurs
-router.get("/", getUsers);
+// Routes admin uniquement
+router.get('/', checkJWT, checkRole(['admin']), controler.getAllUsers);
 
-// Exercice 1 du labo : mise a jour du citizen connecte via Basic Auth + validation Vine
-router.patch("/me", authBasic(['citizen', 'admin']), validate(updateSelfUserSchema), updateSelfUser);
+// router.get('/:id', checkJWT, checkRole(['admin']), controler.getUserById);
 
-// Mise a jour par un admin (id dans le body) avec validation Vine
-router.patch("/", validate(updateUserSchema), updateUser);
-
-router.get("/:id", getUser);
-router.delete("/:id", deleteUser);
+// MAUVAISE PRATIQUE - N'IMPORTE QUI peut voir les users
+router.get('/:id', controler.getUserById);
+router.delete('/:id', checkJWT, checkRole(['admin']), controler.deleteUser);
 
 export default router;

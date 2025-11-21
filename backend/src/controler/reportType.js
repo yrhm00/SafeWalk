@@ -1,49 +1,79 @@
-import {pool} from "../../database/database.js";
+import { pool } from "../../database/database.js";
 import * as reportTypeModel from "../model/reportType.js";
 
-export const getReportType = async (req, res) => {
+/**
+ * Obtenir tous les types de rapports
+ */
+export const getAllReportTypes = async (req, res) => {
     try {
-        if (req.params && req.params.id) {
-            const list = await reportTypeModel.list(pool);
-            const item = list.find(t => String(t.id) === String(req.params.id));
-            if (item) return res.json(item);
-            return res.sendStatus(404);
+        const reportTypes = await reportTypeModel.readAllReportTypes(pool);
+        res.json(reportTypes);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Obtenir un type de rapport par ID
+ */
+export const getReportTypeById = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
         }
-        const items = await reportTypeModel.list(pool);
-        return res.json(items);
-    } catch (err) {
-        console.error(err);
-        return res.sendStatus(500);
+
+        const reportType = await reportTypeModel.readReportTypeById(pool, id);
+        if (reportType) {
+            res.json(reportType);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };
 
-export const addReportType = async (req, res) => {
+/**
+ * Créer un nouveau type de rapport (admin uniquement)
+ */
+export const createReportType = async (req, res) => {
     try {
-        const result = await reportTypeModel.create(pool, req.body);
-        return res.status(201).json(result);
-    } catch (err) {
-        console.error(err);
-        return res.sendStatus(500);
+        const { label } = req.body;
+
+        const newReportType = await reportTypeModel.createReportType(pool, { label });
+
+        res.status(201).json(newReportType);
+    } catch (error) {
+        console.error(error);
+        if (error.code === '23505') { // Violation de contrainte unique
+            res.status(409).json({ error: "Report type already exists" });
+        } else {
+            res.sendStatus(500);
+        }
     }
 };
 
-export const updateReportType = async (req, res) => {
-    try {
-        await reportTypeModel.update(pool, req.body);
-        return res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
-        return res.sendStatus(500);
-    }
-};
-
+/**
+ * Supprimer un type de rapport (admin uniquement)
+ */
 export const deleteReportType = async (req, res) => {
     try {
-        await reportTypeModel.remove(pool, req.params);
-        return res.sendStatus(204);
-    } catch (err) {
-        console.error(err);
-        return res.sendStatus(500);
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        const deleted = await reportTypeModel.deleteReportType(pool, id);
+        if (deleted) {
+            res.sendStatus(204);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
     }
 };
-

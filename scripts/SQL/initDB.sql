@@ -1,3 +1,4 @@
+-- SafeWalk Database Schema with PostGIS for geospatial features
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- ========== ENUM ==========
@@ -50,7 +51,9 @@ CREATE TABLE report (
                         zone_id        INT          REFERENCES zone(id) ON DELETE SET NULL,
                         title          VARCHAR(140) NOT NULL,
                         description    TEXT         NOT NULL,
-                        point          geometry(POINT, 4326) NOT NULL,
+                        latitude       DOUBLE PRECISION NOT NULL,
+                        longitude      DOUBLE PRECISION NOT NULL,
+                        point          geometry(POINT, 4326) GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)) STORED,
                         image_url      TEXT,
                         status         report_status NOT NULL DEFAULT 'pending',
                         severity       severity_level NOT NULL DEFAULT 'medium',
@@ -86,14 +89,17 @@ CREATE TABLE vote (
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
--- users
+-- users (passwords hashed with argon2)
+-- Default password for all users: "password"
+-- Admin user: email=admin@safewalk.local, password=admin
 INSERT INTO users (name, username, email, password_hash, role) VALUES
-                                                                   ('Admin SafeWalk', 'admin', 'admin@safewalk.local', 'hash_admin', 'admin'),
-                                                                   ('Yassin Rhouma', 'yassin', 'yassin@mail.com', 'hash_yassin', 'citizen'),
-                                                                   ('Florian Dupont', 'florian', 'florian@mail.com', 'hash_florian', 'citizen'),
-                                                                   ('Abou Bakar', 'aboub', 'aboub@mail.com', 'hash_aboub', 'citizen'),
-                                                                   ('Emmanuel Lemoine', 'emma', 'emma@mail.com', 'hash_emma', 'citizen'),
-                                                                   ('Yassin Rhouma', 'yassrh', 'yassinadmin@admin.com', '$2b$10$JCsl5ZtWmcUUTB2066zmRe1m.4hJUHgW7AIu2PLHDxz1rOAC0E9ci', 'admin');
+                                                                   ('Admin SafeWalk', 'admin', 'admin@safewalk.local', '$argon2id$v=19$m=65536,t=3,p=4$CoaYz4UVAP+xWqT4kzh7jA$VZjjHZds8B5OxWYqbKq9BoX2g+/aJHvi7o7t+DJq1sg', 'admin'),
+                                                                   ('Yassin Rhouma', 'yassin', 'yassin@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$L2zmHtZW6iQ2zOV1wLUcYw$ZQ1cWfVTjJxdqRpz+sBOZnZvUmLc/m3GNjvB6id6aNA', 'citizen'),
+                                                                   ('Florian Dupont', 'florian', 'florian@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$L2zmHtZW6iQ2zOV1wLUcYw$ZQ1cWfVTjJxdqRpz+sBOZnZvUmLc/m3GNjvB6id6aNA', 'citizen'),
+                                                                   ('Abou Bakar', 'aboub', 'aboub@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$L2zmHtZW6iQ2zOV1wLUcYw$ZQ1cWfVTjJxdqRpz+sBOZnZvUmLc/m3GNjvB6id6aNA', 'citizen'),
+                                                                   ('Emmanuel Lemoine', 'emma', 'emma@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$L2zmHtZW6iQ2zOV1wLUcYw$ZQ1cWfVTjJxdqRpz+sBOZnZvUmLc/m3GNjvB6id6aNA', 'citizen'),
+                                                                   ('Yassin Admin', 'yassadmin', 'yassinadmin@admin.com', '$argon2id$v=19$m=65536,t=3,p=4$CoaYz4UVAP+xWqT4kzh7jA$VZjjHZds8B5OxWYqbKq9BoX2g+/aJHvi7o7t+DJq1sg', 'admin');
+
 
 -- Report_Types
 INSERT INTO report_type (label) VALUES
@@ -103,18 +109,18 @@ INSERT INTO report_type (label) VALUES
                                     ('Suspicious activity'),
                                     ('Flooded area');
 
--- Zones
+-- Zones with PostGIS polygons
 INSERT INTO zone (name, description, geom) VALUES
-                                               ('City Center', 'Main urban zone', ST_GeomFromText('POLYGON((4.35 50.84,4.36 50.84,4.36 50.85,4.35 50.85,4.35 50.84))', 4326)),
-                                               ('Train Station', 'Area around the main station', ST_GeomFromText('POLYGON((4.33 50.84,4.34 50.84,4.34 50.85,4.33 50.85,4.33 50.84))', 4326));
+                                       ('City Center', 'Main urban zone', ST_GeomFromText('POLYGON((4.35 50.84, 4.36 50.84, 4.36 50.85, 4.35 50.85, 4.35 50.84))', 4326)),
+                                       ('Train Station', 'Area around the main station', ST_GeomFromText('POLYGON((4.33 50.84, 4.34 50.84, 4.34 50.85, 4.33 50.85, 4.33 50.84))', 4326));
 
 -- report
-INSERT INTO report (user_id, type_id, zone_id, title, description, point, image_url, status, severity) VALUES
-                                                                                                           (2, 1, 1, 'Lampadaire cassé', 'Aucun éclairage dans la rue principale depuis 3 jours.', ST_GeomFromText('POINT(4.355 50.845)',4326), NULL, 'pending', 'medium'),
-                                                                                                           (3, 2, 1, 'Route gelée', 'Très glissante ce matin à cause du gel.', ST_GeomFromText('POINT(4.357 50.846)',4326), NULL, 'validated', 'high'),
-                                                                                                           (4, 4, 2, 'Personne suspecte', 'Individu tournant autour des voitures la nuit.', ST_GeomFromText('POINT(4.338 50.847)',4326), NULL, 'pending', 'medium'),
-                                                                                                           (5, 3, 2, 'Trottoir abîmé', 'Impossible de passer avec une poussette.', ST_GeomFromText('POINT(4.334 50.843)',4326), NULL, 'resolved', 'low'),
-                                                                                                           (2, 5, 1, 'Rue inondée', 'Après la pluie, la rue devient impraticable.', ST_GeomFromText('POINT(4.352 50.844)',4326), NULL, 'pending', 'high');
+INSERT INTO report (user_id, type_id, zone_id, title, description, latitude, longitude, image_url, status, severity) VALUES
+                                                                                                                        (2, 1, 1, 'Lampadaire cassé', 'Aucun éclairage dans la rue principale depuis 3 jours.', 50.845, 4.355, NULL, 'pending', 'medium'),
+                                                                                                                        (3, 2, 1, 'Route gelée', 'Très glissante ce matin à cause du gel.', 50.846, 4.357, NULL, 'validated', 'high'),
+                                                                                                                        (4, 4, 2, 'Personne suspecte', 'Individu tournant autour des voitures la nuit.', 50.847, 4.338, NULL, 'pending', 'medium'),
+                                                                                                                        (5, 3, 2, 'Trottoir abîmé', 'Impossible de passer avec une poussette.', 50.843, 4.334, NULL, 'resolved', 'low'),
+                                                                                                                        (2, 5, 1, 'Rue inondée', 'Après la pluie, la rue devient impraticable.', 50.844, 4.352, NULL, 'pending', 'high');
 
 -- comment
 INSERT INTO comment (report_id, user_id, content) VALUES
