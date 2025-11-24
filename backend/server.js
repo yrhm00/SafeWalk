@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import userRoutes from "./src/routes/user.js";
 import reportRoutes from "./src/routes/report.js";
 import commentRoutes from "./src/routes/comment.js";
@@ -8,13 +7,8 @@ import voteRoutes from "./src/routes/vote.js";
 import reportTypeRoutes from "./src/routes/reportType.js";
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = 3001;
 
-// CORS : autoriser le frontend
-app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:19006'],
-    credentials: true
-}));
 
 // Parser JSON
 app.use(express.json());
