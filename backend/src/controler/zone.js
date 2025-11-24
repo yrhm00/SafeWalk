@@ -1,0 +1,102 @@
+import { pool } from "../../database/database.js";
+import * as zoneModel from "../model/zone.js";
+
+/**
+ * Obtenir toutes les zones
+ */
+export const getAllZones = async (req, res) => {
+    try {
+        const zones = await zoneModel.readAllZones(pool);
+        res.json(zones);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Obtenir une zone par ID
+ */
+export const getZoneById = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        const zone = await zoneModel.readZoneById(pool, id);
+        if (zone) {
+            res.json(zone);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Créer une nouvelle zone (admin uniquement)
+ */
+export const createZone = async (req, res) => {
+    try {
+        const { name, description, geom } = req.body;
+
+        const newZone = await zoneModel.createZone(pool, {
+            name,
+            description,
+            geom
+        });
+
+        res.status(201).json(newZone);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Mettre à jour une zone (admin uniquement)
+ */
+export const updateZone = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        const updatedZone = await zoneModel.updateZone(pool, id, req.body);
+
+        if (updatedZone) {
+            res.json(updatedZone);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
+ * Supprimer une zone (admin uniquement)
+ */
+export const deleteZone = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        const deleted = await zoneModel.deleteZone(pool, id);
+        if (deleted) {
+            res.sendStatus(204);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
