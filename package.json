@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon backend/server.js",
-    "initDB": "node scripts/JS/initDB.js"
+    "setup": "npm install",
+    "db:start": "docker-compose up -d",
+    "db:stop": "docker-compose down",
+    "db:restart": "docker-compose down && docker-compose up -d",
+    "db:seed": "node scripts/JS/initDB.js",
+    "dev": "nodemon backend/server.js"
   },
   "keywords": [],
   "author": "",

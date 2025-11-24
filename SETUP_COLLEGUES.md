@@ -1,172 +1,116 @@
-# 🚀 Guide de démarrage - SafeWalk Backend
+# 🚀 Guide de démarrage - SafeWalk (Complet)
 
-Ce guide est destiné aux collègues qui veulent lancer le projet SafeWalk.
+Ce guide est destiné aux collègues qui veulent lancer le projet SafeWalk complet (Backend, Frontend, Mobile).
 
 ## Prérequis
 
 - **Node.js** (v18 ou supérieur)
 - **Docker** et **Docker Compose**
-- **Git** (pour cloner le projet)
+- **Git**
+- **Expo Go** (sur votre téléphone pour tester l'app mobile)
 
-## 📦 Installation
+## 📦 1. Backend (Serveur & Base de données)
 
-### 1. Cloner le projet
+C'est la partie la plus importante, à lancer en premier.
 
-```bash
-git clone <url-du-repo>
-cd SafeWalk
-```
-
-### 2. Installer les dépendances
+### Installation
 
 ```bash
+# À la racine du projet
 npm install
 ```
 
-### 3. Configuration
+### Configuration
 
 Copier le fichier d'exemple:
 ```bash
 cp .env.example .env
 ```
+Vérifiez que les valeurs sont correctes (DB, JWT, etc.).
 
-Le fichier `.env` contient déjà les bonnes valeurs par défaut:
-```env
-HOSTDB=localhost
-USERDB=postgres
-PASSWORDDB=yassin123
-DBNAME=safewalk
-PORT=3001
-JWT_SECRET=safewalk_super_secret_key_change_this_in_production_2024
-JWT_EXPIRATION=24h
-```
-
-### 4. Démarrer PostgreSQL
+### Démarrage Base de données
 
 ```bash
-docker-compose up -d
+# Lance PostgreSQL
+npm run db:start
 ```
 
-Cela va:
-- ✅ Télécharger l'image PostgreSQL
-- ✅ Démarrer le conteneur
-- ✅ Créer la base de données `safewalk`
-
-### 5. Initialiser la base de données
+### Initialisation des données
 
 ```bash
-npm run initDB
+# Crée les tables et ajoute les données de test
+npm run db:seed
 ```
 
-Vous devriez voir:
-```
-✅ Database initialized successfully
-```
-
-### 6. Démarrer le serveur
+### Démarrer le Serveur
 
 ```bash
 npm run dev
 ```
-
-Le backend est maintenant accessible sur: **http://localhost:3001**
+Le backend tourne sur : **http://localhost:3001**
 
 ---
 
-## 🧪 Tester l'API
+## 💻 2. Frontend (Backoffice Web)
 
-### Login Admin
+Ouvrez un **nouveau terminal**.
+
+### Installation & Démarrage
 
 ```bash
-curl -X POST http://localhost:3001/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@safewalk.local","password":"admin"}'
+cd frontend
+npm install
+npm run dev
+```
+Le site web sera accessible (généralement) sur : **http://localhost:5173**
+
+---
+
+## 📱 3. Mobile (Application Citoyen)
+
+Ouvrez un **nouveau terminal**.
+
+### Installation & Démarrage
+
+```bash
+cd mobile
+npm install
+npx expo start
 ```
 
-Vous recevrez un token JWT à utiliser pour les requêtes authentifiées.
+- Scannez le **QR Code** avec l'application **Expo Go** (Android) ou l'appareil photo (iOS).
+- Assurez-vous que votre téléphone est sur le **même réseau Wi-Fi** que votre ordinateur.
 
 ---
 
 ## 🛑 Arrêter le projet
 
-```bash
-# Arrêter le serveur: Ctrl+C
+Pour tout arrêter proprement :
 
-# Arrêter PostgreSQL
-docker-compose down
+1. **Terminaux** : `Ctrl+C` dans chaque terminal.
+2. **Base de données** :
+   ```bash
+   npm run db:stop
+   ```
 
-# Supprimer les données (⚠️ ATTENTION: supprime toute la DB)
-docker-compose down -v
-```
+## 👥 Comptes de test
 
----
-
-## 🔄 Réinitialiser la DB
-
-Si vous voulez repartir de zéro:
-
-```bash
-docker-compose down -v
-docker-compose up -d
-npm run initDB
-```
-
----
-
-## 👥 Utilisateurs de test
-
-### Admin
+### Admin (Backoffice)
 - **Email:** `admin@safewalk.local`
 - **Password:** `admin`
 
-### Citizens
+### Utilisateurs (Mobile)
 - **Email:** `yassin@mail.com` / **Password:** `password`
 - **Email:** `florian@mail.com` / **Password:** `password`
-
----
-
-## 📚 Documentation
-
-- **Architecture:** Voir [README.md](./README.md)
-- **API Endpoints:** Voir [README.md](./README.md#-endpoints)
-- **Bruno Tests:** À venir
 
 ---
 
 ## ❓ Problèmes courants
 
 ### Port 5432 déjà utilisé
+Si vous avez déjà PostgreSQL installé localement, changez le port dans `docker-compose.yml` (ex: `5433:5432`) et mettez à jour `.env`.
 
-Si vous avez déjà PostgreSQL installé localement:
-
-```bash
-# Option 1: Arrêter PostgreSQL local
-brew services stop postgresql
-
-# Option 2: Changer le port dans docker-compose.yml
-ports:
-  - "5433:5432"  # Utiliser le port 5433 au lieu de 5432
-```
-
-N'oubliez pas de modifier `.env`:
-```env
-HOSTDB=localhost:5433
-```
-
-### "Cannot connect to Docker daemon"
-
-Assurez-vous que Docker Desktop est lancé.
-
-### Erreur d'authentification PostgreSQL
-
-Vérifiez que le fichier `.env` contient bien `PASSWORDDB=yassin123`.
-
----
-
-## 🎓 Notes
-
-Ce projet suit strictement l'architecture enseignée dans les 7 laboratoires Node.js:
-- **Labo 1:** Structure MVC
-- **Labo 2:** PostgreSQL avec Pool et Adapter
-- **Labo 4:** Middleware Basic Auth et Autorisation
-- **Labo 5:** JWT et Argon2
+### Mobile : "Network request failed"
+Si l'app mobile n'arrive pas à joindre le backend :
+1. Vérifiez que votre téléphone et PC sont sur le même Wi-Fi.
+2. Dans le code mobile, remplacez `localhost` par l'adresse IP locale de votre PC (ex: `192.168.1.x`).
