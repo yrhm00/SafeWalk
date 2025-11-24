@@ -46,19 +46,14 @@ JWT_EXPIRATION=24h
 
 ### 3. Base de données
 
-Démarrer PostgreSQL avec PostGIS:
+Démarrer PostgreSQL avec Docker Compose:
 ```bash
-docker run --name postgres-safewalk \
-  -e POSTGRES_PASSWORD=yassin123 \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_DB=safewalk \
-  -p 5432:5432 \
-  --rm -d postgis/postgis
+npm run db:start
 ```
 
-Initialiser la base de données:
+Initialiser la base de données avec les données de test:
 ```bash
-npm run initDB
+npm run db:seed
 ```
 
 ### 4. Lancer le serveur
@@ -246,8 +241,12 @@ Content-Type: application/json
 ## 📝 Scripts disponibles
 
 ```bash
-npm run dev      # Démarre le serveur en mode développement (nodemon)
-npm run initDB   # Initialise/réinitialise la base de données
+npm run setup       # Installe les dépendances
+npm run db:start    # Démarre PostgreSQL avec Docker
+npm run db:stop     # Arrête PostgreSQL
+npm run db:restart  # Redémarre PostgreSQL
+npm run db:seed     # Initialise/réinitialise la base de données
+npm run dev         # Démarre le serveur en mode développement (nodemon)
 ```
 
 ## 🔄 Différences avec l'ancien code
