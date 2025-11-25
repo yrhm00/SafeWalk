@@ -1,42 +1,32 @@
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { verify } from '../../utils/jwt.js';
 
 /**
- * Middleware d'identification JWT
- * Extrait le token du header Authorization: Bearer ...
- * Vérifie et décode le JWT
- * Ajoute req.session = {id, role} si valide
+ * @swagger
+ * components:
+ *  securitySchemes:
+ *      bearerAuth:
+ *          type: http
+ *          scheme: bearer
+ *          bearerFormat: JWT
+ *  responses:
+ *     UnauthorizedError:
+ *        description: JWT is missing or invalid
+ *        content:
+ *           text/plain:
+ *              schema:
+ *                 type: string
  */
 export const checkJWT = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.sendStatus(401);
-    }
-
-    try {
-        // Extraire le token
-        const token = authHeader.split(' ')[1];
-
-        if (!token) {
-            return res.sendStatus(401);
+    const authorize = req.get('authorization');
+    if (authorize?.includes('Bearer')) {
+        const jwtEncoded = authorize.split(' ')[1];
+        try {
+            req.session = verify(jwtEncoded);
+            next();
+        } catch (e) {
+            res.status(401).send(e.message);
         }
-
-        // Vérifier et décoder le JWT
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || "your_secret_key_here");
-
-        // Ajouter les informations de session
-        req.session = {
-            id: decoded.id,
-            role: decoded.role
-        };
-
-        next();
-    } catch (error) {
-        // Token invalide ou expiré
-        console.error("Error in checkJWT middleware:", error.message);
-        res.sendStatus(401);
+    } else {
+        res.status(401).send('No jwt');
     }
 };
