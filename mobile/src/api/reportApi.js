@@ -16,3 +16,7 @@ export function createReport(payload) {
   });
 }
 
+export function getReportTypes() {
+  return apiRequest('/report-types');
+}
+

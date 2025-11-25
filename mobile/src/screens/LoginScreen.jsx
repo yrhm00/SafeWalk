@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading, setError, setUser, setToken } from '../store/slices/authSlice';
 import { login } from '../api/authApi';
@@ -15,9 +16,15 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     dispatch(setLoading(true));
     try {
-      const me = await login({ email, password });
-      dispatch(setUser(me));
-      dispatch(setToken('basic-auth')); // marque juste que l'utilisateur est connecté
+      const { token } = await login({ email, password });
+      await AsyncStorage.setItem('token', token);
+      dispatch(setToken(token));
+
+      // Fetch user profile to get role/details
+      // Assuming we have a userApi.getMyProfile or similar, 
+      // but for now let's just dispatch success and let navigation handle it.
+      // Ideally we should fetch the user here.
+
       dispatch(setError(null));
     } catch (e) {
       dispatch(setError(e.message || 'Échec de la connexion'));
