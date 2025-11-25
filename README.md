@@ -1,10 +1,12 @@
-# SafeWalk - Refonte Backend selon Méthodologie du Professeur
+# SafeWalk - Projet Complet
 
-Application SafeWalk avec backend **refait selon l'architecture des laboratoires Node.js**.
+Application SafeWalk complète comprenant un Backend (Node.js/Express), un Frontend (React) et une Application Mobile (React Native/Expo).
 
-## 🏗️ Architecture
+Le backend a été refait pour suivre strictement l'architecture MVC et les bonnes pratiques enseignées dans les laboratoires Node.js.
 
-Le backend suit l'architecture MVC enseignée dans les 7 laboratoires:
+## 🏗️ Architecture Backend
+
+Le backend suit l'architecture MVC enseignée dans les 7 laboratoires :
 
 ```
 backend/
@@ -23,222 +25,120 @@ backend/
 └── server.js                  # Point d'entrée (Labo 1)
 ```
 
-## 🚀 Démarrage rapide
+## 🚀 Installation et Démarrage
 
-### 1. Installation
+### Prérequis
+- **Node.js** (v18 ou supérieur)
+- **Docker** et **Docker Compose** (pour la base de données)
+- **Git**
 
-```bash
-npm install
-```
+### 1. Backend (Serveur & Base de données)
 
-### 2. Configuration
+C'est la partie la plus importante, à lancer en premier.
 
-Le fichier `.env` contient:
-```env
-HOSTDB=localhost
-USERDB=postgres
-PASSWORDDB=yassin123
-DBNAME=safewalk
-PORT=3001
-JWT_SECRET=safewalk_super_secret_key_change_this_in_production_2024
-JWT_EXPIRATION=24h
-```
+1.  **Installation des dépendances** :
+    ```bash
+    npm install
+    ```
 
-### 3. Base de données
+2.  **Configuration** :
+    Copiez le fichier d'exemple `.env.example` vers `.env` (les valeurs par défaut devraient fonctionner) :
+    ```bash
+    cp .env.example .env
+    ```
 
-Démarrer PostgreSQL avec Docker Compose:
-```bash
-npm run db:start
-```
+3.  **Démarrage de la Base de données** :
+    Lance PostgreSQL avec PostGIS dans un conteneur Docker :
+    ```bash
+    npm run db:start
+    ```
 
-Initialiser la base de données avec les données de test:
-```bash
-npm run db:seed
-```
+4.  **Initialisation des données** :
+    Crée les tables et ajoute les utilisateurs de test :
+    ```bash
+    npm run db:seed
+    ```
 
-### 4. Lancer le serveur
+5.  **Démarrage du Serveur** :
+    ```bash
+    npm run dev
+    ```
+    Le backend tourne sur : **http://localhost:3001**
 
-```bash
-npm run dev
-```
+### 2. Frontend (Backoffice Web)
 
-API disponible sur: `http://localhost:3001`
+Ouvrez un **nouveau terminal**.
 
-## 👥 Utilisateurs de test
+1.  **Installation & Démarrage** :
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+2.  **Accès** :
+    Le site web sera accessible sur : **http://localhost:5173**
+
+### 3. Mobile (Application Citoyen)
+
+Ouvrez un **nouveau terminal**.
+
+1.  **Installation & Démarrage** :
+    ```bash
+    cd mobile
+    npm install
+    npx expo start
+    ```
+2.  **Test** :
+    - Scannez le **QR Code** avec l'application **Expo Go** (Android) ou l'appareil photo (iOS).
+    - Assurez-vous que votre téléphone est sur le **même réseau Wi-Fi** que votre ordinateur.
+
+---
+
+## 👥 Comptes de test
 
 Tous les mots de passe sont hashés avec **argon2** (Labo 5).
 
-### Admin
-- Email: `admin@safewalk.local`
-- Password: `admin`
+### Admin (Backoffice)
+- **Email:** `admin@safewalk.local`
+- **Password:** `admin`
 
-### Utilisateurs
-- Email: `yassin@mail.com` / Password: `password`
-- Email: `florian@mail.com` / Password: `password`
-- Email: `aboub@mail.com` / Password: `password`
-- Email: `emma@mail.com` / Password: `password`
+### Utilisateurs (Mobile)
+- **Email:** `yassin@mail.com` / **Password:** `password`
+- **Email:** `florian@mail.com` / **Password:** `password`
+- **Email:** `aboub@mail.com` / **Password:** `password`
+- **Email:** `emma@mail.com` / **Password:** `password`
 
-## 🔐 Authentification (Labo 4 & 5)
+---
 
-### Méthode 1: Basic Auth (Labo 4)
-```http
-Authorization: Basic base64(email:password)
-```
+## 📡 Documentation API
 
-### Méthode 2: JWT (Labo 5) - **Recommandée**
+### Authentification (Labo 4 & 5)
 
-1. **Login pour obtenir le token:**
-```http
-POST /users/login
-Content-Type: application/json
+- **Méthode recommandée : JWT (Labo 5)**
+    1.  `POST /users/login` avec email/password pour obtenir un token.
+    2.  Envoyer le header `Authorization: Bearer <token>` pour les requêtes suivantes.
 
-{
-  "email": "admin@safewalk.local",
-  "password": "admin"
-}
-```
+### Endpoints Principaux
 
-Réponse:
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
+#### Users
+- `POST /users/register` - Inscription
+- `POST /users/login` - Connexion
+- `GET /users/me` - Profil utilisateur connecté
+- `GET /users` - Liste utilisateurs (Admin)
 
-2. **Utiliser le token:**
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
+#### Reports (Signalements)
+- `GET /reports` - Liste tous les rapports
+- `POST /reports` - Créer un rapport
+- `PATCH /reports/:id` - Modifier un rapport (Admin)
+- `GET /reports/nearby` - Rechercher à proximité (Géolocalisation)
 
-## 📡 Endpoints
+#### Zones & Types
+- `GET /zones`, `POST /zones`, `PATCH /zones/:id`
+- `GET /report-types`, `POST /report-types`, `PATCH /report-types/:id`
 
-### Users (Labo 2, 4, 5)
-- `POST /users/register` - Inscription (public)
-- `POST /users/login` - Connexion → JWT (public)
-- `GET /users/me` - Profil utilisateur connecté (JWT required)
-- `PATCH /users/me` - Mise à jour profil (JWT required)
-- `GET /users` - Liste utilisateurs (admin only)
-- `DELETE /users/:id` - Supprimer utilisateur (admin only)
+---
 
-### Reports (Labo 2)
-- `GET /reports` - Liste tous les rapports (public)
-- `GET /reports/:id` - Un rapport par ID (public)
-- `POST /reports` - Créer un rapport (JWT required)
-- `PATCH /reports/:id` - Modifier un rapport (admin only)
-- `DELETE /reports/:id` - Supprimer un rapport (admin only)
-
-### Comments (Labo 2)
-- `GET /comments/report/:reportId` - Liste commentaires (public)
-- `POST /comments` - Créer commentaire (JWT required)
-- `DELETE /comments/:id` - Supprimer commentaire (JWT required, owner ou admin)
-
-### Zones (Labo 2)
-- `GET /zones` - Liste zones (public)
-- `GET /zones/:id` - Une zone (public)
-- `POST /zones` - Créer zone (admin only)
-- `PATCH /zones/:id` - Modifier zone (admin only)
-- `DELETE /zones/:id` - Supprimer zone (admin only)
-
-### Votes (Labo 2)
-- `GET /votes/report/:reportId` - Statistiques de votes (public)
-- `POST /votes` - Voter (JWT required)
-- `DELETE /votes` - Retirer son vote (JWT required)
-- `GET /votes/report/:reportId/me` - Mon vote (JWT required)
-
-### Report Types (Labo 2)
-- `GET /report-types` - Liste types (public)
-- `POST /report-types` - Créer type (admin only)
-- `DELETE /report-types/:id` - Supprimer type (admin only)
-
-## 🔒 Système de rôles (Labo 4)
-
-Le middleware `checkRole(['admin'])` protège les routes admin.
-
-- **citizen**: Peut créer rapports, commenter, voter
-- **admin**: Accès complet + gestion utilisateurs, zones, types
-
-## ✅ Validation (Labo 4)
-
-Toutes les routes utilisent **VineJS** pour valider les données:
-- Formats email
-- Longueurs minimales/maximales
-- Types de données
-- Valeurs enum (status, severity, role)
-
-Exemple d'erreur:
-```json
-{
-  "errors": {
-    "email": "The email field must be a valid email address"
-  }
-}
-```
-
-## 🗄️ Base de données (Labo 2)
-
-- **PostgreSQL** avec **PostGIS** pour les données géographiques
-- **Pool de connexions** avec pattern Adapter (Labo 2)
-- **Transactions** supportées via le client SQL
-- **Mots de passe**: argon2 (Labo 5)
-
-## 📦 Technologies utilisées
-
-Selon les laboratoires:
-- **Express** (Labo 1)
-- **PostgreSQL** + **pg** (Labo 2)
-- **argon2** (Labo 5)
-- **jsonwebtoken** (Labo 5)
-- **VineJS** (Labo 4)
-- **dotenv** (Labo 2)
-- **cors** (Labo 1)
-- **PostGIS** (extension PostgreSQL)
-
-## 🧪 Tests (Labo 7)
-
-Pour tester l'API, utilisez **Bruno** (recommandé par le prof) ou Postman.
-
-### Exemple de scénario de test:
-
-1. **Login:**
-```http
-POST http://localhost:3001/users/login
-Content-Type: application/json
-
-{
-  "email": "admin@safewalk.local",
-  "password": "admin"
-}
-```
-
-2. **Créer un rapport:**
-```http
-POST http://localhost:3001/reports
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "type_id": 1,
-  "title": "Éclairage défaillant",
-  "description": "Lampadaire cassé depuis 2 jours",
-  "latitude": 50.845,
-  "longitude": 4.355,
-  "severity": "medium"
-}
-```
-
-3. **Voter pour un rapport:**
-```http
-POST http://localhost:3001/votes
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "report_id": 1,
-  "value": true
-}
-```
-
-## 📝 Scripts disponibles
+## 🛠️ Commandes Utiles (Backend)
 
 ```bash
 npm run setup       # Installe les dépendances
@@ -246,31 +146,15 @@ npm run db:start    # Démarre PostgreSQL avec Docker
 npm run db:stop     # Arrête PostgreSQL
 npm run db:restart  # Redémarre PostgreSQL
 npm run db:seed     # Initialise/réinitialise la base de données
-npm run dev         # Démarre le serveur en mode développement (nodemon)
+npm run dev         # Démarre le serveur en mode développement
 ```
 
-## 🔄 Différences avec l'ancien code
+## ❓ Dépannage
 
-✅ Architecture MVC stricte (model/controler/routes séparés)
-✅ Pool de connexions PostgreSQL avec pattern Adapter  
-✅ Middleware d'identification en couches (Basic + JWT)
-✅ Middleware d'autorisation basé sur les rôles
-✅ Validation VineJS sur toutes les routes
-✅ Mots de passe hashés avec argon2 (au lieu de bcrypt)
-✅ JWT avec expiration configurable
-✅ Gestion d'erreurs standardisée (sendStatus)
-✅ Code structuré comme dans les laboratoires
+### Port 5432 déjà utilisé
+Si vous avez déjà PostgreSQL installé localement, changez le port dans `docker-compose.yml` (ex: `5433:5432`) et mettez à jour `HOSTDB` dans `.env`.
 
-## 📚 Références des laboratoires
-
-- **Labo 1**: Structure MVC, Express, Routes
-- **Labo 2**: PostgreSQL, Pool, Scripts d'init, Modèles/Contrôleurs
-- **Labo 3**: ORM Prisma (non utilisé, on garde PostgreSQL)
-- **Labo 4**: Middleware Basic Auth, Autorisation, Validation VineJS
-- **Labo 5**: JWT, Argon2, Hash de mots de passe
-- **Labo 6**: Documentation Swagger (à venir)
-- **Labo 7**: Tests Bruno (à venir)
-
-## 🚧 Frontend & Mobile
-
-Le frontend (React + Vite) et l'application mobile (React Native/Expo) restent inchangés et sont compatibles avec cette nouvelle API.
+### Mobile : "Network request failed"
+Si l'app mobile n'arrive pas à joindre le backend :
+1.  Vérifiez que votre téléphone et PC sont sur le même Wi-Fi.
+2.  Dans le code mobile, remplacez `localhost` par l'adresse IP locale de votre PC (ex: `192.168.1.x`).
