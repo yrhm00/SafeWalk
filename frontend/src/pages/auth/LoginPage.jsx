@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Alert from '../../components/Alert.jsx';
-import { apiRequest } from '../../services/apiClient.js';
+import { login } from '../../services/authApi.js';
+import { getMyProfile } from '../../services/userApi.js';
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState(''); // email ou username
+  const [identifier, setIdentifier] = useState(''); // email
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -14,29 +15,28 @@ function LoginPage() {
     setError('');
 
     if (!identifier || !password) {
-      setError('Email ou username et mot de passe requis');
+      setError('Email et mot de passe requis');
       return;
     }
 
-    // Pour le moment, le backend Basic Auth ne connaît que l'email.
-    // On stocke quand même l'identifiant tel quel ; si c'est un username,
-    // il faudra adapter le middleware plus tard.
-    localStorage.setItem('basic_email', identifier);
-    localStorage.setItem('basic_password', password);
-
     try {
-      const me = await apiRequest('/users/me');
+      const { token } = await login({ email: identifier, password });
+      localStorage.setItem('token', token);
+
+      const me = await getMyProfile();
 
       if (!me || me.role !== 'admin') {
         setError('Seuls les administrateurs peuvent accéder au backoffice');
+        localStorage.removeItem('token');
         return;
       }
 
       localStorage.setItem('role', me.role);
-      navigate('/admin');
+      navigate('/admin'); // Or just '/' if that's the dashboard
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.message || 'Connexion au serveur impossible');
+      const message = err.response?.data?.error || err.message || 'Connexion au serveur impossible';
+      setError(message);
     }
   };
 

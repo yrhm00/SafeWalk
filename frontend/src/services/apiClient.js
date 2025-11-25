@@ -1,35 +1,20 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import axios from 'axios';
 
-export async function apiRequest(path, options = {}) {
-  const email = localStorage.getItem('basic_email');
-  const password = localStorage.getItem('basic_password');
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3001';
 
-  const headers = {
+const apiClient = axios.create({
+  baseURL: API_URL,
+  headers: {
     'Content-Type': 'application/json',
-    ...(options.headers || {}),
-  };
+  },
+});
 
-  if (email && password) {
-    const encoded = btoa(`${email}:${password}`);
-    headers['Authorization'] = `Basic ${encoded}`;
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-  });
-
-  let body = null;
-  try {
-    body = await res.json();
-  } catch (e) {
-    // pas de body JSON
-  }
-
-  if (!res.ok) {
-    const message = body?.error || body?.message || `Erreur HTTP ${res.status}`;
-    throw new Error(message);
-  }
-
-  return body;
-}
+export default apiClient;

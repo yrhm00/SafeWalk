@@ -4,6 +4,7 @@ import UsersListPage from './pages/users/UsersListPage.jsx';
 import UserFormPage from './pages/users/UserFormPage.jsx';
 import ReportsListPage from './pages/reports/ReportsListPage.jsx';
 import ReportDetailPage from './pages/reports/ReportDetailPage.jsx';
+import ReportFormPage from './pages/reports/ReportFormPage.jsx';
 import ReportTypesListPage from './pages/reportTypes/ReportTypesListPage.jsx';
 import ReportTypeFormPage from './pages/reportTypes/ReportTypeFormPage.jsx';
 import ZonesListPage from './pages/zones/ZonesListPage.jsx';
@@ -12,10 +13,9 @@ import LoginPage from './pages/auth/LoginPage.jsx';
 
 // Petit helper pour savoir si on est connecté et admin
 function isAuthenticatedAdmin() {
-  const email = localStorage.getItem('basic_email');
-  const password = localStorage.getItem('basic_password');
+  const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
-  return !!email && !!password && role === 'admin';
+  return !!token && role === 'admin';
 }
 
 function RequireAdmin({ children }) {
@@ -47,7 +47,9 @@ function App() {
         <Route path="users/new" element={<UserFormPage mode="create" />} />
         <Route path="users/:id/edit" element={<UserFormPage mode="edit" />} />
         <Route path="reports" element={<ReportsListPage />} />
+        <Route path="reports/new" element={<ReportFormPage mode="create" />} />
         <Route path="reports/:id" element={<ReportDetailPage />} />
+        <Route path="reports/:id/edit" element={<ReportFormPage mode="edit" />} />
         <Route path="report-types" element={<ReportTypesListPage />} />
         <Route path="report-types/new" element={<ReportTypeFormPage mode="create" />} />
         <Route path="report-types/:id/edit" element={<ReportTypeFormPage mode="edit" />} />

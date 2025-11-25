@@ -1,30 +1,22 @@
-import { apiRequest } from './apiClient.js';
+import apiClient from './apiClient.js';
 
 export function listReportTypes() {
-  return apiRequest('/report-types');
+  return apiClient.get('/report-types').then(res => res.data);
 }
 
 export function getReportTypeById(id) {
-  return apiRequest(`/report-types/${id}`);
+  return apiClient.get(`/report-types/${id}`).then(res => res.data);
 }
 
 export function createReportType(payload) {
-  return apiRequest('/report-types', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+  return apiClient.post('/report-types', payload).then(res => res.data);
 }
 
 export function updateReportType(payload) {
-  return apiRequest('/report-types', {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
+  return apiClient.patch('/report-types', payload).then(res => res.data);
 }
 
 export function deleteReportType(id) {
-  return apiRequest(`/report-types/${id}`, {
-    method: 'DELETE',
-  });
+  return apiClient.delete(`/report-types/${id}`);
 }
 

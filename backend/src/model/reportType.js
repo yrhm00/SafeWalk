@@ -30,6 +30,20 @@ export const createReportType = async (SQLClient, { label }) => {
 };
 
 /**
+ * Mettre à jour un type de rapport
+ */
+export const updateReportType = async (SQLClient, id, { label }) => {
+    const query = `
+        UPDATE report_type
+        SET label = $1
+        WHERE id = $2
+        RETURNING *
+    `;
+    const { rows } = await SQLClient.query(query, [label, id]);
+    return rows[0];
+};
+
+/**
  * Supprimer un type de rapport
  */
 export const deleteReportType = async (SQLClient, id) => {

@@ -57,6 +57,34 @@ export const createReportType = async (req, res) => {
 };
 
 /**
+ * Mettre à jour un type de rapport (admin uniquement)
+ */
+export const updateReportType = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        const { label } = req.body;
+        const updated = await reportTypeModel.updateReportType(pool, id, { label });
+
+        if (updated) {
+            res.json(updated);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        if (error.code === '23505') {
+            res.status(409).json({ error: "Report type already exists" });
+        } else {
+            res.sendStatus(500);
+        }
+    }
+};
+
+/**
  * Supprimer un type de rapport (admin uniquement)
  */
 export const deleteReportType = async (req, res) => {

@@ -51,6 +51,7 @@ function ReportsListPage() {
     <div>
       <div className="page-header">
         <h1>Signalements</h1>
+        <button onClick={() => navigate('new')}>Nouveau signalement</button>
       </div>
       <Alert type="error" message={error} />
       {loading && <p>Chargement...</p>}
@@ -58,6 +59,7 @@ function ReportsListPage() {
         columns={columns}
         data={reports}
         onView={row => navigate(`${row.id}`)}
+        onEdit={row => navigate(`${row.id}/edit`)}
         onDelete={row => setToDelete(row)}
       />
       <ConfirmDialog

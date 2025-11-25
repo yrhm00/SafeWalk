@@ -1,30 +1,22 @@
-import { apiRequest } from './apiClient.js';
+import apiClient from './apiClient.js';
 
 export function listZones() {
-  return apiRequest('/zones');
+  return apiClient.get('/zones').then(res => res.data);
 }
 
 export function getZoneById(id) {
-  return apiRequest(`/zones/${id}`);
+  return apiClient.get(`/zones/${id}`).then(res => res.data);
 }
 
 export function createZone(payload) {
-  return apiRequest('/zones', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+  return apiClient.post('/zones', payload).then(res => res.data);
 }
 
 export function updateZone(payload) {
-  return apiRequest('/zones', {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
+  return apiClient.patch('/zones', payload).then(res => res.data);
 }
 
 export function deleteZone(id) {
-  return apiRequest(`/zones/${id}`, {
-    method: 'DELETE',
-  });
+  return apiClient.delete(`/zones/${id}`);
 }
 

@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import userRoutes from "./src/routes/user.js";
 import reportRoutes from "./src/routes/report.js";
 import commentRoutes from "./src/routes/comment.js";
@@ -12,7 +13,10 @@ const port = 3001;
 
 // Parser JSON
 app.use(express.json());
-
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 // Route de base
 app.get('/', (req, res) => {
     res.json({

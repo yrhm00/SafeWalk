@@ -17,22 +17,22 @@ export const readZoneById = async (SQLClient, id) => {
 };
 
 /**
- * Créer une nouvelle zone (sans géométrie)
+ * Créer une nouvelle zone
  */
-export const createZone = async (SQLClient, { name, description }) => {
+export const createZone = async (SQLClient, { name, description, geom }) => {
     const query = `
-        INSERT INTO zone (name, description)
-        VALUES ($1, $2)
-        RETURNING *
+        INSERT INTO zone (name, description, geom)
+        VALUES ($1, $2, ST_GeomFromGeoJSON($3))
+        RETURNING id, name, description, ST_AsGeoJSON(geom) as geom
     `;
-    const { rows } = await SQLClient.query(query, [name, description]);
+    const { rows } = await SQLClient.query(query, [name, description, geom]);
     return rows[0];
 };
 
 /**
- * Mettre à jour une zone (mise à jour partielle)
+ * Mettre à jour une zone
  */
-export const updateZone = async (SQLClient, id, { name, description }) => {
+export const updateZone = async (SQLClient, id, { name, description, geom }) => {
     let query = "UPDATE zone SET ";
     const querySet = [];
     const queryValues = [];
@@ -45,10 +45,14 @@ export const updateZone = async (SQLClient, id, { name, description }) => {
         queryValues.push(description);
         querySet.push(`description = $${queryValues.length}`);
     }
+    if (geom !== undefined) {
+        queryValues.push(geom);
+        querySet.push(`geom = ST_GeomFromGeoJSON($${queryValues.length})`);
+    }
 
     if (queryValues.length > 0) {
         queryValues.push(id);
-        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING *`;
+        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING id, name, description, ST_AsGeoJSON(geom) as geom`;
         const { rows } = await SQLClient.query(query, queryValues);
         return rows[0];
     } else {
