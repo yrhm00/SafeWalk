@@ -41,6 +41,20 @@ export const createComment = async (SQLClient, { report_id, user_id, content }) 
 };
 
 /**
+ * Mettre à jour un commentaire
+ */
+export const updateComment = async (SQLClient, id, { content }) => {
+    const query = `
+        UPDATE comment
+        SET content = $2
+        WHERE id = $1
+        RETURNING *
+    `;
+    const { rows } = await SQLClient.query(query, [id, content]);
+    return rows[0];
+};
+
+/**
  * Supprimer un commentaire
  */
 export const deleteComment = async (SQLClient, id) => {

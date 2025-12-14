@@ -3,11 +3,28 @@
  */
 export const readAllReports = async (SQLClient) => {
     const query = `
-        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name
+        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name,
+               COALESCE(SUM(CASE WHEN v.value = TRUE THEN 1 ELSE 0 END), 0) as upvotes,
+               COALESCE(SUM(CASE WHEN v.value = FALSE THEN 1 ELSE 0 END), 0) as downvotes,
+               COALESCE(
+                   json_agg(
+                       json_build_object(
+                           'id', c.id,
+                           'content', c.content,
+                           'user_name', cu.username,
+                           'created_at', c.created_at
+                       ) ORDER BY c.created_at ASC
+                   ) FILTER (WHERE c.id IS NOT NULL),
+                   '[]'
+               ) as comments
         FROM report r
         LEFT JOIN users u ON r.user_id = u.id
         LEFT JOIN report_type rt ON r.type_id = rt.id
         LEFT JOIN zone z ON r.zone_id = z.id
+        LEFT JOIN comment c ON r.id = c.report_id
+        LEFT JOIN users cu ON c.user_id = cu.id
+        LEFT JOIN vote v ON r.id = v.report_id
+        GROUP BY r.id, u.name, rt.label, z.name
         ORDER BY r.created_at DESC
     `;
     const { rows } = await SQLClient.query(query);
@@ -121,16 +138,33 @@ export const searchReportsNearby = async (SQLClient, { latitude, longitude, radi
                ST_Distance(
                    r.point::geography,
                    ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography
-               ) as distance_meters
+               ) as distance_meters,
+               COALESCE(SUM(CASE WHEN v.value = TRUE THEN 1 ELSE 0 END), 0) as upvotes,
+               COALESCE(SUM(CASE WHEN v.value = FALSE THEN 1 ELSE 0 END), 0) as downvotes,
+               COALESCE(
+                   json_agg(
+                       json_build_object(
+                           'id', c.id,
+                           'content', c.content,
+                           'user_name', cu.username,
+                           'created_at', c.created_at
+                       ) ORDER BY c.created_at ASC
+                   ) FILTER (WHERE c.id IS NOT NULL),
+                   '[]'
+               ) as comments
         FROM report r
         LEFT JOIN users u ON r.user_id = u.id
         LEFT JOIN report_type rt ON r.type_id = rt.id
         LEFT JOIN zone z ON r.zone_id = z.id
+        LEFT JOIN comment c ON r.id = c.report_id
+        LEFT JOIN users cu ON c.user_id = cu.id
+        LEFT JOIN vote v ON r.id = v.report_id
         WHERE ST_DWithin(
             r.point::geography,
             ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,
             $3
         )
+        GROUP BY r.id, u.name, rt.label, z.name
         ORDER BY distance_meters ASC
     `;
     const { rows } = await SQLClient.query(query, [latitude, longitude, radiusMeters]);

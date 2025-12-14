@@ -40,6 +40,37 @@ export const createComment = async (req, res) => {
 };
 
 /**
+ * Mettre à jour un commentaire
+ */
+export const updateComment = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const { content } = req.body;
+
+        if (isNaN(id) || !content) {
+            return res.sendStatus(400);
+        }
+
+        // Vérifier que le commentaire appartient à l'utilisateur ou que l'utilisateur est admin
+        const comment = await commentModel.readCommentById(pool, id);
+
+        if (!comment) {
+            return res.sendStatus(404);
+        }
+
+        if (comment.user_id !== req.session.id && req.session.role !== 'admin') {
+            return res.sendStatus(403);
+        }
+
+        const updatedComment = await commentModel.updateComment(pool, id, { content });
+        res.json(updatedComment);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+/**
  * Supprimer un commentaire
  */
 export const deleteComment = async (req, res) => {
