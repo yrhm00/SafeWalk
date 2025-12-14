@@ -15,6 +15,7 @@ router.patch('/me', checkJWT, controler.updateUser);
 
 // Routes admin uniquement
 router.get('/', checkJWT, checkRole(['admin']), controler.getAllUsers);
+router.post('/', checkJWT, checkRole(['admin']), controler.createUser);
 
 // router.get('/:id', checkJWT, checkRole(['admin']), controler.getUserById);
 
