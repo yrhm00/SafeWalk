@@ -25,7 +25,7 @@ export const login = async (req, res) => {
             const token = generateToken({ id: person.id, role: person.role });
 
             // 2. Status 201 et renvoi du token (comme le prof) [cite: 2]
-            res.status(201).send(token);
+            res.status(201).json({ token });
         } else {
             res.sendStatus(404); // Le prof renvoie 404 si user pas trouvé [cite: 2]
         }
