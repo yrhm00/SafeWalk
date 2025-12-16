@@ -2,7 +2,7 @@ import { pool } from "../../database/database.js";
 import * as userModel from "../model/user.js";
 import * as personModel from "../model/person.js";
 import argon2 from "argon2";
-import jwt from "jsonwebtoken";
+import { generateToken } from "../../utils/jwt.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -21,21 +21,13 @@ export const login = async (req, res) => {
         const person = await personModel.readPerson(pool, { email, password });
 
         if (person.id && person.role) {
-            // Créer le JWT
-            const token = jwt.sign(
-                {
-                    id: person.id,
-                    role: person.role
-                },
-                process.env.JWT_SECRET || "your_secret_key_here",
-                {
-                    expiresIn: process.env.JWT_EXPIRATION || "24h"
-                }
-            );
+            // 1. On utilise la fonction utilitaire (comme le prof)
+            const token = generateToken({ id: person.id, role: person.role });
 
-            res.json({ token });
+            // 2. Status 201 et renvoi du token (comme le prof) [cite: 2]
+            res.status(201).send(token);
         } else {
-            res.sendStatus(401);
+            res.sendStatus(404); // Le prof renvoie 404 si user pas trouvé [cite: 2]
         }
     } catch (err) {
         console.error(err);
