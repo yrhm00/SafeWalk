@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DataTable from '../../components/DataTable.jsx';
-import ConfirmDialog from '../../components/ConfirmDialog.jsx';
-import Alert from '../../components/Alert.jsx';
-import CommentsDialog from '../../components/CommentsDialog.jsx';
-import { listReports, deleteReport } from '../../services/reportApi.js';
+import DataTable from '../../component/DataTable.jsx';
+import ConfirmDialog from '../../component/ConfirmDialog.jsx';
+import Alert from '../../component/Alert.jsx';
+import CommentsDialog from '../../component/CommentsDialog.jsx';
+import { listReports, deleteReport } from '../../API/reportApi.js';
 
 function ReportsListPage() {
   const navigate = useNavigate();

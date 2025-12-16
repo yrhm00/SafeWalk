@@ -1,4 +1,4 @@
-import apiClient from './apiClient.js';
+import apiClient from './http.js';
 
 export function listComments(reportId) {
     return apiClient.get(`/comments/report/${reportId}`).then(res => res.data);

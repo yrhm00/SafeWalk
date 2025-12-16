@@ -1,4 +1,4 @@
-import apiClient from './apiClient.js';
+import apiClient from './http.js';
 
 export function listReports({ page = 1, size = 20 } = {}) {
   const params = new URLSearchParams({ page, size });

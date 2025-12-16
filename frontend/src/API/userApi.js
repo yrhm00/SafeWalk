@@ -1,4 +1,4 @@
-import apiClient from './apiClient.js';
+import apiClient from './http.js';
 
 export function getMyProfile() {
   return apiClient.get('/users/me').then(res => res.data);

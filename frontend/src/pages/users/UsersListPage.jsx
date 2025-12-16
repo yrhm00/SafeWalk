@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DataTable from '../../components/DataTable.jsx';
-import ConfirmDialog from '../../components/ConfirmDialog.jsx';
-import Alert from '../../components/Alert.jsx';
-import { listUsers, deleteUser } from '../../services/userApi.js';
+import DataTable from '../../component/DataTable.jsx';
+import ConfirmDialog from '../../component/ConfirmDialog.jsx';
+import Alert from '../../component/Alert.jsx';
+import { listUsers, deleteUser } from '../../API/userApi.js';
 
 function UsersListPage() {
   const navigate = useNavigate();

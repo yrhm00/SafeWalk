@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listComments, createComment, updateComment, deleteComment } from '../services/commentApi.js';
+import { listComments, createComment, updateComment, deleteComment } from '../API/commentApi.js';
 
 function CommentsDialog({ report, onClose }) {
     const [comments, setComments] = useState([]);

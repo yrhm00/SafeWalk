@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Alert from '../../components/Alert.jsx';
-import { createZone, getZoneById, updateZone } from '../../services/zoneApi.js';
+import Alert from '../../component/Alert.jsx';
+import { createZone, getZoneById, updateZone } from '../../API/zoneApi.js';
 
 function ZoneFormPage({ mode }) {
   const navigate = useNavigate();

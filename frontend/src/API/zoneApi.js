@@ -1,4 +1,4 @@
-import apiClient from './apiClient.js';
+import apiClient from './http.js';
 
 export function listZones() {
   return apiClient.get('/zones').then(res => res.data);

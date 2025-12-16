@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Alert from '../../components/Alert.jsx';
-import { createUser, getUserById, updateUser } from '../../services/userApi.js';
+import Alert from '../../component/Alert.jsx';
+import { createUser, getUserById, updateUser } from '../../API/userApi.js';
 
 function UserFormPage({ mode }) {
   const navigate = useNavigate();

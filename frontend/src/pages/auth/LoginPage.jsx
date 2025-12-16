@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Alert from '../../components/Alert.jsx';
-import { login } from '../../services/authApi.js';
-import { getMyProfile } from '../../services/userApi.js';
+import Alert from '../../component/Alert.jsx';
+import { login } from '../../API/authApi.js';
+import { getMyProfile } from '../../API/userApi.js';
 
 function LoginPage() {
   const navigate = useNavigate();

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Alert from '../../components/Alert.jsx';
-import { createReport, getReportById, updateReport } from '../../services/reportApi.js';
-import { listReportTypes } from '../../services/reportTypeApi.js';
-import { listZones } from '../../services/zoneApi.js';
+import Alert from '../../component/Alert.jsx';
+import { createReport, getReportById, updateReport } from '../../API/reportApi.js';
+import { listReportTypes } from '../../API/reportTypeApi.js';
+import { listZones } from '../../API/zoneApi.js';
 
 function ReportFormPage({ mode }) {
     const navigate = useNavigate();

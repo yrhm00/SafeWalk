@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DataTable from '../../components/DataTable.jsx';
-import ConfirmDialog from '../../components/ConfirmDialog.jsx';
-import Alert from '../../components/Alert.jsx';
-import { listReportTypes, deleteReportType } from '../../services/reportTypeApi.js';
+import DataTable from '../../component/DataTable.jsx';
+import ConfirmDialog from '../../component/ConfirmDialog.jsx';
+import Alert from '../../component/Alert.jsx';
+import { listReportTypes, deleteReportType } from '../../API/reportTypeApi.js';
 
 function ReportTypesListPage() {
   const navigate = useNavigate();

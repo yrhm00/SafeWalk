@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DataTable from '../../components/DataTable.jsx';
-import ConfirmDialog from '../../components/ConfirmDialog.jsx';
-import Alert from '../../components/Alert.jsx';
-import { listZones, deleteZone } from '../../services/zoneApi.js';
+import DataTable from '../../component/DataTable.jsx';
+import ConfirmDialog from '../../component/ConfirmDialog.jsx';
+import Alert from '../../component/Alert.jsx';
+import { listZones, deleteZone } from '../../API/zoneApi.js';
 
 function ZonesListPage() {
   const navigate = useNavigate();

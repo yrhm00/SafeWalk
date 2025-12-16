@@ -1,4 +1,4 @@
-import apiClient from './apiClient.js';
+import apiClient from './http.js';
 
 export function listReportTypes() {
   return apiClient.get('/report-types').then(res => res.data);
