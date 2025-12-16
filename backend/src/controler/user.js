@@ -1,7 +1,7 @@
 import { pool } from "../../database/database.js";
 import * as userModel from "../model/user.js";
 import * as personModel from "../model/person.js";
-import argon2 from "argon2";
+import { hashPassword } from "../../utils/password.js";
 import { generateToken } from "../../utils/jwt.js";
 import dotenv from "dotenv";
 
@@ -77,8 +77,7 @@ export const createUser = async (req, res) => {
     try {
         const { name, username, email, password, role } = req.body;
 
-        // Hash du mot de passe avec argon2
-        const password_hash = await argon2.hash(password);
+        const password_hash = await hashPassword(password);
 
         const newUser = await userModel.createUser(pool, {
             name,
@@ -91,7 +90,7 @@ export const createUser = async (req, res) => {
         res.status(201).json(newUser);
     } catch (error) {
         console.error(error);
-        if (error.code === '23505') { // Violation de contrainte unique
+        if (error.code === '23505') {
             res.status(409).json({ error: "Email or username already exists" });
         } else {
             res.sendStatus(500);
@@ -106,9 +105,8 @@ export const updateUser = async (req, res) => {
     try {
         let updateData = { ...req.body };
 
-        // Si un nouveau mot de passe est fourni, le hasher
         if (updateData.password) {
-            updateData.password_hash = await argon2.hash(updateData.password);
+            updateData.password_hash = await hashPassword(updateData.password);
             delete updateData.password;
         }
 
