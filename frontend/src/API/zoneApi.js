@@ -12,8 +12,8 @@ export function createZone(payload) {
   return apiClient.post('/zones', payload).then(res => res.data);
 }
 
-export function updateZone(payload) {
-  return apiClient.patch('/zones', payload).then(res => res.data);
+export function updateZone(id, payload) {
+  return apiClient.patch(`/zones/${id}`, payload).then(res => res.data);
 }
 
 export function deleteZone(id) {

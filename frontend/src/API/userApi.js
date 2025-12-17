@@ -17,8 +17,8 @@ export function createUser(payload) {
   return apiClient.post('/users', payload).then(res => res.data);
 }
 
-export function updateUser(payload) {
-  return apiClient.patch('/users', payload).then(res => res.data);
+export function updateUser(id, payload) {
+  return apiClient.patch(`/users/${id}`, payload).then(res => res.data);
 }
 
 export function deleteUser(id) {

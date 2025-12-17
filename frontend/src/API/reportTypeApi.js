@@ -12,8 +12,8 @@ export function createReportType(payload) {
   return apiClient.post('/report-types', payload).then(res => res.data);
 }
 
-export function updateReportType(payload) {
-  return apiClient.patch('/report-types', payload).then(res => res.data);
+export function updateReportType(id, payload) {
+  return apiClient.patch(`/report-types/${id}`, payload).then(res => res.data);
 }
 
 export function deleteReportType(id) {

@@ -45,7 +45,7 @@ function UserFormPage({ mode }) {
       } else {
         const payload = { ...values };
         if (!payload.password) delete payload.password;
-        await updateUser(payload);
+        await updateUser(values.id, payload);
       }
       navigate('/admin/users');
     } catch (e) {

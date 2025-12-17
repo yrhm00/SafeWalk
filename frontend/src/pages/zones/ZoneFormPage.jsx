@@ -34,7 +34,7 @@ function ZoneFormPage({ mode }) {
       if (mode === 'create') {
         await createZone(values);
       } else {
-        await updateZone(values);
+        await updateZone(values.id, values);
       }
       navigate('/admin/zones');
     } catch (e) {

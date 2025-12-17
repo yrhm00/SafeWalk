@@ -161,3 +161,33 @@ export const getMyProfile = async (req, res) => {
         res.sendStatus(500);
     }
 };
+
+/**
+ * Mettre à jour un utilisateur (admin uniquement)
+ */
+export const updateUserById = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        let updateData = { ...req.body };
+
+        if (updateData.password) {
+            updateData.password_hash = await hashPassword(updateData.password);
+            delete updateData.password;
+        }
+
+        const updatedUser = await userModel.updateUser(pool, id, updateData);
+
+        if (updatedUser) {
+            res.json(updatedUser);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};

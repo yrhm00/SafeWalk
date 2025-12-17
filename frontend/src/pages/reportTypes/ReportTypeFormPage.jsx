@@ -34,7 +34,7 @@ function ReportTypeFormPage({ mode }) {
       if (mode === 'create') {
         await createReportType({ label: values.label });
       } else {
-        await updateReportType(values);
+        await updateReportType(values.id, values);
       }
       navigate('/admin/report-types');
     } catch (e) {
