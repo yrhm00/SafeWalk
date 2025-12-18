@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
 import userRoutes from "./src/routes/user.js";
 import reportRoutes from "./src/routes/report.js";
 import commentRoutes from "./src/routes/comment.js";
@@ -11,6 +13,37 @@ import morgan from "morgan";
 const app = express();
 const port = 3001;
 const apiVersion = '/api/v1';
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'SafeWalk API',
+            version: '1.0.0',
+            description: 'Documentation de l\'API SafeWalk (Projet Scolaire)',
+        },
+        servers: [
+            {
+                url: 'http://localhost:3001/api/v1',
+                description: 'Serveur Local'
+            }
+        ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            }
+        },
+        security: [{ bearerAuth: [] }]
+    },
+    apis: ['./src/routes/*.js'], // Chemin vers les fichiers annotés
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(morgan("dev"));
 
