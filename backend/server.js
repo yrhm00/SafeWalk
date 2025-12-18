@@ -10,6 +10,7 @@ import morgan from "morgan";
 
 const app = express();
 const port = 3001;
+const apiVersion = '/api/v1';
 
 app.use(morgan("dev"));
 
@@ -23,25 +24,25 @@ app.use(cors({
 app.get('/', (req, res) => {
     res.json({
         message: 'API SafeWalk',
-        version: '2.0',
+        version: '1.0',
         endpoints: {
-            users: '/users',
-            reports: '/reports',
-            comments: '/comments',
-            zones: '/zones',
-            votes: '/votes',
-            reportTypes: '/report-types'
+            users: apiVersion + '/users',
+            reports: apiVersion + '/reports',
+            comments: apiVersion + '/comments',
+            zones: apiVersion + '/zones',
+            votes: apiVersion + '/votes',
+            reportTypes: apiVersion + '/report-types'
         }
     });
 });
 
 // Routes
-app.use('/users', userRoutes);
-app.use('/reports', reportRoutes);
-app.use('/comments', commentRoutes);
-app.use('/zones', zoneRoutes);
-app.use('/votes', voteRoutes);
-app.use('/report-types', reportTypeRoutes);
+app.use(apiVersion + '/users', userRoutes);
+app.use(apiVersion + '/reports', reportRoutes);
+app.use(apiVersion + '/comments', commentRoutes);
+app.use(apiVersion + '/zones', zoneRoutes);
+app.use(apiVersion + '/votes', voteRoutes);
+app.use(apiVersion + '/report-types', reportTypeRoutes);
 
 // Gestion des erreurs 404
 app.use((req, res) => {
