@@ -14,7 +14,7 @@ export const checkRole = (allowedRoles) => {
         if (allowedRoles.includes(req.session.role)) {
             next();
         } else {
-            res.sendStatus(403);
+            res.status(403).json({ error: "Accès interdit : Vous n'avez pas les droits nécessaires pour accéder à cette ressource." });
         }
     };
 };

@@ -8,7 +8,6 @@ const router = express.Router();
 
 // Routes publiques
 router.get('/', controler.getAllReports);
-router.get('/nearby', controler.searchReportsNearby); // IMPORTANT: avant /:id
 router.get('/:id', controler.getReportById);
 
 // Routes protégées (utilisateur connecté)

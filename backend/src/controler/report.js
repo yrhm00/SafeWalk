@@ -1,5 +1,7 @@
 import { pool } from "../../database/database.js";
 import * as reportModel from "../model/report.js";
+import * as voteModel from "../model/vote.js";
+import * as commentModel from "../model/comment.js";
 
 /**
  * Obtenir tous les rapports
@@ -40,10 +42,13 @@ export const getReportById = async (req, res) => {
  * Créer un nouveau rapport
  */
 export const createReport = async (req, res) => {
+    const client = await pool.connect();
     try {
+        await client.query('BEGIN');
+
         const { type_id, zone_id, title, description, latitude, longitude, image_url, severity } = req.body;
 
-        const newReport = await reportModel.createReport(pool, {
+        const newReport = await reportModel.createReport(client, {
             user_id: req.session.id,
             type_id,
             zone_id,
@@ -55,33 +60,62 @@ export const createReport = async (req, res) => {
             severity
         });
 
+        await voteModel.createOrUpdateVote(client, {
+            report_id: newReport.id,
+            user_id: req.session.id,
+            value: true
+        });
+
+        await client.query('COMMIT');
+
         res.status(201).json(newReport);
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error(error);
         res.sendStatus(500);
+    } finally {
+        client.release();
     }
 };
 
 /**
  * Mettre à jour un rapport
  */
+
 export const updateReport = async (req, res) => {
+    const client = await pool.connect();
     try {
+        await client.query('BEGIN');
+
         const id = parseInt(req.params.id);
         if (isNaN(id)) {
+            client.release();
             return res.sendStatus(400);
         }
 
-        const updatedReport = await reportModel.updateReport(pool, id, req.body);
+        const updatedReport = await reportModel.updateReport(client, id, req.body);
 
         if (updatedReport) {
+            if (req.body.status === 'validated' || req.body.status === 'resolved') {
+                await commentModel.createComment(client, {
+                    report_id: id,
+                    user_id: req.session.id,
+                    content: `Le statut du signalement est passé à : ${req.body.status.toUpperCase()} (Validation Admin).`
+                });
+            }
+
+            await client.query('COMMIT');
             res.json(updatedReport);
         } else {
+            await client.query('ROLLBACK');
             res.sendStatus(404);
         }
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error(error);
         res.sendStatus(500);
+    } finally {
+        client.release();
     }
 };
 
@@ -117,38 +151,5 @@ export const getMyReports = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.sendStatus(500);
-    }
-};
-
-/**
- * Rechercher les rapports à proximité (dans un rayon donné)
- * Query params: ?latitude=50.845&longitude=4.355&radius=5000
- */
-export const searchReportsNearby = async (req, res) => {
-    try {
-        const { latitude, longitude, radius } = req.query;
-
-        if (!latitude || !longitude) {
-            return res.status(400).json({ error: 'Latitude and longitude are required' });
-        }
-
-        const lat = parseFloat(latitude);
-        const lon = parseFloat(longitude);
-        const radiusMeters = radius ? parseInt(radius) : 5000; // 5km par défaut
-
-        if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-            return res.status(400).json({ error: 'Invalid coordinates' });
-        }
-
-        const reports = await reportModel.searchReportsNearby(pool, {
-            latitude: lat,
-            longitude: lon,
-            radiusMeters
-        });
-
-        res.json(reports);
-    } catch (error) {
-        console.error('Error searching nearby reports:', error);
-        res.status(500).json({ error: 'Failed to search nearby reports' });
     }
 };

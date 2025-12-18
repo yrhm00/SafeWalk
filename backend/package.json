@@ -4,5 +4,8 @@
   "private": true,
   "description": "Placeholder, le backend est configuré via le package.json à la racine.",
   "type": "module",
-  "scripts": {}
+  "scripts": {},
+  "dependencies": {
+    "morgan": "^1.10.1"
+  }
 }

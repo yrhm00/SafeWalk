@@ -6,10 +6,12 @@ import commentRoutes from "./src/routes/comment.js";
 import zoneRoutes from "./src/routes/zone.js";
 import voteRoutes from "./src/routes/vote.js";
 import reportTypeRoutes from "./src/routes/reportType.js";
+import morgan from "morgan";
 
 const app = express();
 const port = 3001;
 
+app.use(morgan("dev"));
 
 // Parser JSON
 app.use(express.json());

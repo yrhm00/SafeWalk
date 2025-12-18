@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     container_name: postgres-safewalk
-    image: postgis/postgis:16-3.4 # <--- L'astuce est ici : PostGIS est pré-installé !
+    image: postgis/postgis:16-3.4
     restart: always
     environment:
       POSTGRES_USER: postgres

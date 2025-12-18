@@ -20,7 +20,7 @@ router.post('/', checkJWT, checkRole(['admin']), controler.createUser);
 // router.get('/:id', checkJWT, checkRole(['admin']), controler.getUserById);
 
 // MAUVAISE PRATIQUE - N'IMPORTE QUI peut voir les users
-router.get('/:id', controler.getUserById);
+router.get('/:id', checkJWT, checkRole(['admin']), controler.getUserById);
 router.patch('/:id', checkJWT, checkRole(['admin']), controler.updateUserById);
 router.delete('/:id', checkJWT, checkRole(['admin']), controler.deleteUser);
 
