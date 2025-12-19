@@ -69,13 +69,19 @@ app.get('/', (req, res) => {
     });
 });
 
+// Cache Middleware (1 heure)
+const cacheMiddleware = (req, res, next) => {
+    res.set('Cache-Control', 'public, max-age=3600');
+    next();
+};
+
 // Routes
 app.use(apiVersion + '/users', userRoutes);
 app.use(apiVersion + '/reports', reportRoutes);
 app.use(apiVersion + '/comments', commentRoutes);
-app.use(apiVersion + '/zones', zoneRoutes);
+app.use(apiVersion + '/zones', cacheMiddleware, zoneRoutes);
 app.use(apiVersion + '/votes', voteRoutes);
-app.use(apiVersion + '/report-types', reportTypeRoutes);
+app.use(apiVersion + '/report-types', cacheMiddleware, reportTypeRoutes);
 
 // Gestion des erreurs 404
 app.use((req, res) => {
