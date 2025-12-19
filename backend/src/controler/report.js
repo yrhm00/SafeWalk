@@ -8,7 +8,9 @@ import * as commentModel from "../model/comment.js";
  */
 export const getAllReports = async (req, res) => {
     try {
-        const reports = await reportModel.readAllReports(pool);
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = parseInt(req.query.offset) || 0;
+        const reports = await reportModel.readAllReports(pool, limit, offset);
         res.json(reports);
     } catch (error) {
         console.error(error);
@@ -89,7 +91,6 @@ export const updateReport = async (req, res) => {
 
         const id = parseInt(req.params.id);
         if (isNaN(id)) {
-            client.release();
             return res.sendStatus(400);
         }
 

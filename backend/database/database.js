@@ -21,6 +21,9 @@ export const pool = {
             throw e;
         }
     },
+    connect: async () => {
+        return await pgPool.connect();
+    },
     end: () => {
         return pgPool.end();
     }

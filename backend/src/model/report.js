@@ -1,7 +1,7 @@
 /**
  * Lire tous les rapports
  */
-export const readAllReports = async (SQLClient) => {
+export const readAllReports = async (SQLClient, limit = 20, offset = 0) => {
     // 1. D'abord, on récupère les rapports avec les compteurs de votes
     // On utilise GROUP BY pour compter les votes sans dupliquer les lignes
     const reportsQuery = `
@@ -15,8 +15,9 @@ export const readAllReports = async (SQLClient) => {
         LEFT JOIN vote v ON r.id = v.report_id
         GROUP BY r.id, u.name, rt.label, z.name
         ORDER BY r.created_at DESC
+        LIMIT $1 OFFSET $2
     `;
-    const reportsResult = await SQLClient.query(reportsQuery);
+    const reportsResult = await SQLClient.query(reportsQuery, [limit, offset]);
     const reports = reportsResult.rows;
 
     // 2. Ensuite, on récupère TOUS les commentaires séparément
