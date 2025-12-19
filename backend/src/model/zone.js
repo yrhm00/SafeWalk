@@ -1,24 +1,15 @@
-/**
- * Lire toutes les zones
- */
 export const readAllZones = async (SQLClient) => {
-    const query = "SELECT * FROM zone ORDER BY id";
+    const query = "SELECT id, name, description, ST_AsGeoJSON(geom) as geom FROM zone ORDER BY id";
     const { rows } = await SQLClient.query(query);
     return rows;
 };
 
-/**
- * Lire une zone par ID
- */
 export const readZoneById = async (SQLClient, id) => {
-    const query = "SELECT * FROM zone WHERE id = $1";
+    const query = "SELECT id, name, description, ST_AsGeoJSON(geom) as geom FROM zone WHERE id = $1";
     const { rows } = await SQLClient.query(query, [id]);
     return rows[0];
 };
 
-/**
- * Créer une nouvelle zone
- */
 export const createZone = async (SQLClient, { name, description, geom }) => {
     const query = `
         INSERT INTO zone (name, description, geom)
@@ -29,9 +20,6 @@ export const createZone = async (SQLClient, { name, description, geom }) => {
     return rows[0];
 };
 
-/**
- * Mettre à jour une zone
- */
 export const updateZone = async (SQLClient, id, { name, description, geom }) => {
     let query = "UPDATE zone SET ";
     const querySet = [];
@@ -60,9 +48,6 @@ export const updateZone = async (SQLClient, id, { name, description, geom }) => 
     }
 };
 
-/**
- * Supprimer une zone
- */
 export const deleteZone = async (SQLClient, id) => {
     const query = "DELETE FROM zone WHERE id = $1";
     const result = await SQLClient.query(query, [id]);

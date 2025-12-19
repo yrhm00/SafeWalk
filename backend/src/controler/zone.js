@@ -1,9 +1,6 @@
 import { pool } from "../../database/database.js";
 import * as zoneModel from "../model/zone.js";
 
-/**
- * Obtenir toutes les zones
- */
 export const getAllZones = async (req, res) => {
     try {
         const zones = await zoneModel.readAllZones(pool);
@@ -14,9 +11,6 @@ export const getAllZones = async (req, res) => {
     }
 };
 
-/**
- * Obtenir une zone par ID
- */
 export const getZoneById = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -36,9 +30,6 @@ export const getZoneById = async (req, res) => {
     }
 };
 
-/**
- * Créer une nouvelle zone (admin uniquement)
- */
 export const createZone = async (req, res) => {
     try {
         const { name, description, geom } = req.body;
@@ -56,9 +47,6 @@ export const createZone = async (req, res) => {
     }
 };
 
-/**
- * Mettre à jour une zone (admin uniquement)
- */
 export const updateZone = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -79,9 +67,6 @@ export const updateZone = async (req, res) => {
     }
 };
 
-/**
- * Supprimer une zone (admin uniquement)
- */
 export const deleteZone = async (req, res) => {
     try {
         const id = parseInt(req.params.id);

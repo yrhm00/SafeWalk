@@ -1,8 +1,25 @@
 {
-  "name": "safewalk-backend-placeholder",
+  "name": "safewalk-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "Placeholder, le backend est configuré via le package.json à la racine.",
   "type": "module",
-  "scripts": {}
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@vinejs/vine": "^1.0.0",
+    "argon2": "^0.44.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "pg": "^8.16.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
 }

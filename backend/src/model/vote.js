@@ -1,6 +1,3 @@
-/**
- * Lire tous les votes d'un rapport
- */
 export const readVotesByReportId = async (SQLClient, report_id) => {
     const query = `
         SELECT v.*, u.name as user_name
@@ -13,9 +10,6 @@ export const readVotesByReportId = async (SQLClient, report_id) => {
     return rows;
 };
 
-/**
- * Obtenir le résumé des votes pour un rapport
- */
 export const getVoteSummary = async (SQLClient, report_id) => {
     const query = `
         SELECT 
@@ -29,9 +23,6 @@ export const getVoteSummary = async (SQLClient, report_id) => {
     return rows[0];
 };
 
-/**
- * Créer ou mettre à jour un vote
- */
 export const createOrUpdateVote = async (SQLClient, { report_id, user_id, value }) => {
     const query = `
         INSERT INTO vote (report_id, user_id, value)
@@ -44,18 +35,12 @@ export const createOrUpdateVote = async (SQLClient, { report_id, user_id, value 
     return rows[0];
 };
 
-/**
- * Supprimer un vote
- */
 export const deleteVote = async (SQLClient, { report_id, user_id }) => {
     const query = "DELETE FROM vote WHERE report_id = $1 AND user_id = $2";
     const result = await SQLClient.query(query, [report_id, user_id]);
     return result.rowCount > 0;
 };
 
-/**
- * Vérifier si un utilisateur a voté pour un rapport
- */
 export const getUserVote = async (SQLClient, { report_id, user_id }) => {
     const query = `
         SELECT value

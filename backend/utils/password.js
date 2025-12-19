@@ -1,29 +1,21 @@
-import bcrypt from 'bcrypt';
+import argon2 from "argon2";
 
-const DEFAULT_SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
+const PEPPER = Buffer.from("cecinestpasunpepper");
 
-/**
- * Hash un mot de passe en clair avec bcrypt.
- * @param {string} plainPassword
- * @returns {Promise<string>} hash bcrypt
- */
 export async function hashPassword(plainPassword) {
   if (typeof plainPassword !== 'string' || !plainPassword.trim()) {
-    throw new Error('Mot de passe invalide pour le hashage');
+    throw new Error('Mot de passe invalide');
   }
-  return bcrypt.hash(plainPassword, DEFAULT_SALT_ROUNDS);
+
+  return await argon2.hash(plainPassword, {
+    type: argon2.argon2id,
+    secret: PEPPER
+  });
 }
 
-/**
- * Vérifie qu'un mot de passe en clair correspond au hash stocké.
- * @param {string} plainPassword
- * @param {string} passwordHash
- * @returns {Promise<boolean>} true si correspond, sinon false
- */
-export async function verifyPassword(plainPassword, passwordHash) {
-  if (!plainPassword || !passwordHash) {
-    return false;
-  }
-  return bcrypt.compare(plainPassword, passwordHash);
+export async function verifyPassword(hash, plainPassword) {
+  if (!hash || !plainPassword) return false;
+  return await argon2.verify(hash, plainPassword, {
+    secret: PEPPER
+  });
 }
-

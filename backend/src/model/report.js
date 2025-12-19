@@ -1,17 +1,37 @@
 /**
  * Lire tous les rapports
  */
-export const readAllReports = async (SQLClient) => {
-    const query = `
-        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name
+export const readAllReports = async (SQLClient, limit = 20, offset = 0) => {
+    const reportsQuery = `
+        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name,
+               COUNT(CASE WHEN v.value = TRUE THEN 1 END) as upvotes,
+               COUNT(CASE WHEN v.value = FALSE THEN 1 END) as downvotes
         FROM report r
         LEFT JOIN users u ON r.user_id = u.id
         LEFT JOIN report_type rt ON r.type_id = rt.id
         LEFT JOIN zone z ON r.zone_id = z.id
+        LEFT JOIN vote v ON r.id = v.report_id
+        GROUP BY r.id, u.name, rt.label, z.name
         ORDER BY r.created_at DESC
+        LIMIT $1 OFFSET $2
     `;
-    const { rows } = await SQLClient.query(query);
-    return rows;
+    const reportsResult = await SQLClient.query(reportsQuery, [limit, offset]);
+    const reports = reportsResult.rows;
+
+    const commentsQuery = `
+        SELECT c.id, c.content, c.created_at, c.report_id, u.username as user_name
+        FROM comment c
+        JOIN users u ON c.user_id = u.id
+        ORDER BY c.created_at ASC
+    `;
+    const commentsResult = await SQLClient.query(commentsQuery);
+    const allComments = commentsResult.rows;
+
+    for (const report of reports) {
+        report.comments = allComments.filter(comment => comment.report_id === report.id);
+    }
+
+    return reports;
 };
 
 /**
@@ -95,9 +115,6 @@ export const deleteReport = async (SQLClient, id) => {
     return result.rowCount > 0;
 };
 
-/**
- * Lire les rapports par utilisateur
- */
 export const readReportsByUserId = async (SQLClient, user_id) => {
     const query = `
         SELECT r.*, rt.label as type_label, z.name as zone_name
@@ -108,31 +125,5 @@ export const readReportsByUserId = async (SQLClient, user_id) => {
         ORDER BY r.created_at DESC
     `;
     const { rows } = await SQLClient.query(query, [user_id]);
-    return rows;
-};
-
-/**
- * Rechercher les rapports dans un rayon donné (en mètres)
- * Utilise PostGIS pour calculer la distance
- */
-export const searchReportsNearby = async (SQLClient, { latitude, longitude, radiusMeters = 5000 }) => {
-    const query = `
-        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name,
-               ST_Distance(
-                   r.point::geography,
-                   ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography
-               ) as distance_meters
-        FROM report r
-        LEFT JOIN users u ON r.user_id = u.id
-        LEFT JOIN report_type rt ON r.type_id = rt.id
-        LEFT JOIN zone z ON r.zone_id = z.id
-        WHERE ST_DWithin(
-            r.point::geography,
-            ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography,
-            $3
-        )
-        ORDER BY distance_meters ASC
-    `;
-    const { rows } = await SQLClient.query(query, [latitude, longitude, radiusMeters]);
     return rows;
 };

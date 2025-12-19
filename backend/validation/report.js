@@ -1,8 +1,5 @@
 import vine from '@vinejs/vine';
 
-/**
- * Schéma de validation pour la création d'un rapport
- */
 export const createReportSchema = vine.object({
     type_id: vine.number().positive(),
     zone_id: vine.number().positive().optional().nullable(),
@@ -14,9 +11,6 @@ export const createReportSchema = vine.object({
     severity: vine.enum(['low', 'medium', 'high']).optional()
 });
 
-/**
- * Schéma de validation pour la mise à jour d'un rapport
- */
 export const updateReportSchema = vine.object({
     title: vine.string().minLength(3).maxLength(140).optional(),
     description: vine.string().minLength(10).optional(),
@@ -26,9 +20,6 @@ export const updateReportSchema = vine.object({
     zone_id: vine.number().positive().optional().nullable()
 });
 
-/**
- * Middleware de validation pour la création de rapport
- */
 export const validateCreateReport = async (req, res, next) => {
     try {
         req.body = await vine.validate({ schema: createReportSchema, data: req.body });
@@ -38,9 +29,6 @@ export const validateCreateReport = async (req, res, next) => {
     }
 };
 
-/**
- * Middleware de validation pour la mise à jour de rapport
- */
 export const validateUpdateReport = async (req, res, next) => {
     try {
         req.body = await vine.validate({ schema: updateReportSchema, data: req.body });

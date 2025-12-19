@@ -1,10 +1,6 @@
 import { readUserByEmail } from "./user.js";
-import argon2 from "argon2";
+import { verifyPassword } from "../../utils/password.js";
 
-/**
- * Authentifier une personne par email et mot de passe
- * Retourne les informations de l'utilisateur si authentifié
- */
 export const readPerson = async (clientSQL, { email, password }) => {
     try {
         const user = await readUserByEmail(clientSQL, { email });
@@ -13,8 +9,7 @@ export const readPerson = async (clientSQL, { email, password }) => {
             return { id: null, role: null };
         }
 
-        // Vérifier le mot de passe avec argon2
-        const isPasswordValid = await argon2.verify(user.password_hash, password);
+        const isPasswordValid = await verifyPassword(user.password_hash, password);
 
         if (isPasswordValid) {
             return {

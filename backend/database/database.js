@@ -11,7 +11,6 @@ const pgPool = new pg.Pool({
     port: 5432
 });
 
-/* ----- Pattern Adapter ----- */
 export const pool = {
     query: async (query, params) => {
         try {
@@ -21,13 +20,14 @@ export const pool = {
             throw e;
         }
     },
+    connect: async () => {
+        return await pgPool.connect();
+    },
     end: () => {
         return pgPool.end();
     }
 };
 
-/* ----- Fermeture propre du pool ----- */
-// Si nous fermons notre processus, nous fermerons automatiquement toutes les connexions ouvertes à la base de données
 process.on("exit", () => {
     pgPool.end().then(() => console.log("pool closed"));
 });

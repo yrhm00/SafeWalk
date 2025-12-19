@@ -1,9 +1,6 @@
 import { pool } from "../../database/database.js";
 import * as reportTypeModel from "../model/reportType.js";
 
-/**
- * Obtenir tous les types de rapports
- */
 export const getAllReportTypes = async (req, res) => {
     try {
         const reportTypes = await reportTypeModel.readAllReportTypes(pool);
@@ -14,9 +11,6 @@ export const getAllReportTypes = async (req, res) => {
     }
 };
 
-/**
- * Obtenir un type de rapport par ID
- */
 export const getReportTypeById = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -36,9 +30,6 @@ export const getReportTypeById = async (req, res) => {
     }
 };
 
-/**
- * Créer un nouveau type de rapport (admin uniquement)
- */
 export const createReportType = async (req, res) => {
     try {
         const { label } = req.body;
@@ -56,9 +47,6 @@ export const createReportType = async (req, res) => {
     }
 };
 
-/**
- * Mettre à jour un type de rapport (admin uniquement)
- */
 export const updateReportType = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -84,9 +72,6 @@ export const updateReportType = async (req, res) => {
     }
 };
 
-/**
- * Supprimer un type de rapport (admin uniquement)
- */
 export const deleteReportType = async (req, res) => {
     try {
         const id = parseInt(req.params.id);

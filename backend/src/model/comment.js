@@ -1,6 +1,3 @@
-/**
- * Lire tous les commentaires d'un rapport
- */
 export const readCommentsByReportId = async (SQLClient, report_id) => {
     const query = `
         SELECT c.*, u.name as user_name, u.username
@@ -13,9 +10,6 @@ export const readCommentsByReportId = async (SQLClient, report_id) => {
     return rows;
 };
 
-/**
- * Lire un commentaire par ID
- */
 export const readCommentById = async (SQLClient, id) => {
     const query = `
         SELECT c.*, u.name as user_name
@@ -27,9 +21,6 @@ export const readCommentById = async (SQLClient, id) => {
     return rows[0];
 };
 
-/**
- * Créer un nouveau commentaire
- */
 export const createComment = async (SQLClient, { report_id, user_id, content }) => {
     const query = `
         INSERT INTO comment (report_id, user_id, content)
@@ -40,9 +31,17 @@ export const createComment = async (SQLClient, { report_id, user_id, content }) 
     return rows[0];
 };
 
-/**
- * Supprimer un commentaire
- */
+export const updateComment = async (SQLClient, id, { content }) => {
+    const query = `
+        UPDATE comment
+        SET content = $2
+        WHERE id = $1
+        RETURNING *
+    `;
+    const { rows } = await SQLClient.query(query, [id, content]);
+    return rows[0];
+};
+
 export const deleteComment = async (SQLClient, id) => {
     const query = "DELETE FROM comment WHERE id = $1";
     const result = await SQLClient.query(query, [id]);

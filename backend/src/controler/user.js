@@ -1,15 +1,12 @@
 import { pool } from "../../database/database.js";
 import * as userModel from "../model/user.js";
 import * as personModel from "../model/person.js";
-import argon2 from "argon2";
-import jwt from "jsonwebtoken";
+import { hashPassword } from "../../utils/password.js";
+import { generateToken } from "../../utils/jwt.js";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-/**
- * Login - génère un JWT
- */
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -21,21 +18,11 @@ export const login = async (req, res) => {
         const person = await personModel.readPerson(pool, { email, password });
 
         if (person.id && person.role) {
-            // Créer le JWT
-            const token = jwt.sign(
-                {
-                    id: person.id,
-                    role: person.role
-                },
-                process.env.JWT_SECRET || "your_secret_key_here",
-                {
-                    expiresIn: process.env.JWT_EXPIRATION || "24h"
-                }
-            );
+            const token = generateToken({ id: person.id, role: person.role });
 
-            res.json({ token });
+            res.status(201).json({ token });
         } else {
-            res.sendStatus(401);
+            res.sendStatus(404);
         }
     } catch (err) {
         console.error(err);
@@ -43,9 +30,6 @@ export const login = async (req, res) => {
     }
 };
 
-/**
- * Obtenir tous les utilisateurs (admin uniquement)
- */
 export const getAllUsers = async (req, res) => {
     try {
         const users = await userModel.readAllUsers(pool);
@@ -56,9 +40,6 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
-/**
- * Obtenir un utilisateur par ID
- */
 export const getUserById = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -78,15 +59,11 @@ export const getUserById = async (req, res) => {
     }
 };
 
-/**
- * Créer un nouvel utilisateur (inscription)
- */
 export const createUser = async (req, res) => {
     try {
         const { name, username, email, password, role } = req.body;
 
-        // Hash du mot de passe avec argon2
-        const password_hash = await argon2.hash(password);
+        const password_hash = await hashPassword(password);
 
         const newUser = await userModel.createUser(pool, {
             name,
@@ -99,7 +76,7 @@ export const createUser = async (req, res) => {
         res.status(201).json(newUser);
     } catch (error) {
         console.error(error);
-        if (error.code === '23505') { // Violation de contrainte unique
+        if (error.code === '23505') {
             res.status(409).json({ error: "Email or username already exists" });
         } else {
             res.sendStatus(500);
@@ -107,16 +84,12 @@ export const createUser = async (req, res) => {
     }
 };
 
-/**
- * Mettre à jour l'utilisateur connecté
- */
 export const updateUser = async (req, res) => {
     try {
         let updateData = { ...req.body };
 
-        // Si un nouveau mot de passe est fourni, le hasher
         if (updateData.password) {
-            updateData.password_hash = await argon2.hash(updateData.password);
+            updateData.password_hash = await hashPassword(updateData.password);
             delete updateData.password;
         }
 
@@ -133,9 +106,6 @@ export const updateUser = async (req, res) => {
     }
 };
 
-/**
- * Supprimer un utilisateur (admin uniquement)
- */
 export const deleteUser = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -155,14 +125,38 @@ export const deleteUser = async (req, res) => {
     }
 };
 
-/**
- * Obtenir le profil de l'utilisateur connecté
- */
 export const getMyProfile = async (req, res) => {
     try {
         const user = await userModel.readUserById(pool, req.session.id);
         if (user) {
             res.json(user);
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+};
+
+export const updateUserById = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.sendStatus(400);
+        }
+
+        let updateData = { ...req.body };
+
+        if (updateData.password) {
+            updateData.password_hash = await hashPassword(updateData.password);
+            delete updateData.password;
+        }
+
+        const updatedUser = await userModel.updateUser(pool, id, updateData);
+
+        if (updatedUser) {
+            res.json(updatedUser);
         } else {
             res.sendStatus(404);
         }

@@ -1,5 +1,3 @@
-// file: database/transaction.js
-// Fonction transactionnelle réutilisable : prend le pool, les données du report et l'userId.
 export async function createReportWithInitialVote(pool, reportData, userId) {
     const client = await pool.connect();
     try {

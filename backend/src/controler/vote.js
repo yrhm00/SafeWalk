@@ -1,9 +1,5 @@
 import { pool } from "../../database/database.js";
 import * as voteModel from "../model/vote.js";
-
-/**
- * Obtenir les votes d'un rapport avec résumé
- */
 export const getVotesByReport = async (req, res) => {
     try {
         const report_id = parseInt(req.params.reportId);
@@ -26,9 +22,6 @@ export const getVotesByReport = async (req, res) => {
     }
 };
 
-/**
- * Créer ou mettre à jour un vote
- */
 export const addVote = async (req, res) => {
     try {
         const { report_id, value } = req.body;
@@ -50,9 +43,6 @@ export const addVote = async (req, res) => {
     }
 };
 
-/**
- * Supprimer un vote
- */
 export const removeVote = async (req, res) => {
     try {
         const { report_id } = req.body;
@@ -73,9 +63,6 @@ export const removeVote = async (req, res) => {
     }
 };
 
-/**
- * Obtenir le vote de l'utilisateur connecté pour un rapport
- */
 export const getMyVote = async (req, res) => {
     try {
         const report_id = parseInt(req.params.reportId);

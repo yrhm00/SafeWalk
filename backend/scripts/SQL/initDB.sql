@@ -1,4 +1,3 @@
--- SafeWalk Database Schema with PostGIS for geospatial features
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- ========== ENUM ==========
@@ -89,16 +88,17 @@ CREATE TABLE vote (
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
--- users (passwords hashed with argon2)
--- Default password for all users: "password"
--- Admin user: email=admin@safewalk.local, password=admin
+-- users (Générés avec Argon2 + Pepper 'cecinestpasunpepper')
+-- Mot de passe Admin : 'admin'
+-- Mot de passe Citoyens : 'password'
 INSERT INTO users (name, username, email, password_hash, role) VALUES
-                                                                   ('Admin SafeWalk', 'admin', 'admin@safewalk.local', '$argon2id$v=19$m=65536,t=3,p=4$CoaYz4UVAP+xWqT4kzh7jA$VZjjHZds8B5OxWYqbKq9BoX2g+/aJHvi7o7t+DJq1sg', 'admin'),
-                                                                   ('Yassin Rhouma', 'yassin', 'yassin@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$L2zmHtZW6iQ2zOV1wLUcYw$ZQ1cWfVTjJxdqRpz+sBOZnZvUmLc/m3GNjvB6id6aNA', 'citizen'),
-                                                                   ('Florian Dupont', 'florian', 'florian@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$L2zmHtZW6iQ2zOV1wLUcYw$ZQ1cWfVTjJxdqRpz+sBOZnZvUmLc/m3GNjvB6id6aNA', 'citizen'),
-                                                                   ('Abou Bakar', 'aboub', 'aboub@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$L2zmHtZW6iQ2zOV1wLUcYw$ZQ1cWfVTjJxdqRpz+sBOZnZvUmLc/m3GNjvB6id6aNA', 'citizen'),
-                                                                   ('Emmanuel Lemoine', 'emma', 'emma@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$L2zmHtZW6iQ2zOV1wLUcYw$ZQ1cWfVTjJxdqRpz+sBOZnZvUmLc/m3GNjvB6id6aNA', 'citizen'),
-                                                                   ('Yassin Admin', 'yassadmin', 'yassinadmin@admin.com', '$argon2id$v=19$m=65536,t=3,p=4$CoaYz4UVAP+xWqT4kzh7jA$VZjjHZds8B5OxWYqbKq9BoX2g+/aJHvi7o7t+DJq1sg', 'admin');
+('Admin SafeWalk', 'admin', 'admin@safewalk.local', '$argon2id$v=19$m=65536,t=3,p=4$kVS7ToU1lNU+0M/F/CwNBQ$twzDADpN63spGSnzae1CW2O7ndJkOntZ4Exj7oL3gEE', 'admin'),
+('Yassin Rhouma', 'yassin', 'yassin@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3SRVPFYX2s80NGa54HQnsA$pQSmZVTtn3UvRxdofUagfQvDzodsIxcCmpxU+Knv/DY', 'citizen'),
+('Florian Dupont', 'florian', 'florian@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3SRVPFYX2s80NGa54HQnsA$pQSmZVTtn3UvRxdofUagfQvDzodsIxcCmpxU+Knv/DY', 'citizen'),
+('Abou Bakar', 'aboub', 'aboub@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3SRVPFYX2s80NGa54HQnsA$pQSmZVTtn3UvRxdofUagfQvDzodsIxcCmpxU+Knv/DY', 'citizen'),
+('Emmanuel Lemoine', 'emma', 'emma@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3SRVPFYX2s80NGa54HQnsA$pQSmZVTtn3UvRxdofUagfQvDzodsIxcCmpxU+Knv/DY', 'citizen'),
+('Yassin Admin', 'yassadmin', 'yassinadmin@admin.com', '$argon2id$v=19$m=65536,t=3,p=4$kVS7ToU1lNU+0M/F/CwNBQ$twzDADpN63spGSnzae1CW2O7ndJkOntZ4Exj7oL3gEE', 'admin');
+
 
 
 -- Report_Types
