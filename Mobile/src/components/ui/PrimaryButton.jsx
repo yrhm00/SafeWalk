@@ -1,23 +1,24 @@
-import { Text, TouchableOpacity, StyleSheet } from "react-native";
-import { COLORS } from "../../styles/colors";
+import { Text, TouchableOpacity } from "react-native";
+import { colors, spacing, typography } from "../../styles";
 
 export default function PrimaryButton({ title, onPress }) {
   return (
-    <TouchableOpacity style={styles.btn} onPress={onPress}>
+    <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.85}>
       <Text style={styles.text}>{title}</Text>
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  btn: {
-    backgroundColor: COLORS.primary,
-    padding: 14,
-    borderRadius: 10,
+const styles = {
+  button: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    borderRadius: 12,
     alignItems: "center",
   },
   text: {
-    color: "white",
-    fontWeight: "700",
+    color: colors.white,
+    fontSize: typography.body.fontSize,
+    fontWeight: "600",
   },
-});
+};

@@ -1,35 +1,12 @@
-import { StyleSheet } from "react-native";
-import { COLORS } from "./colors";
+import { colors } from "./colors";
 
-export const globalStyles = StyleSheet.create({
-  page: {
+export const globalStyles = {
+  screen: {
     flex: 1,
-    backgroundColor: COLORS.lightBackground,
-    padding: 20,
+    backgroundColor: colors.background,
   },
-
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: COLORS.textDark,
-    textAlign: "center",
-    marginBottom: 20,
+  container: {
+    flex: 1,
+    padding: 16,
   },
-
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.gray,
-    textAlign: "center",
-    marginBottom: 10,
-  },
-
-  card: {
-    backgroundColor: COLORS.cardBackground,
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-});
+};

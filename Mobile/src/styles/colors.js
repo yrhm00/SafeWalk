@@ -1,19 +1,24 @@
-export const COLORS = {
-  primary: "#3B82F6",
-  primaryDark: "#1E40AF",
-  gradientStart: "#2563EB",
-  gradientEnd: "#1D4ED8",
+export const colors = {
+  // Brand
+  primary: "#1E88E5",
+  primaryDark: "#1565C0",
 
-  lightBackground: "#F8FAFC",
-  cardBackground: "#FFFFFF",
+  // Status
+  danger: "#E53935",
+  warning: "#FB8C00",
+  success: "#43A047",
 
-  textDark: "#1E293B",
-  textLight: "#CBD5E1",
-  border: "#E2E8F0",
+  // Neutrals
+  background: "#FFFFFF",
+  surface: "#F7F9FC",
+  border: "#E0E0E0",
 
-  success: "#22C55E",
-  warning: "#FACC15",
-  danger: "#EF4444",
+  // Text
+  textPrimary: "#111111",
+  textSecondary: "#6B7280",
+  textMuted: "#9CA3AF",
 
-  gray: "#94A3B8",
+  // Others
+  white: "#FFFFFF",
+  black: "#000000",
 };

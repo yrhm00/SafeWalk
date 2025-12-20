@@ -1,14 +1,19 @@
-import { TextInput, StyleSheet, View } from "react-native";
-import { COLORS } from "../../styles/colors";
+import { TextInput, View } from "react-native";
+import { colors, spacing, typography } from "../../styles";
 
-export default function TextField({ value, onChangeText, placeholder, secure }) {
+export default function TextField({
+  value,
+  onChangeText,
+  placeholder,
+  secure = false,
+}) {
   return (
     <View style={styles.container}>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={COLORS.gray}
+        placeholderTextColor={colors.textMuted}
         secureTextEntry={secure}
         style={styles.input}
       />
@@ -16,19 +21,18 @@ export default function TextField({ value, onChangeText, placeholder, secure }) 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     width: "100%",
-    marginBottom: 12,
   },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: COLORS.textDark,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: typography.body.fontSize,
+    color: colors.textPrimary,
   },
-});
+};
