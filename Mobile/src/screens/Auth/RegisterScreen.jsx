@@ -16,6 +16,7 @@ import {
   colors,
   shadows,
 } from "../../styles";
+import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 
 export default function RegisterScreen() {
   const [name, setName] = useState("");
@@ -31,11 +32,13 @@ export default function RegisterScreen() {
   };
 
   return (
+  
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={globalStyles.screen}>
+        <SafeWalkHeader title="Register" showBack/>
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
