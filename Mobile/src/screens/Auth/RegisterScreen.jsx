@@ -38,7 +38,7 @@ export default function RegisterScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={globalStyles.screen}>
-        <SafeWalkHeader title="Register" showBack/>
+   
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
