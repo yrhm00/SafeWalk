@@ -14,6 +14,7 @@ import {
   globalStyles,
   shadows,
   severityColor,
+  typography,
 } from "../../styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -56,8 +57,8 @@ export default function HomeScreen({ navigation }) {
               onPress={() => navigation.navigate("DangerDetails", { report })}
             >
               <View style={styles.callout}>
-                <Text style={styles.title}>{report.title}</Text>
-                <Text style={styles.subtitle}>Severity: {report.severity}</Text>
+                <Text style={typography.h3}>{report.title}</Text>
+                <Text style={typography.small}>Severity: {report.severity}</Text>
               </View>
             </Callout>
           </Marker>
@@ -154,12 +155,5 @@ const styles = {
     padding: 10,
     borderRadius: 10,
     minWidth: 140,
-  },
-  title: {
-    fontWeight: "600",
-  },
-  subtitle: {
-    fontSize: 12,
-    color: "#666",
   },
 };
