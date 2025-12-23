@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { typography, spacing, colors } from "../../styles";
+import { typography, spacing, colors, shadows } from "../../styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SafeWalkHeader({
@@ -11,7 +11,7 @@ export default function SafeWalkHeader({
   const navigation = useNavigation();
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.container}>
         {showBack ? (
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -39,6 +39,7 @@ const styles = {
   safe: {
     backgroundColor: colors.white,
   },
+  // SafeWalkHeader styles
   container: {
     height: 56,
     paddingHorizontal: spacing.md,
@@ -46,5 +47,8 @@ const styles = {
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: colors.white,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    ...shadows.card,
   },
 };

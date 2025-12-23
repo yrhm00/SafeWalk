@@ -1,43 +1,91 @@
-import { View, Text, StyleSheet} from "react-native";
+import { useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import MapView, { Marker, Callout } from "react-native-maps";
+import { useNavigation } from "@react-navigation/native";
+
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
-import { colors, spacing, globalStyles } from "../../styles";
-import { SafeAreaView } from "react-native-safe-area-context";
+import FilterBar from "../../components/danger/FilterBar";
+
+import { fakeReports } from "../../data/fakeReports";
+
+import {
+  colors,
+  spacing,
+  globalStyles,
+  shadows,
+  severityColor,
+} from "../../styles";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
+  const headerOffset = insets.top + HEADER_HEIGHT;
+  const searchTop = headerOffset + spacing.sm;
+  const filtersTop = searchTop + SEARCH_HEIGHT + spacing.sm;
+
+  const [filter, setFilter] = useState("all");
+
+  const filteredReports =
+    filter === "all"
+      ? fakeReports
+      : fakeReports.filter((r) => r.severity === filter);
+
   return (
+    <View style={globalStyles.container}>
+      {/* MAP FULL SCREEN */}
+      <MapView
+        style={StyleSheet.absoluteFillObject}
+        initialRegion={{
+          latitude: 48.8566,
+          longitude: 2.3522,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }}
+      >
+        {filteredReports.map((report) => (
+          <Marker
+            key={report.id}
+            coordinate={{
+              latitude: report.latitude,
+              longitude: report.longitude,
+            }}
+            pinColor={severityColor[report.severity]}
+          >
+            <Callout
+              tooltip
+              onPress={() => navigation.navigate("DangerDetails", { report })}
+            >
+              <View style={styles.callout}>
+                <Text style={styles.title}>{report.title}</Text>
+                <Text style={styles.subtitle}>Severity: {report.severity}</Text>
+              </View>
+            </Callout>
+          </Marker>
+        ))}
+      </MapView>
 
-      <View style={globalStyles.container}>
-
-        {/* MAP (placeholder) */}
-        <View style={styles.map}>
-          <Text style={styles.mapText}>🗺️ Interactive Map View</Text>
-        </View>
-
-        {/* HEADER */}
-        <View style={styles.header}>
-          <SafeWalkHeader />
-        </View>
-
-        {/* SEARCH BAR */}
-        <View style={styles.search}>
-          <Text style={styles.searchText}>
-              🔍 Search location...
-            </Text>
-        </View>
-
-        {/* FILTERS */}
-        <View style={styles.filters}>
-          {["Crime", "Harassment", "Poor Lighting", "All"].map((item) => (
-            <View key={item} style={styles.filterChip}>
-              <Text style={styles.filterText}>{item}</Text>
-            </View>
-          ))}
-        </View>
-
+      {/* HEADER */}
+      <View style={styles.header}>
+        <SafeWalkHeader />
       </View>
 
+      {/* SEARCH BAR */}
+      <View style={[styles.search, { top: searchTop }]}>
+        <Text style={styles.searchPlaceholder}>🔍 Search location...</Text>
+      </View>
+
+      {/* FILTERS */}
+      <FilterBar
+        active={filter}
+        onChange={setFilter}
+        style={{ top: filtersTop }}
+      />
+    </View>
   );
 }
+
+const HEADER_HEIGHT = 56;
+const SEARCH_HEIGHT = 44;
 
 const styles = {
   container: {
@@ -66,22 +114,23 @@ const styles = {
 
   search: {
     position: "absolute",
-    top: 90,
     left: spacing.md,
     right: spacing.md,
+    height: SEARCH_HEIGHT,
     backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: 12,
-    elevation: 4,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.md,
+    borderRadius: 14,
+    ...shadows.card,
+    justifyContent: "center",
   },
-
-  searchText: {
+  searchPlaceholder: {
     color: colors.textMuted,
+    fontSize: 15,
   },
 
   filters: {
     position: "absolute",
-    top: 150,
     left: spacing.md,
     right: spacing.md,
     flexDirection: "row",
@@ -100,5 +149,17 @@ const styles = {
     fontSize: 12,
     fontWeight: "600",
   },
+  callout: {
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 10,
+    minWidth: 140,
+  },
+  title: {
+    fontWeight: "600",
+  },
+  subtitle: {
+    fontSize: 12,
+    color: "#666",
+  },
 };
-
