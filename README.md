@@ -68,7 +68,12 @@ Le backend doit être lancé en premier pour que les applications frontend et mo
 
 ### 3. Mobile (Application iOS/Android)
 
-1.  Ouvrez un nouveau terminal et naviguez dans le dossier `mobile` :
+1.  **Important** : Configurez l'adresse IP de votre API.
+    *   Ouvrez `mobile/src/config.js`.
+    *   Remplacez l'adresse IP (`http://172.x.x.x:3001/...`) par l'adresse IP locale de votre ordinateur (ex: `http://192.168.1.15:3001/api/v1`).
+    *   *Note : `localhost` ne fonctionne pas sur un téléphone physique, il faut l'IP de votre réseau.*
+
+2.  Ouvrez un nouveau terminal et naviguez dans le dossier `mobile` :
     ```bash
     cd mobile
     ```
