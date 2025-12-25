@@ -20,6 +20,13 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 ## 🚀 Installation et Lancement
 
+### 0. Configuration Initiale
+
+Avant de lancer les différentes parties, copiez le fichier de configuration (qui contient les vraies données) :
+```bash
+cp .env.example .env
+```
+
 ### 1. Backend (Serveur API)
 
 Le backend doit être lancé en premier pour que les applications frontend et mobile puissent fonctionner.
@@ -33,8 +40,10 @@ Le backend doit être lancé en premier pour que les applications frontend et mo
     npm install
     ```
 3.  Configurez vos variables d'environnement :
-    *   Créez un fichier `.env` dans le dossier `backend`.
-    *   Ajoutez-y les configurations nécessaires (Port, Database URL, JWT Secret, etc.).
+    *   Créez un fichier `.env` dans le dossier `backend` ou copiez celui de la racine :
+    ```bash
+    cp ../.env .env
+    ```
 4.  Lancez le serveur :
     ```bash
     npm run dev
