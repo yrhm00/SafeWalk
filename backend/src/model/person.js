@@ -14,7 +14,9 @@ export const readPerson = async (clientSQL, { email, password }) => {
         if (isPasswordValid) {
             return {
                 id: user.id,
-                role: user.role
+                role: user.role,
+                username: user.username,
+                email: user.email
             };
         } else {
             return { id: null, role: null };

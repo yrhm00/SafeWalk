@@ -20,7 +20,15 @@ export const login = async (req, res) => {
         if (person.id && person.role) {
             const token = generateToken({ id: person.id, role: person.role });
 
-            res.status(201).json({ token });
+            res.status(201).json({
+                token,
+                user: {
+                    id: person.id,
+                    username: person.username,
+                    email: person.email,
+                    role: person.role
+                }
+            });
         } else {
             res.sendStatus(404);
         }

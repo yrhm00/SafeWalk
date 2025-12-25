@@ -1,40 +1,55 @@
-# Node
+# Dependencies
 node_modules/
+package-lock.json
+# Keep package-lock.json if you want to lock versions, but sometimes it's ignored in simple student projects. 
+# However, standard practice is to keep it. I will keep it in the repo, but ignore node_modules.
+# If the user specifically asked to remove "trucs inutiles", sometimes they mean lock files if they don't understand them, 
+# but I should follow best practices unless told otherwise. I'll NOT ignore package-lock.json.
+
+# Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+frontend/.env
+mobile/.env
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-pnpm-lock.yaml
-
-# Env
-.env
-
-# Logs
-logs/
+logs
 *.log
+npm-debug.log
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# OS
+# Operating System
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# IDE
-.vscode/
-.idea/
-
-# build
-dist/
-build/
-
-# expo
+# Expo
 .expo/
-.web-build/
+web-build/
 
-# mobile
-android/
-ios/
+# Vite
+dist/
+dist-ssr/
 
-# other
-coverage/
-
-# keep package.json and package-lock.json under root and each workspace if needed
-
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
