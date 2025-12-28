@@ -22,33 +22,21 @@ Avant de commencer, assurez-vous d'avoir installé :
 
 ### 0. Configuration Initiale
 
-Avant de lancer les différentes parties, copiez le fichier de configuration (qui contient les vraies données) :
-```bash
-cp .env.example .env
-```
+1.  Copiez le fichier de configuration global :
+    ```bash
+    cp .env.example .env
+    ```
 
-### 1. Backend (Serveur API)
+### 1. Backend & Base de Données (Via Docker)
 
-Le backend doit être lancé en premier pour que les applications frontend et mobile puissent fonctionner.
+Cette commande va créer la base de données, l'initialiser avec les tables nécessaires, installer les dépendances du backend et lancer le serveur API.
 
-1.  Ouvrez un terminal et naviguez dans le dossier `backend` :
+1.  À la racine du projet, lancez :
     ```bash
-    cd backend
+    docker compose up --build
     ```
-2.  Installez les dépendances :
-    ```bash
-    npm install
-    ```
-3.  Configurez vos variables d'environnement :
-    *   Créez un fichier `.env` dans le dossier `backend` ou copiez celui de la racine :
-    ```bash
-    cp ../.env .env
-    ```
-4.  Lancez le serveur :
-    ```bash
-    npm run dev
-    ```
-    Le serveur démarrera généralement sur `http://localhost:3000` (ou le port défini).
+    *   L'API sera accessible sur `http://localhost:3001`.
+    *   La base de données sera automatiquement initialisée.
 
 ### 2. Frontend (Dashboard Web)
 
@@ -56,39 +44,29 @@ Le backend doit être lancé en premier pour que les applications frontend et mo
     ```bash
     cd frontend
     ```
-2.  Installez les dépendances :
+2.  Installez les dépendances et lancez le site :
     ```bash
     npm install
-    ```
-3.  Lancez l'interface web :
-    ```bash
     npm run dev
     ```
-    L'application sera accessible via l'URL indiquée dans le terminal (souvent `http://localhost:5173`).
+    L'application sera accessible via l'URL indiquée (souvent `http://localhost:5173`).
 
 ### 3. Mobile (Application iOS/Android)
 
-1.  **Important** : Configurez l'adresse IP de votre API.
+1.  **Configuration IP** :
     *   Ouvrez `mobile/src/config.js`.
-    *   Remplacez l'adresse IP (`http://172.x.x.x:3001/...`) par l'adresse IP locale de votre ordinateur (ex: `http://192.168.1.15:3001/api/v1`).
-    *   *Note : `localhost` ne fonctionne pas sur un téléphone physique, il faut l'IP de votre réseau.*
+    *   Remplacez l'IP par celle de votre machine (ex: `192.168.1.x`). *Ne laissez pas localhost.*
 
 2.  Ouvrez un nouveau terminal et naviguez dans le dossier `mobile` :
     ```bash
     cd mobile
     ```
-2.  Installez les dépendances :
+3.  Installez les dépendances et lancez Expo :
     ```bash
     npm install
+    npx expo start
     ```
-3.  Lancez Expo :
-    ```bash
-    npm start
-    ```
-4.  Un QR code s'affichera.
-    *   **Android** : Scannez-le avec l'application "Expo Go".
-    *   **iOS** : Scannez-le avec l'application Appareil photo (nécessite Expo Go installé).
-    *   Vous pouvez aussi appuyer sur `a` pour lancer un émulateur Android ou `i` pour un simulateur iOS (si configurés).
+4.  Scannez le QR code avec l'application **Expo Go** sur votre téléphone.
 
 ---
 
