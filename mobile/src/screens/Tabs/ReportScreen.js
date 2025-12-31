@@ -35,7 +35,6 @@ export default function ReportScreen() {
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [image, setImage] = useState(null); // Base64 ou URI
 
-  // États API locaux (remplace Redux Thunks)
   const [incidentTypes, setIncidentTypes] = useState([]);
   const [zones, setZones] = useState([]);
 
