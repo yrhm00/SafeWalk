@@ -1,8 +1,11 @@
 /**
  * Lire tous les rapports
  */
-export const readAllReports = async (SQLClient, limit = 20, offset = 0) => {
-    const reportsQuery = `
+/**
+ * Lire tous les rapports avec filtres optionnels
+ */
+export const readAllReports = async (SQLClient, limit = 20, offset = 0, params = {}) => {
+    let query = `
         SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name,
                COUNT(CASE WHEN v.value = TRUE THEN 1 END) as upvotes,
                COUNT(CASE WHEN v.value = FALSE THEN 1 END) as downvotes
@@ -11,11 +14,37 @@ export const readAllReports = async (SQLClient, limit = 20, offset = 0) => {
         LEFT JOIN report_type rt ON r.type_id = rt.id
         LEFT JOIN zone z ON r.zone_id = z.id
         LEFT JOIN vote v ON r.id = v.report_id
+        WHERE 1=1
+    `;
+
+    const queryParams = [limit, offset];
+    let paramCounter = 3;
+
+    if (params.severity) {
+        query += ` AND r.severity = $${paramCounter}`;
+        queryParams.push(params.severity);
+        paramCounter++;
+    }
+
+    if (params.type_id) {
+        query += ` AND r.type_id = $${paramCounter}`;
+        queryParams.push(params.type_id);
+        paramCounter++;
+    }
+
+    if (params.days) {
+        query += ` AND r.created_at >= NOW() - INTERVAL '1 day' * $${paramCounter}`;
+        queryParams.push(params.days);
+        paramCounter++;
+    }
+
+    query += `
         GROUP BY r.id, u.name, rt.label, z.name
         ORDER BY r.created_at DESC
         LIMIT $1 OFFSET $2
     `;
-    const reportsResult = await SQLClient.query(reportsQuery, [limit, offset]);
+
+    const reportsResult = await SQLClient.query(query, queryParams);
     const reports = reportsResult.rows;
 
     const commentsQuery = `

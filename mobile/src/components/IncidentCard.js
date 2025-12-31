@@ -1,117 +1,100 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../constants/theme';
 
-// Ce composant reçoit les données d'un incident via "props"
 export default function IncidentCard({ item, onPress }) {
 
-  // On choisit la couleur de la bordure selon le type d'incident
-  const getBorderColor = (type) => {
+  const getIncidentMeta = (type) => {
     switch (type) {
-      case 'Suspicious activity': return '#FF3B30';
-      case 'Theft': return '#FF3B30';
-      case 'Harassment': return '#FF9500';
-      case 'Poor lighting': return '#FFCC00';
-      case 'Icy road': return '#00BCD4';
-      case 'Flooded area': return '#007AFF';
-      case 'Broken sidewalk': return '#8E8E93';
-      default: return '#007AFF';
+      case 'Suspicious activity': return { icon: 'eye', color: '#FF3B30', label: 'Suspicious' };
+      case 'Poor lighting': return { icon: 'flashlight', color: '#FFCC00', label: 'Dark Spot' };
+      case 'Icy road': return { icon: 'snow', color: '#00BCD4', label: 'Icy' };
+      case 'Flooded area': return { icon: 'water', color: '#007AFF', label: 'Flood' };
+      case 'Broken sidewalk': return { icon: 'alert-circle', color: '#8E8E93', label: 'Broken' };
+      default: return { icon: 'warning', color: '#007AFF', label: 'Incident' };
     }
   };
 
   const displayType = item.type_label || item.type || "Unknown";
-  const displayDate = item.created_at ? new Date(item.created_at).toLocaleString() : item.date;
+  const meta = getIncidentMeta(displayType);
+  const displayDate = item.created_at ? new Date(item.created_at).toLocaleDateString() : item.date;
 
   return (
-    <View style={[styles.card, { borderLeftColor: getBorderColor(displayType) }]}>
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
+      <View style={styles.card}>
+        {/* Left Icon Strip */}
+        <View style={[styles.iconStrip, { backgroundColor: meta.color + '20' }]}>
+          <Ionicons name={meta.icon} size={24} color={meta.color} />
+        </View>
 
-      {/* En-tête de la carte : Type et Statut */}
-      <View style={styles.header}>
-        <Text style={styles.type}>{displayType}</Text>
-        <View style={[
-          styles.statusBadge,
-          // Si c'est "Resolved", on met le badge en vert, sinon gris
-          item.status === 'Resolved' ? styles.statusResolved : styles.statusPending
-        ]}>
-          <Text style={styles.statusText}>{item.status}</Text>
+        {/* Content */}
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>{meta.label}</Text>
+            <Text style={styles.date}>{displayDate}</Text>
+          </View>
+          <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
+
+          <View style={styles.footer}>
+            <View style={[
+              styles.badge,
+              item.status === 'validated' ? styles.badgeValidated :
+                item.status === 'resolved' ? styles.badgeResolved :
+                  styles.badgePending
+            ]}>
+              <Text style={[
+                styles.badgeText,
+                item.status === 'validated' ? styles.textValidated :
+                  item.status === 'resolved' ? styles.textResolved :
+                    styles.textPending
+              ]}>
+                {item.status}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Arrow */}
+        <View style={styles.arrow}>
+          <Ionicons name="chevron-forward" size={20} color="#ccc" />
         </View>
       </View>
-
-      {/* Description et Date */}
-      <Text style={styles.description} numberOfLines={2}>
-        {item.description}
-      </Text>
-      <Text style={styles.date}>{displayDate}</Text>
-
-      {/* Bouton "View Details" */}
-      <TouchableOpacity style={styles.button} onPress={onPress}>
-        <Text style={styles.buttonText}>View Details</Text>
-        <Ionicons name="arrow-forward" size={16} color="#007AFF" />
-      </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-    // Ombre légère (Card style)
+    borderRadius: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3, // Pour Android
-    borderLeftWidth: 5, // La barre colorée à gauche
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+  iconStrip: {
+    width: 50, height: 50, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center',
+    marginRight: 15,
   },
-  type: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusPending: {
-    backgroundColor: '#FFF3CD', // Fond jaune clair
-  },
-  statusResolved: {
-    backgroundColor: '#D4EDDA', // Fond vert clair
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  description: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 10,
-    lineHeight: 20,
-  },
-  date: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 15,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end', // Aligne à droite
-  },
-  buttonText: {
-    color: '#007AFF',
-    fontWeight: '600',
-    marginRight: 5,
-  },
+  content: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+  title: { fontWeight: 'bold', fontSize: 16, color: '#333' },
+  date: { fontSize: 12, color: '#999' },
+  description: { fontSize: 13, color: '#666', lineHeight: 18, marginBottom: 8 },
+  footer: { flexDirection: 'row' },
+  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  badgePending: { backgroundColor: '#FFF8E1' },
+  badgeValidated: { backgroundColor: '#E8F5E9' },
+  badgeResolved: { backgroundColor: '#E3F2FD' },
+  textPending: { color: '#FFA000', fontSize: 10, fontWeight: 'bold' },
+  textValidated: { color: '#4CAF50', fontSize: 10, fontWeight: 'bold' },
+  textResolved: { color: '#1976D2', fontSize: 10, fontWeight: 'bold' },
+  arrow: { paddingLeft: 10 }
 });

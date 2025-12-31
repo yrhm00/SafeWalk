@@ -1,3 +1,6 @@
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchReports, selectAllReports } from '../../store/reportsSlice';
+
 import React, { useState } from 'react';
 import {
   View,
@@ -9,30 +12,24 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { API_URL } from '../../config';
-import IncidentCard from '../../components/IncidentCard'; // On importe notre composant
+// API_URL n'est plus nécessaire ici si on passe par le slice
+import IncidentCard from '../../components/IncidentCard';
 
 export default function IncidentListScreen({ navigation }) {
-  const [incidents, setIncidents] = useState([]);
+  const dispatch = useDispatch();
+  const incidents = useSelector(selectAllReports); // On réutilise le même selector que MapScreen !
+
   const [searchText, setSearchText] = useState('');
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchIncidents();
-    }, [])
+      // Rafraîchir les données quand on arrive sur cet écran
+      dispatch(fetchReports());
+    }, [dispatch])
   );
 
-  const fetchIncidents = async () => {
-    try {
-      const response = await fetch(`${API_URL}/reports`);
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setIncidents(data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  // Plus de fetchIncidents local !
+
 
   // Fonction pour filtrer la liste selon la recherche
   const filteredData = incidents.filter(item => {
@@ -41,6 +38,14 @@ export default function IncidentListScreen({ navigation }) {
     return type.toLowerCase().includes(searchText.toLowerCase()) ||
       desc.toLowerCase().includes(searchText.toLowerCase());
   });
+
+  const EmptyListState = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="checkmark-circle-outline" size={80} color="#4CAF50" />
+      <Text style={styles.emptyText}>Aucun incident signalé.</Text>
+      <Text style={styles.emptySubText}>Tout est calme !</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -70,8 +75,9 @@ export default function IncidentListScreen({ navigation }) {
             onPress={() => navigation.navigate('IncidentDetail', { incident: item })}
           />
         )}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, filteredData.length === 0 && { flex: 1 }]}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={EmptyListState}
       />
     </View>
   );
@@ -116,6 +122,24 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
+    paddingHorizontal: 20,
     paddingBottom: 20,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 50,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20,
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
   },
 });

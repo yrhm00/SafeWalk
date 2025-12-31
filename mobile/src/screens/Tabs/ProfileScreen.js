@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import * as Notifications from 'expo-notifications';
 import {
   View,
   Text,
@@ -14,48 +16,36 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Still need for manual clear if wanted, or rely on slice
 import { API_URL } from '../../config';
 
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../store/authSlice';
+
 export default function ProfileScreen({ navigation }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { user } = useSelector(state => state.auth);
+
+  const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   // Editable fields
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState(user?.username || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [avatar, setAvatar] = useState(null); // Base64 or URI
 
+  // Sync state with Redux user change
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      // Assuming there is an endpoint /users/me or similar, otherwise we might need to store user info on login
-      // For now, let's assume we stored user info in AsyncStorage on login or we fetch it.
-      // If the backend doesn't have /me, we'll rely on stored data or mock it for now.
-
-      // Let's check what we stored in LoginScreen.js. 
-      // LoginScreen stores 'token' and 'user'. let's use that.
-      const storedUser = await AsyncStorage.getItem('user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setUsername(parsedUser.username || '');
-        setEmail(parsedUser.email || '');
-      }
-    } catch (e) {
-      console.error("Failed to load profile", e);
-    } finally {
-      setLoading(false);
+    if (user) {
+      setUsername(user.username || '');
+      setEmail(user.email || '');
     }
-  };
+  }, [user]);
 
   const handleLogout = async () => {
-    await AsyncStorage.clear();
+    await SecureStore.deleteItemAsync('token');
+    await AsyncStorage.removeItem('user');
+    dispatch(logout());
     navigation.reset({
       index: 0,
       routes: [{ name: 'Login' }],
@@ -201,6 +191,28 @@ export default function ProfileScreen({ navigation }) {
           {!isEditing && (
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
               <Text style={styles.logoutButtonText}>Log Out</Text>
+            </TouchableOpacity>
+          )}
+
+          {!isEditing && (
+            <TouchableOpacity
+              style={[styles.saveButton, { marginTop: 15, backgroundColor: '#5856D6' }]}
+              onPress={async () => {
+                try {
+                  await Notifications.scheduleNotificationAsync({
+                    content: {
+                      title: "🔔 Test Notification",
+                      body: "This is a test notification to demonstrate the feature.",
+                    },
+                    trigger: null,
+                  });
+                  Alert.alert("Sent!", "Check your notification center.");
+                } catch (e) {
+                  Alert.alert("Error", "Could not trigger notification.");
+                }
+              }}
+            >
+              <Text style={styles.saveButtonText}>Test Notification</Text>
             </TouchableOpacity>
           )}
         </View>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // On réutilise les icônes
 import { API_URL } from '../../config';
+import { TEXTS } from '../../constants/texts';
 
 export default function SignupScreen({ navigation }) {
   // Les états pour stocker les données du formulaire
@@ -20,38 +22,50 @@ export default function SignupScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [agreed, setAgreed] = useState(false); // Est-ce que la case est cochée ?
 
+  const validatePassword = (pwd) => {
+    if (pwd.length < 8) return TEXTS.errors.passwordLength;
+    if (!/[A-Z]/.test(pwd)) return TEXTS.errors.passwordCase;
+    if (!/[a-z]/.test(pwd)) return TEXTS.errors.passwordCase;
+    if (!/[0-9]/.test(pwd)) return TEXTS.errors.passwordNumber;
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) return TEXTS.errors.passwordSpecial;
+    return null;
+  };
+
   const handleSignup = async () => {
     if (!agreed) {
-      alert("Please agree to the terms.");
+      alert(TEXTS.errors.acceptTerms);
       return;
     }
     if (!name || !username || !email || !password) {
-      alert("Please fill in all fields.");
+      alert(TEXTS.errors.fillFields);
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      alert(passwordError);
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          username,
-          email,
-          password
-        })
+      const response = await axios.post(`${API_URL}/users`, {
+        name,
+        username,
+        email,
+        password
       });
 
       if (response.status === 201) {
         alert("Account created! Please log in.");
         navigation.navigate('Login');
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || "Signup failed");
       }
     } catch (e) {
       console.error(e);
-      alert("Network error");
+      if (e.response) {
+        alert(e.response.data.error || TEXTS.errors.generic);
+      } else {
+        alert(TEXTS.errors.network);
+      }
     }
   };
 
@@ -64,8 +78,8 @@ export default function SignupScreen({ navigation }) {
 
         {/* En-tête */}
         <View style={styles.header}>
-          <Text style={styles.title}>SafeWalk</Text>
-          <Text style={styles.subtitle}>Create your account to get started</Text>
+          <Text style={styles.title}>{TEXTS.appName}</Text>
+          <Text style={styles.subtitle}>{TEXTS.auth.signupSubtitle}</Text>
         </View>
 
         {/* Formulaire */}
@@ -73,7 +87,7 @@ export default function SignupScreen({ navigation }) {
           <Text style={styles.label}>Full Name</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter full name"
+            placeholder={TEXTS.auth.namePlaceholder}
             value={name}
             onChangeText={setName}
           />
@@ -81,7 +95,7 @@ export default function SignupScreen({ navigation }) {
           <Text style={styles.label}>Username</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter username"
+            placeholder={TEXTS.auth.usernamePlaceholder}
             value={username}
             onChangeText={setUsername}
           />
@@ -89,7 +103,7 @@ export default function SignupScreen({ navigation }) {
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter email"
+            placeholder={TEXTS.auth.emailPlaceholder}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -99,7 +113,7 @@ export default function SignupScreen({ navigation }) {
           <Text style={styles.label}>Password</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter password"
+            placeholder={TEXTS.auth.passwordPlaceholder}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -115,19 +129,19 @@ export default function SignupScreen({ navigation }) {
               size={24}
               color={agreed ? "#007AFF" : "#666"}
             />
-            <Text style={styles.checkboxLabel}>I agree to the Terms & Conditions</Text>
+            <Text style={styles.checkboxLabel}>{TEXTS.auth.agreeTerms}</Text>
           </TouchableOpacity>
 
           {/* Bouton Créer Compte */}
           <TouchableOpacity style={styles.button} onPress={handleSignup}>
-            <Text style={styles.buttonText}>Create Account</Text>
+            <Text style={styles.buttonText}>{TEXTS.auth.signUpButton}</Text>
           </TouchableOpacity>
 
           {/* Lien retour vers Login */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+            <Text style={styles.footerText}>{TEXTS.auth.hasAccount}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.link}>Sign In</Text>
+              <Text style={styles.link}>{TEXTS.auth.signInButton}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Switch,
   Modal,
   Alert,
   Image,
@@ -16,10 +17,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TEXTS } from '../../constants/texts';
 import { API_URL } from '../../config';
+import { fetchReports } from '../../store/reportsSlice';
 
 export default function ReportScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const { token } = useSelector(state => state.auth);
+
   // États du formulaire
   const [description, setDescription] = useState('');
   const [incidentType, setIncidentType] = useState(null);
@@ -28,12 +33,12 @@ export default function ReportScreen({ navigation }) {
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [image, setImage] = useState(null); // Base64 ou URI
 
-  // Gestion de la fenêtre de choix (Modal)
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // États des données API
+  // États API locaux (remplace Redux Thunks)
   const [incidentTypes, setIncidentTypes] = useState([]);
   const [zones, setZones] = useState([]);
+
+  // Gestion de la fenêtre de choix (Modal)
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Récupération de la position et des données initiales (Types, Zones)
   useEffect(() => {
@@ -50,26 +55,20 @@ export default function ReportScreen({ navigation }) {
       setLocation(loc);
       setLoadingLocation(false);
 
-      // 2. Récupérer les données depuis l'API (Types et Zones)
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) return; // Si pas de token, on ne peut rien faire (ou on redirige)
+      // 2. Récupérer les données depuis l'API (Types et Zones) avec AXIOS DIRECT
+      if (token) {
+        try {
+          const typesRes = await axios.get(`${API_URL}/report-types`);
+          if (Array.isArray(typesRes.data)) setIncidentTypes(typesRes.data);
 
-        // Fetch Types
-        const typesReq = await fetch(`${API_URL}/report-types`);
-        const typesData = await typesReq.json();
-        if (Array.isArray(typesData)) setIncidentTypes(typesData);
-
-        // Fetch Zones (Pour en sélectionner une par défaut)
-        const zonesReq = await fetch(`${API_URL}/zones`);
-        const zonesData = await zonesReq.json();
-        if (Array.isArray(zonesData)) setZones(zonesData);
-
-      } catch (e) {
-        console.error("Erreur de chargement", e);
+          const zonesRes = await axios.get(`${API_URL}/zones`);
+          if (Array.isArray(zonesRes.data)) setZones(zonesRes.data);
+        } catch (e) {
+          console.log("Erreur chargement types/zones", e);
+        }
       }
     })();
-  }, []);
+  }, [token]);
 
   const pickImage = () => {
     Alert.alert(
@@ -120,28 +119,29 @@ export default function ReportScreen({ navigation }) {
     }
   };
 
-  // Envoi du formulaire
+  // Envoi du formulaire avec AXIOS DIRECT
   const handleSubmit = async () => {
     if (!incidentType) {
-      Alert.alert("Manquant", "Veuillez sélectionner un type d'incident.");
+      Alert.alert(TEXTS.report.errorTitle, "Veuillez sélectionner un type d'incident.");
       return;
     }
     if (!location) {
-      Alert.alert("Erreur", "Position introuvable.");
+      Alert.alert(TEXTS.report.errorTitle, "Position introuvable.");
+      return;
+    }
+    if (!token) {
+      Alert.alert(TEXTS.report.errorTitle, "Vous devez être connecté.");
       return;
     }
 
     try {
-      const token = await AsyncStorage.getItem('token');
       const selectedTypeObj = incidentTypes.find(t => t.label === incidentType);
-      // On prend la première zone par défaut pour l'instant (ID 1 souvent) ou la première dispo
       const defaultZoneId = zones.length > 0 ? zones[0].id : 1;
 
       // Préparation de l'image en Base64
       let imageBase64 = null;
       if (image && image.base64) {
         imageBase64 = `data:image/jpeg;base64,${image.base64}`;
-        console.log(`Image Size: ${imageBase64.length} chars`);
       }
 
       const payload = {
@@ -155,40 +155,27 @@ export default function ReportScreen({ navigation }) {
         severity: isEmergency ? 'high' : 'low'
       };
 
-      const response = await fetch(`${API_URL}/reports`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
+      // APPEL DIRECT AXIOS
+      await axios.post(`${API_URL}/reports`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (response.ok) {
-        Alert.alert("Succès", "Signalement envoyé !");
-        navigation.navigate('Incidents');
+      Alert.alert(TEXTS.report.successTitle, TEXTS.report.successMsg);
 
-        // Reset
-        setDescription('');
-        setIncidentType(null);
-        setIsEmergency(false);
-        setImage(null);
-      } else {
-        let errorMessage = "Impossible d'envoyer le signalement";
-        try {
-          const errData = await response.json();
-          errorMessage = errData.description || errorMessage;
-        } catch (jsonErr) {
-          // Si ce n'est pas du JSON (ex: 413 Payload Too Large en texte brut)
-          const textErr = await response.text();
-          console.log("Non-JSON Error:", textErr);
-          errorMessage = textErr || errorMessage;
-        }
-        Alert.alert("Erreur", errorMessage);
-      }
+      // Refresh la liste globale via Redux pour que la map soit à jour
+      dispatch(fetchReports());
+
+      navigation.navigate('Incidents');
+
+      // Reset local fields
+      setDescription('');
+      setIncidentType(null);
+      setIsEmergency(false);
+      setImage(null);
+
     } catch (e) {
-      console.error("Network Error Details:", e);
-      Alert.alert("Erreur réseau", "Vérifiez votre connexion ou la taille de l'image.");
+      console.error("Erreur envoi", e);
+      Alert.alert(TEXTS.report.errorTitle, "Une erreur est survenue lors de l'envoi.");
     }
   };
 
@@ -199,26 +186,26 @@ export default function ReportScreen({ navigation }) {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
-        <Text style={styles.headerTitle}>Report Incident</Text>
+        <Text style={styles.headerTitle}>{TEXTS.report.title}</Text>
 
         {/* 1. TYPE D'INCIDENT */}
-        <Text style={styles.label}>Report Type</Text>
+        <Text style={styles.label}>{TEXTS.report.typeLabel}</Text>
         <TouchableOpacity
           style={styles.selector}
           onPress={() => setModalVisible(true)}
         >
           <Text style={incidentType ? styles.selectorText : styles.placeholderText}>
-            {incidentType || "Select incident type"}
+            {incidentType || TEXTS.report.typePlaceholder}
           </Text>
           <Ionicons name="chevron-down" size={20} color="#666" />
         </TouchableOpacity>
 
         {/* 2. DESCRIPTION */}
-        <Text style={styles.label}>Description</Text>
+        <Text style={styles.label}>{TEXTS.report.descLabel}</Text>
         <View style={styles.textAreaContainer}>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Describe the incident..."
+            placeholder={TEXTS.report.descPlaceholder}
             multiline
             numberOfLines={4}
             value={description}
@@ -228,14 +215,14 @@ export default function ReportScreen({ navigation }) {
           <Text style={styles.charCount}>{description.length}/500</Text>
         </View>
 
-        <Text style={styles.label}>Photo (Optional)</Text>
+        <Text style={styles.label}>{TEXTS.report.photoLabel}</Text>
         <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
           {image ? (
             <Image source={{ uri: image.uri }} style={styles.previewImage} />
           ) : (
             <View style={styles.photoPlaceholder}>
               <Ionicons name="camera" size={32} color="#666" />
-              <Text style={styles.photoText}>Add Photo</Text>
+              <Text style={styles.photoText}>{TEXTS.report.photoLabel}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -270,7 +257,7 @@ export default function ReportScreen({ navigation }) {
           />
           <View style={{ marginLeft: 10 }}>
             <Text style={[styles.checkboxLabel, isEmergency && { color: 'red' }]}>
-              Emergency Report
+              {TEXTS.report.emergencyLabel}
             </Text>
             <Text style={styles.checkboxSubLabel}>Requires immediate attention</Text>
           </View>
@@ -278,7 +265,7 @@ export default function ReportScreen({ navigation }) {
 
         {/* BOUTON ENVOYER */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit Report</Text>
+          <Text style={styles.submitButtonText}>{TEXTS.report.submitButton}</Text>
         </TouchableOpacity>
 
       </ScrollView>

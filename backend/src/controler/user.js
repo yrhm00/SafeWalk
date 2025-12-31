@@ -71,6 +71,10 @@ export const createUser = async (req, res) => {
     try {
         const { name, username, email, password, role } = req.body;
 
+        if (password.length < 8) {
+            return res.status(400).json({ error: "Password must be at least 8 characters long" });
+        }
+
         const password_hash = await hashPassword(password);
 
         const newUser = await userModel.createUser(pool, {
@@ -97,6 +101,9 @@ export const updateUser = async (req, res) => {
         let updateData = { ...req.body };
 
         if (updateData.password) {
+            if (updateData.password.length < 8) {
+                return res.status(400).json({ error: "Password must be at least 8 characters long" });
+            }
             updateData.password_hash = await hashPassword(updateData.password);
             delete updateData.password;
         }
@@ -157,6 +164,9 @@ export const updateUserById = async (req, res) => {
         let updateData = { ...req.body };
 
         if (updateData.password) {
+            if (updateData.password.length < 8) {
+                return res.status(400).json({ error: "Password must be at least 8 characters long" });
+            }
             updateData.password_hash = await hashPassword(updateData.password);
             delete updateData.password;
         }

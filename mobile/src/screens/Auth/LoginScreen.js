@@ -1,188 +1,121 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  KeyboardAvoidingView,
-  Platform
-} from 'react-native';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '../../store/authSlice';
 import { API_URL } from '../../config';
-
+import { COLORS } from '../../constants/theme';
+import { styles } from '../../styles/LoginScreen.styles';
+import { TEXTS } from '../../constants/texts';
 export default function LoginScreen({ navigation }) {
-  // Ces variables stockent ce que l'utilisateur tape (State)
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    // ... (Keep existing logic, same as before)
     if (!email || !password) {
-      alert("Please enter both email and password");
+      alert(TEXTS.errors.fillFields);
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/users/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password
-        }),
-      });
+      setIsLoading(true);
+      const response = await axios.post(`${API_URL}/users/login`, { email, password });
 
-      let data;
-      const responseText = await response.text();
-      try {
-        data = JSON.parse(responseText);
-        console.log("Login Response Data:", JSON.stringify(data));
-      } catch (e) {
-        data = { message: responseText || "Error connecting to server" };
-      }
+      const { user, token } = response.data;
+      dispatch(setCredentials({ user, token }));
 
-      if (response.ok) {
-        // Sauvegarde du token et de l'ID utilisateur
-        await AsyncStorage.setItem('token', data.token);
-        if (data.user) {
-          await AsyncStorage.setItem('user', JSON.stringify(data.user));
-          await AsyncStorage.setItem('userId', data.user.id.toString());
-        }
+      // Persist data securely
+      await SecureStore.setItemAsync('token', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
 
-        // Navigation vers l'accueil
-        navigation.replace('Home');
-      } else {
-        alert(data.message || data.error || "Login failed");
-      }
+      navigation.replace('Home');
     } catch (error) {
-      console.error(error);
-      alert("Network error. Check if backend is running.");
+      if (error.response) {
+        alert(error.response.data.message || error.response.data.error || TEXTS.errors.generic);
+      } else {
+        alert(TEXTS.errors.network);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      {/* 1. En-tête : Logo et Titre */}
-      <View style={styles.header}>
-        <View style={styles.logoBox}>
-          <Text style={{ fontSize: 40 }}>🛡️</Text>
-        </View>
-        <Text style={styles.title}>SafeWalk</Text>
-        <Text style={styles.subtitle}>Your safety companion</Text>
-      </View>
+    <View style={styles.container}>
+      <StatusBar style="light" />
+      <LinearGradient
+        colors={COLORS.gradients.login}
+        style={styles.background}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardView}
+        >
+          {/* Logo & Header */}
+          <View style={styles.header}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoEmoji}>🛡️</Text>
+            </View>
+            <Text style={styles.title}>{TEXTS.appName}</Text>
+            <Text style={styles.subtitle}>{TEXTS.auth.loginSubtitle}</Text>
+          </View>
 
-      {/* 2. Formulaire */}
-      <View style={styles.form}>
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+          {/* Form */}
+          <View style={styles.formContainer}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={TEXTS.auth.emailPlaceholder}
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
 
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry // Cache le mot de passe
-        />
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={TEXTS.auth.passwordPlaceholder}
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </View>
 
-        {/* Bouton Connexion */}
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Sign In</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading}>
+              <LinearGradient
+                colors={[COLORS.secondary, COLORS.info]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={styles.buttonGradient}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>{TEXTS.auth.signInButton}</Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
 
-        {/* Lien Inscription */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.link}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')} style={styles.footerLink}>
+              <Text style={styles.footerText}>
+                {TEXTS.auth.noAccount}<Text style={styles.highlight}>{TEXTS.auth.signupTitle}</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff', // Fond blanc propre
-    padding: 20,
-    justifyContent: 'center',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logoBox: {
-    width: 80,
-    height: 80,
-    backgroundColor: '#E6F0FF', // Bleu très clair
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#007AFF', // Bleu SafeWalk
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 5,
-  },
-  form: {
-    width: '100%',
-  },
-  label: {
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 5,
-    marginTop: 15,
-  },
-  input: {
-    backgroundColor: '#F5F5F5', // Gris très clair pour les champs
-    padding: 15,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 18,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  footerText: {
-    color: '#666',
-  },
-  link: {
-    color: '#007AFF',
-    fontWeight: 'bold',
-  },
-});

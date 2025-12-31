@@ -7,7 +7,14 @@ export const getAllReports = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 20;
         const offset = parseInt(req.query.offset) || 0;
-        const reports = await reportModel.readAllReports(pool, limit, offset);
+
+        // Extraction des filtres
+        const params = {};
+        if (req.query.severity) params.severity = req.query.severity;
+        if (req.query.days) params.days = parseInt(req.query.days);
+        if (req.query.type_id) params.type_id = parseInt(req.query.type_id);
+
+        const reports = await reportModel.readAllReports(pool, limit, offset, params);
         res.json(reports);
     } catch (error) {
         console.error(error);
