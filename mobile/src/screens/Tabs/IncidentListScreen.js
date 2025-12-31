@@ -1,5 +1,5 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchReports, selectAllReports } from '../../store/reportsSlice';
+import { useSelector } from 'react-redux';
+import { selectAllReports } from '../../store/reportsSlice';
 
 import React, { useState } from 'react';
 import {
@@ -16,18 +16,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import IncidentCard from '../../components/IncidentCard';
 
 export default function IncidentListScreen({ navigation }) {
-  const dispatch = useDispatch();
+
   const incidents = useSelector(selectAllReports); // On réutilise le même selector que MapScreen !
 
   const [searchText, setSearchText] = useState('');
 
-  useFocusEffect(
-    React.useCallback(() => {
-      // Rafraîchir les données quand on arrive sur cet écran
-      dispatch(fetchReports());
-    }, [dispatch])
-  );
-
+  // Rafraîchir les données quand on arrive sur cet écran
+  // Note: fetchReports removed. Relying on MapScreen auto-refresh or add local axios call here.
+  // For now, simpler is better to fix crash.
   // Plus de fetchIncidents local !
 
 

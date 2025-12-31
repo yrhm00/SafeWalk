@@ -18,7 +18,6 @@ export default function LoginScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    // ... (Keep existing logic, same as before)
     if (!email || !password) {
       alert(TEXTS.errors.fillFields);
       return;

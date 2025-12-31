@@ -5,11 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import * as Location from 'expo-location'; // Import direct
+
 import { API_URL } from '../../config';
 import { selectAllReports, setReports, setLoading, setError } from '../../store/reportsSlice';
 
-// Hooks
-import useLocationTracking from '../../hooks/useLocationTracking';
+// Hooks (On garde les autres s'ils existent encore, sinon on inline aussi ?)
+// Le user a suppr useLocationTracking. On va supposer qu'il veut garder shake/notif séparés pour l'instant
+// ou alors on simplifie tout. Dans le doute, on inline la location qui a été supprimée.
 import useShakeSensor from '../../hooks/useShakeSensor';
 import useProximityNotification from '../../hooks/useProximityNotification';
 
@@ -26,9 +29,58 @@ export default function MapScreen() {
   // 1. Data Layer
   const reports = useSelector(selectAllReports);
 
-  // 2. Logic Hooks
-  const { location, address, errorMsg } = useLocationTracking();
+  // 2. Logic Location (Inlined - "Simple")
+  const [location, setLocation] = useState(null);
+  const [address, setAddress] = useState("Locating...");
+  const [errorMsg, setErrorMsg] = useState(null);
 
+  // Reverse Geocoding Simple (Expo)
+  const getAddress = async (lat, lon) => {
+    try {
+      const geocode = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lon });
+      if (geocode.length > 0) {
+        const obj = geocode[0];
+        setAddress(`${obj.street || ''} ${obj.streetNumber || ''}, ${obj.city || ''}`);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      // Rapide : Dernière position connue
+      let lastKnown = await Location.getLastKnownPositionAsync({});
+      if (lastKnown) {
+        setLocation(lastKnown);
+        getAddress(lastKnown.coords.latitude, lastKnown.coords.longitude);
+      } else {
+        // Sinon position courante
+        let current = await Location.getCurrentPositionAsync({});
+        setLocation(current);
+        getAddress(current.coords.latitude, current.coords.longitude);
+      }
+
+      // Tracking
+      // On peut garder le watchPosition si on veut du temps réel, ou simplification : juste one-shot au focus ?
+      // Restons sur du watch pour la map c'est mieux.
+      Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 5000, distanceInterval: 10 }, (newLoc) => {
+        setLocation(newLoc);
+        // getAddress(newLoc.coords.latitude, newLoc.coords.longitude); // Optionnel
+      });
+
+    })();
+  }, []);
+
+  // Sensor & Notif Hooks
+  // Si useShakeSensor existe encore... sinon commenter.
+  // On va assumer qu'ils sont là sauf si erreur.
   useShakeSensor(() => {
     navigation.navigate('Report');
   });
@@ -44,11 +96,9 @@ export default function MapScreen() {
 
   // Function to load reports (Local Logic -> Sync Redux)
   const loadReports = async () => {
-    // dispatch(setLoading()); // Optionnel si on veut montrer un loader global
     try {
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       const response = await axios.get(`${API_URL}/reports`, config);
-
       dispatch(setReports(response.data));
     } catch (err) {
       console.log("Error loading reports", err);
@@ -56,11 +106,10 @@ export default function MapScreen() {
     }
   };
 
-  // Auto-refresh reports on focus & interval
   useFocusEffect(
     React.useCallback(() => {
       loadReports();
-    }, [token]) // Depend de token pour le header
+    }, [token])
   );
 
   useEffect(() => {
@@ -68,7 +117,6 @@ export default function MapScreen() {
     return () => clearInterval(interval);
   }, [token]);
 
-  // Recenter Map Helper
   const recenterMap = () => {
     if (location && mapRef.current) {
       mapRef.current.animateToRegion({

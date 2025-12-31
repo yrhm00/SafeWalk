@@ -14,6 +14,7 @@ import {
 import { responsiveHeight, responsiveFontSize } from 'react-native-responsive-dimensions';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
 import { API_URL } from '../../config';
 
@@ -26,6 +27,7 @@ export default function IncidentDetailScreen({ route, navigation }) {
     const [newComment, setNewComment] = useState('');
     const [voteCounts, setVoteCounts] = useState({ up: 0, down: 0 });
     const [userVote, setUserVote] = useState(null);
+    const [address, setAddress] = useState('Loading address...');
 
     // Animations Refs
     const fadeAnim = useRef(new Animated.Value(0)).current; // Opacity 0 -> 1
@@ -35,6 +37,7 @@ export default function IncidentDetailScreen({ route, navigation }) {
         // Init Data via AXIOS
         fetchComments();
         fetchVoteAndCounts();
+        fetchAddress();
 
         // Animation
         Animated.parallel([
@@ -52,6 +55,25 @@ export default function IncidentDetailScreen({ route, navigation }) {
             })
         ]).start();
     }, []);
+
+    const fetchAddress = async () => {
+        try {
+            if (incident.latitude && incident.longitude) {
+                const geocode = await Location.reverseGeocodeAsync({
+                    latitude: parseFloat(incident.latitude),
+                    longitude: parseFloat(incident.longitude)
+                });
+                if (geocode.length > 0) {
+                    const obj = geocode[0];
+                    setAddress(`${obj.street || ''} ${obj.streetNumber || ''}, ${obj.city || ''}`);
+                } else {
+                    setAddress("Address unavailable");
+                }
+            }
+        } catch (e) {
+            setAddress("Address unavailable");
+        }
+    };
 
     const fetchVoteAndCounts = async () => {
         try {
@@ -181,6 +203,12 @@ export default function IncidentDetailScreen({ route, navigation }) {
                     <Text style={styles.date}>{dateLabel}</Text>
                 </View>
 
+                {/* Address Display */}
+                <View style={styles.addressContainer}>
+                    <Ionicons name="location-sharp" size={16} color="#666" />
+                    <Text style={styles.address}>{address}</Text>
+                </View>
+
                 <Text style={styles.title}>Incident Report</Text>
 
                 <Text style={styles.sectionTitle}>Description</Text>
@@ -263,7 +291,10 @@ const styles = StyleSheet.create({
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
     badge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
     badgeText: { color: '#fff', fontWeight: 'bold' },
+    badgeText: { color: '#fff', fontWeight: 'bold' },
     date: { color: '#666', fontSize: 13 },
+    addressContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+    address: { color: '#666', fontSize: 14, marginLeft: 5 },
     title: { fontSize: responsiveFontSize(3), fontWeight: 'bold', marginBottom: 20, color: '#333' },
     sectionTitle: { fontSize: 16, fontWeight: '600', color: '#666', marginBottom: 5, marginTop: 15 },
     description: { fontSize: 16, color: '#333', lineHeight: 24 },

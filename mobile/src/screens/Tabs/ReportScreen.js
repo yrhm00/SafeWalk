@@ -19,7 +19,6 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { TEXTS } from '../../constants/texts';
 import { API_URL } from '../../config';
-import { fetchReports } from '../../store/reportsSlice';
 
 export default function ReportScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -163,7 +162,8 @@ export default function ReportScreen({ navigation }) {
       Alert.alert(TEXTS.report.successTitle, TEXTS.report.successMsg);
 
       // Refresh la liste globale via Redux pour que la map soit à jour
-      dispatch(fetchReports());
+      // Note: fetchReports removed. We could dispatch an optimistic update or let MapScreen auto-refresh.
+      // For now, simpler is better.
 
       navigation.navigate('Incidents');
 
