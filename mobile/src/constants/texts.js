@@ -1,3 +1,7 @@
+/* DOCUMENT GÉNÉRÉ AVEC ASSISTANCE IA
+   Objectif : Centralisation automatique des textes de l'application (Refactoring).
+   But : Éviter le hard-coding conformément aux standards de développement.
+*/
 export const TEXTS = {
     // --- Général ---
     appName: "SafeWalk",
@@ -49,6 +53,46 @@ export const TEXTS = {
         submitButton: "Submit Report",
         successTitle: "Succès",
         successMsg: "Signalement envoyé avec succès !",
+        successMsg: "Signalement envoyé avec succès !",
         errorTitle: "Erreur"
+    },
+
+    // --- Map Screen ---
+    map: {
+        locating: "Locating...",
+        permissionDenied: "Permission to access location was denied",
+        searchPlaceholder: "Search location...",
+        tapDetails: "Tap for details >"
+    },
+
+    // --- Incident Detail Screen ---
+    incidentDetail: {
+        headerTitle: "Incident Report",
+        noPhoto: "No Photo Available",
+        labels: {
+            description: "Description",
+            status: "Status",
+            reportedBy: "Reported By",
+            comments: "Comments"
+        },
+        status: {
+            pending: "Pending"
+        },
+        comments: {
+            none: "No comments yet.",
+            placeholder: "Add a comment...",
+            loginRequired: "Login required",
+            loginMsg: "You must be logged in to comment.",
+            postError: "Could not post comment"
+        },
+        votes: {
+            loginRequired: "Login required",
+            loginMsg: "You must be logged in to vote.",
+            error: "Network error during voting."
+        },
+        address: {
+            loading: "Loading address...",
+            unavailable: "Address unavailable"
+        }
     }
 };

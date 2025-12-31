@@ -12,8 +12,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-// API_URL n'est plus nécessaire ici si on passe par le slice
-import IncidentCard from '../../components/IncidentCard';
+import { API_URL } from '../../config';
+import { COLORS } from '../../constants/theme';
+import { TEXTS } from '../../constants/texts';
+// import IncidentCard from '../../components/IncidentCard'; // Unused now
 
 export default function IncidentListScreen({ navigation }) {
 
@@ -34,6 +36,38 @@ export default function IncidentListScreen({ navigation }) {
     return type.toLowerCase().includes(searchText.toLowerCase()) ||
       desc.toLowerCase().includes(searchText.toLowerCase());
   });
+
+  const getBadgeColor = (type) => {
+    switch (type) {
+      case 'Suspicious activity': return COLORS.badges.suspicious;
+      case 'Theft': return COLORS.badges.theft;
+      case 'Harassment': return COLORS.badges.harassment;
+      case 'Poor lighting': return COLORS.badges.lighting;
+      case 'Icy road': return COLORS.badges.icy;
+      case 'Flooded area': return COLORS.badges.flooded;
+      case 'Broken sidewalk': return COLORS.badges.sidewalk;
+      default: return COLORS.badges.default;
+    }
+  };
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('IncidentDetail', { incident: item })}
+    >
+      <View style={styles.row}>
+        <View style={[styles.badge, { backgroundColor: getBadgeColor(item.type_label) }]}>
+          <Text style={styles.badgeText}>{item.type_label || 'Unknown'}</Text>
+        </View>
+        <Text style={styles.date}>{new Date(item.created_at).toLocaleDateString()}</Text>
+      </View>
+      <Text style={styles.cardTitle}>{item.description}</Text>
+      <View style={styles.footer}>
+        <Text style={styles.status}>{item.status}</Text>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.gray.medium} />
+      </View>
+    </TouchableOpacity>
+  );
 
   const EmptyListState = () => (
     <View style={styles.emptyContainer}>
@@ -65,12 +99,7 @@ export default function IncidentListScreen({ navigation }) {
       <FlatList
         data={filteredData}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <IncidentCard
-            item={item}
-            onPress={() => navigation.navigate('IncidentDetail', { incident: item })}
-          />
-        )}
+        renderItem={renderItem}
         contentContainerStyle={[styles.listContent, filteredData.length === 0 && { flex: 1 }]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={EmptyListState}

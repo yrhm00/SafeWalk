@@ -12,6 +12,26 @@ export const COLORS = {
     danger: '#FF3B30',
     warning: '#FF9500',
     info: '#5AC8FA',
+    // Incident Types (Badges & Pins)
+    badges: {
+        suspicious: '#FF3B30',
+        theft: '#FF3B30',
+        harassment: '#FF9500',
+        lighting: '#FFCC00',
+        icy: '#00BCD4',
+        flooded: '#007AFF',
+        sidewalk: '#8E8E93',
+        default: '#007AFF'
+    },
+    // Grays
+    gray: {
+        light: '#F5F5F5',
+        medium: '#888888',
+        dark: '#333333',
+        text: '#666666',
+        border: '#DDDDDD',
+        input: '#EEEEEE'
+    },
     gradients: {
         primary: ['#0A2540', '#183B5E'],
         login: ['#000428', '#004e92'],

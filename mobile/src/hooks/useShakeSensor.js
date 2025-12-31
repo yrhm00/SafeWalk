@@ -9,6 +9,7 @@ export default function useShakeSensor(onShake) {
         return () => _unsubscribe();
     }, []);
 
+    // DÉBUT GÉNÉRATION IA 
     const _subscribe = () => {
         // Intervalle de mise à jour (100ms)
         Accelerometer.setUpdateInterval(100);

@@ -72,7 +72,7 @@ Cette commande va créer la base de données, l'initialiser avec les tables néc
 
 ## 🛠 Technologies Utilisées
 
-*   **Backend** : Node.js, Express, PostgreSQL, Prisma (ou autre ORM selon le projet), Swagger.
+*   **Backend** : Node.js, Express, PostgreSQL, Swagger.
 *   **Frontend** : React, Vite.
 *   **Mobile** : React Native, Expo.
 

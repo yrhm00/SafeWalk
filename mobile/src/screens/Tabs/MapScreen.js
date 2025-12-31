@@ -9,6 +9,8 @@ import * as Location from 'expo-location'; // Import direct
 
 import { API_URL } from '../../config';
 import { selectAllReports, setReports, setLoading, setError } from '../../store/reportsSlice';
+import { COLORS } from '../../constants/theme';
+import { TEXTS } from '../../constants/texts';
 
 // Hooks (On garde les autres s'ils existent encore, sinon on inline aussi ?)
 // Le user a suppr useLocationTracking. On va supposer qu'il veut garder shake/notif séparés pour l'instant
@@ -31,7 +33,7 @@ export default function MapScreen() {
 
   // 2. Logic Location (Inlined - "Simple")
   const [location, setLocation] = useState(null);
-  const [address, setAddress] = useState("Locating...");
+  const [address, setAddress] = useState(TEXTS.map.locating);
   const [errorMsg, setErrorMsg] = useState(null);
 
   // Reverse Geocoding Simple (Expo)
@@ -51,7 +53,7 @@ export default function MapScreen() {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
+        setErrorMsg(TEXTS.map.permissionDenied);
         return;
       }
 
@@ -169,16 +171,16 @@ export default function MapScreen() {
       {/* HEADER & FILTRES */}
       <View style={styles.headerContainer}>
         <View style={styles.topRow}>
-          <Text style={styles.appName}>SafeWalk</Text>
+          <Text style={styles.appName}>{TEXTS.appName}</Text>
           <Text style={styles.locationText}>
-            Current Location | {errorMsg ? errorMsg : (address || "Locating...")}
+            Current Location | {errorMsg ? errorMsg : (address || TEXTS.map.locating)}
           </Text>
         </View>
 
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+          <Ionicons name="search" size={20} color={COLORS.gray.text} style={styles.searchIcon} />
           <TextInput
-            placeholder="Search location..."
+            placeholder={TEXTS.map.searchPlaceholder}
             style={styles.searchInput}
           />
         </View>
@@ -215,17 +217,17 @@ export default function MapScreen() {
                   longitude: parseFloat(incident.longitude)
                 }}
                 pinColor={
-                  incident.type_label === "Suspicious activity" ? "red" :
-                    incident.type_label === "Flooded area" ? "blue" :
-                      incident.type_label === "Icy road" ? "cyan" :
-                        incident.type_label === "Poor lighting" ? "gold" : "orange"
+                  incident.type_label === "Suspicious activity" ? COLORS.badges.suspicious :
+                    incident.type_label === "Flooded area" ? COLORS.badges.flooded :
+                      incident.type_label === "Icy road" ? COLORS.badges.icy :
+                        incident.type_label === "Poor lighting" ? COLORS.badges.lighting : COLORS.badges.default
                 }
               >
                 <Callout onPress={() => navigation.navigate('IncidentDetail', { incident })}>
                   <View style={styles.calloutContainer}>
                     <Text style={styles.calloutTitle}>{incident.title}</Text>
                     <Text style={styles.calloutSubtitle}>{incident.type_label}</Text>
-                    <Text style={styles.calloutLink}>Tap for details &gt;</Text>
+                    <Text style={styles.calloutLink}>{TEXTS.map.tapDetails}</Text>
                   </View>
                 </Callout>
               </Marker>

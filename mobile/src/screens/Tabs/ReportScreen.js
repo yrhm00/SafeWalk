@@ -19,9 +19,12 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { TEXTS } from '../../constants/texts';
 import { API_URL } from '../../config';
+import { COLORS } from '../../constants/theme';
+import { useNavigation } from '@react-navigation/native'; // Assuming useNavigation is needed based on the diff
 
-export default function ReportScreen({ navigation }) {
+export default function ReportScreen() {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const { token } = useSelector(state => state.auth);
 
   // États du formulaire
@@ -197,7 +200,7 @@ export default function ReportScreen({ navigation }) {
           <Text style={incidentType ? styles.selectorText : styles.placeholderText}>
             {incidentType || TEXTS.report.typePlaceholder}
           </Text>
-          <Ionicons name="chevron-down" size={20} color="#666" />
+          <Ionicons name="chevron-down" size={20} color={COLORS.gray.medium} />
         </TouchableOpacity>
 
         {/* 2. DESCRIPTION */}
@@ -206,6 +209,7 @@ export default function ReportScreen({ navigation }) {
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder={TEXTS.report.descPlaceholder}
+            placeholderTextColor={COLORS.gray.text}
             multiline
             numberOfLines={4}
             value={description}
@@ -216,13 +220,13 @@ export default function ReportScreen({ navigation }) {
         </View>
 
         <Text style={styles.label}>{TEXTS.report.photoLabel}</Text>
-        <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
+        <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
           {image ? (
-            <Image source={{ uri: image.uri }} style={styles.previewImage} />
+            <Image source={{ uri: image.uri }} style={styles.image} />
           ) : (
-            <View style={styles.photoPlaceholder}>
-              <Ionicons name="camera" size={32} color="#666" />
-              <Text style={styles.photoText}>{TEXTS.report.photoLabel}</Text>
+            <View style={styles.imagePlaceholder}>
+              <Ionicons name="camera" size={40} color={COLORS.gray.medium} />
+              <Text style={styles.imagePlaceholderText}>{TEXTS.report.photoLabel}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -230,7 +234,7 @@ export default function ReportScreen({ navigation }) {
         {/* 4. LOCALISATION */}
         <Text style={styles.label}>Current Location</Text>
         <View style={styles.locationBox}>
-          <Ionicons name="location-sharp" size={24} color="#007AFF" />
+          <Ionicons name="location-sharp" size={24} color={COLORS.primary} />
           <View style={{ marginLeft: 10 }}>
             <Text style={styles.locationTitle}>Ma position</Text>
             {loadingLocation ? (
@@ -253,10 +257,10 @@ export default function ReportScreen({ navigation }) {
           <Ionicons
             name={isEmergency ? "checkbox" : "square-outline"}
             size={24}
-            color={isEmergency ? "red" : "#666"}
+            color={isEmergency ? COLORS.red.default : COLORS.gray.medium}
           />
           <View style={{ marginLeft: 10 }}>
-            <Text style={[styles.checkboxLabel, isEmergency && { color: 'red' }]}>
+            <Text style={[styles.checkboxLabel, isEmergency && { color: COLORS.red.default }]}>
               {TEXTS.report.emergencyLabel}
             </Text>
             <Text style={styles.checkboxSubLabel}>Requires immediate attention</Text>

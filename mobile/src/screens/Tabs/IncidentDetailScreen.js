@@ -17,6 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useSelector } from 'react-redux';
 import { API_URL } from '../../config';
+import { COLORS, SIZES } from '../../constants/theme';
+import { TEXTS } from '../../constants/texts';
 
 export default function IncidentDetailScreen({ route, navigation }) {
     const { incident } = route.params;
@@ -27,7 +29,7 @@ export default function IncidentDetailScreen({ route, navigation }) {
     const [newComment, setNewComment] = useState('');
     const [voteCounts, setVoteCounts] = useState({ up: 0, down: 0 });
     const [userVote, setUserVote] = useState(null);
-    const [address, setAddress] = useState('Loading address...');
+    const [address, setAddress] = useState(TEXTS.incidentDetail.address.loading);
 
     // Animations Refs
     const fadeAnim = useRef(new Animated.Value(0)).current; // Opacity 0 -> 1
@@ -67,11 +69,11 @@ export default function IncidentDetailScreen({ route, navigation }) {
                     const obj = geocode[0];
                     setAddress(`${obj.street || ''} ${obj.streetNumber || ''}, ${obj.city || ''}`);
                 } else {
-                    setAddress("Address unavailable");
+                    setAddress(TEXTS.incidentDetail.address.unavailable);
                 }
             }
         } catch (e) {
-            setAddress("Address unavailable");
+            setAddress(TEXTS.incidentDetail.address.unavailable);
         }
     };
 
@@ -102,7 +104,7 @@ export default function IncidentDetailScreen({ route, navigation }) {
     const handleVote = async (value) => {
         try {
             if (!token) {
-                Alert.alert("Login required", "You must be logged in to vote.");
+                Alert.alert(TEXTS.incidentDetail.votes.loginRequired, TEXTS.incidentDetail.votes.loginMsg);
                 return;
             }
 
@@ -127,7 +129,7 @@ export default function IncidentDetailScreen({ route, navigation }) {
                 );
             }
         } catch (e) {
-            Alert.alert("Error", "Network error during voting.");
+            Alert.alert(TEXTS.errors.errorTitle, TEXTS.incidentDetail.votes.error);
         }
     };
 
@@ -141,7 +143,7 @@ export default function IncidentDetailScreen({ route, navigation }) {
     const handlePostComment = async () => {
         if (!newComment.trim()) return;
         try {
-            if (!token) { Alert.alert("Login required", "You must be logged in to comment."); return; }
+            if (!token) { Alert.alert(TEXTS.incidentDetail.comments.loginRequired, TEXTS.incidentDetail.comments.loginMsg); return; }
 
             await axios.post(`${API_URL}/comments`,
                 { content: newComment, report_id: incident.id },
@@ -151,20 +153,20 @@ export default function IncidentDetailScreen({ route, navigation }) {
             setNewComment('');
             fetchComments();
         } catch (e) {
-            Alert.alert("Error", "Could not post comment");
+            Alert.alert(TEXTS.errors.errorTitle, TEXTS.incidentDetail.comments.postError);
         }
     };
 
     const getBadgeColor = (type) => {
         switch (type) {
-            case 'Suspicious activity': return '#FF3B30';
-            case 'Theft': return '#FF3B30';
-            case 'Harassment': return '#FF9500';
-            case 'Poor lighting': return '#FFCC00';
-            case 'Icy road': return '#00BCD4';
-            case 'Flooded area': return '#007AFF';
-            case 'Broken sidewalk': return '#8E8E93';
-            default: return '#007AFF';
+            case 'Suspicious activity': return COLORS.badges.suspicious;
+            case 'Theft': return COLORS.badges.theft;
+            case 'Harassment': return COLORS.badges.harassment;
+            case 'Poor lighting': return COLORS.badges.lighting;
+            case 'Icy road': return COLORS.badges.icy;
+            case 'Flooded area': return COLORS.badges.flooded;
+            case 'Broken sidewalk': return COLORS.badges.sidewalk;
+            default: return COLORS.badges.default;
         }
     };
 
@@ -179,8 +181,8 @@ export default function IncidentDetailScreen({ route, navigation }) {
                     <Image source={{ uri: incident.image_url }} style={styles.image} />
                 ) : (
                     <View style={styles.placeholderImage}>
-                        <Ionicons name="image-outline" size={64} color="#ccc" />
-                        <Text style={styles.placeholderText}>No Photo Available</Text>
+                        <Ionicons name="image-outline" size={64} color={COLORS.gray.medium} />
+                        <Text style={styles.placeholderText}>{TEXTS.incidentDetail.noPhoto}</Text>
                     </View>
                 )}
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -209,9 +211,9 @@ export default function IncidentDetailScreen({ route, navigation }) {
                     <Text style={styles.address}>{address}</Text>
                 </View>
 
-                <Text style={styles.title}>Incident Report</Text>
+                <Text style={styles.title}>{TEXTS.incidentDetail.headerTitle}</Text>
 
-                <Text style={styles.sectionTitle}>Description</Text>
+                <Text style={styles.sectionTitle}>{TEXTS.incidentDetail.labels.description}</Text>
                 <Text style={styles.description}>{incident.description}</Text>
 
                 {/* Votes */}
@@ -233,20 +235,20 @@ export default function IncidentDetailScreen({ route, navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.sectionTitle}>Status</Text>
-                <Text style={styles.status}>{incident.status || 'Pending'}</Text>
+                <Text style={styles.sectionTitle}>{TEXTS.incidentDetail.labels.status}</Text>
+                <Text style={styles.status}>{incident.status || TEXTS.incidentDetail.status.pending}</Text>
 
                 {incident.user_name && (
                     <>
-                        <Text style={styles.sectionTitle}>Reported By</Text>
+                        <Text style={styles.sectionTitle}>{TEXTS.incidentDetail.labels.reportedBy}</Text>
                         <Text style={styles.reporter}>{incident.user_name}</Text>
                     </>
                 )}
 
                 {/* Comments */}
-                <Text style={styles.sectionTitle}>Comments</Text>
+                <Text style={styles.sectionTitle}>{TEXTS.incidentDetail.labels.comments}</Text>
                 {comments.length === 0 ? (
-                    <Text style={styles.noCommentsText}>No comments yet.</Text>
+                    <Text style={styles.noCommentsText}>{TEXTS.incidentDetail.comments.none}</Text>
                 ) : (
                     comments.map((comment, index) => (
                         <View key={comment.id || index} style={styles.commentItem}>
@@ -261,12 +263,12 @@ export default function IncidentDetailScreen({ route, navigation }) {
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
-                        placeholder="Add a comment..."
+                        placeholder={TEXTS.incidentDetail.comments.placeholder}
                         value={newComment}
                         onChangeText={setNewComment}
                     />
                     <TouchableOpacity style={styles.sendButton} onPress={handlePostComment}>
-                        <Ionicons name="send" size={24} color="#007AFF" />
+                        <Ionicons name="send" size={24} color={COLORS.secondary} />
                     </TouchableOpacity>
                 </View>
             </Animated.View>
@@ -282,7 +284,7 @@ const styles = StyleSheet.create({
     },
     image: { width: '100%', height: '100%', resizeMode: 'cover' },
     placeholderImage: { alignItems: 'center' },
-    placeholderText: { color: '#888', marginTop: 10 },
+    placeholderText: { color: COLORS.gray.medium, marginTop: 10 },
     backButton: {
         position: 'absolute', top: 40, left: 20,
         backgroundColor: 'rgba(0,0,0,0.5)', padding: 8, borderRadius: 20, zIndex: 10
@@ -291,18 +293,17 @@ const styles = StyleSheet.create({
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
     badge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
     badgeText: { color: '#fff', fontWeight: 'bold' },
-    badgeText: { color: '#fff', fontWeight: 'bold' },
-    date: { color: '#666', fontSize: 13 },
+    date: { color: COLORS.gray.small, fontSize: 13 },
     addressContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
-    address: { color: '#666', fontSize: 14, marginLeft: 5 },
-    title: { fontSize: responsiveFontSize(3), fontWeight: 'bold', marginBottom: 20, color: '#333' },
-    sectionTitle: { fontSize: 16, fontWeight: '600', color: '#666', marginBottom: 5, marginTop: 15 },
-    description: { fontSize: 16, color: '#333', lineHeight: 24 },
-    status: { fontSize: 16, color: '#333', textTransform: 'capitalize' },
-    reporter: { fontSize: 16, color: '#333' },
+    address: { color: COLORS.gray.small, fontSize: 14, marginLeft: 5 },
+    title: { fontSize: responsiveFontSize(3), fontWeight: 'bold', marginBottom: 20, color: COLORS.gray.dark },
+    sectionTitle: { fontSize: 16, fontWeight: '600', color: COLORS.gray.text, marginBottom: 5, marginTop: 15 },
+    description: { fontSize: 16, color: COLORS.gray.dark, lineHeight: 24 },
+    status: { fontSize: 16, color: COLORS.gray.dark, textTransform: 'capitalize' },
+    reporter: { fontSize: 16, color: COLORS.gray.dark },
     noCommentsText: { color: '#999', fontStyle: 'italic', marginTop: 10 },
     commentItem: { backgroundColor: '#F9F9F9', padding: 10, borderRadius: 8, marginTop: 10 },
-    commentUser: { fontWeight: 'bold', fontSize: 14, color: '#333' },
+    commentUser: { fontWeight: 'bold', fontSize: 14, color: COLORS.gray.dark },
     commentContent: { fontSize: 14, color: '#555', marginTop: 2 },
     commentDate: { fontSize: 10, color: '#999', marginTop: 5, textAlign: 'right' },
     inputContainer: { flexDirection: 'row', marginTop: 20, alignItems: 'center', borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 15 },
