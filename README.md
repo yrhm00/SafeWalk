@@ -36,6 +36,8 @@ Cette commande va créer la base de données, l'initialiser avec les tables néc
     docker compose up --build
     ```
     *   L'API sera accessible sur `http://localhost:3001`.
+    *   La documentation API (Swagger) est disponible sur `http://localhost:3001/api-docs`.
+    *   Le serveur redémarre automatiquement en cas de modification (mode dev avec `nodemon`).
     *   La base de données sera automatiquement initialisée.
 
 ### 2. Frontend (Dashboard Web)
@@ -66,7 +68,20 @@ Cette commande va créer la base de données, l'initialiser avec les tables néc
     npm install
     npx expo start
     ```
-4.  Scannez le QR code avec l'application **Expo Go** sur votre téléphone.
+4.  Lancez l'application :
+    *   **Sur téléphone physique** : Scannez le QR code avec l'application **Expo Go**. (Assurez-vous que le téléphone est sur le même réseau WiFi que votre ordinateur).
+    *   **Sur ordinateur** : Appuyez sur `i` pour lancer le simulateur iOS (Mac uniquement) ou `a` pour l'émulateur Android.
+
+---
+
+## 🛡 Comptes de Test
+
+Voici les comptes pré-configurés pour tester l'application :
+
+| Rôle | Username | Password |
+| :--- | :--- | :--- |
+| **Administrateur** | `admin` | `admin` |
+| **Utilisateur** | `yassin` | `password` |
 
 ---
 
