@@ -1,10 +1,13 @@
-import { AuthProvider } from "./src/context/AuthContext";
+import { Provider } from "react-redux";
+import { store } from "./src/store/store";
 import Navigation from "./src/navigation";
+
+
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Navigation />
-    </AuthProvider>
+      <Provider store={store}>
+        <Navigation />
+      </Provider>
   );
 }

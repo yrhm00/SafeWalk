@@ -5,8 +5,7 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { useState } from "react";
 import TextField from "../../components/ui/TextField";
 import PrimaryButton from "../../components/ui/PrimaryButton";
 import {
@@ -18,25 +17,32 @@ import {
 } from "../../styles";
 import { useNavigation } from "@react-navigation/native";
 
-export default function LoginScreen() {
-  const { login, user } = useContext(AuthContext);
+import { useDispatch, useSelector } from "react-redux";
+import { loginThunk } from "../../store/authSlice";
+import Card from "../../components/ui/Card";
 
+export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigation = useNavigation();
 
-  // Log uniquement quand user change
-  useEffect(() => {
-    console.log("🔍 user a changé :", user);
-  }, [user]);
+  const dispatch = useDispatch();
+  const authError = useSelector((state) => state.auth.error);
+
+  const handleLogin = async () => {
+    const action = await dispatch(loginThunk({ email, password }));
+    if (loginThunk.rejected.match(action)) {
+      console.log("❌ Login failed:", action.payload);
+    }
+  };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <View style={globalStyles.screen}>
+    <View style={globalStyles.screen}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <View style={styles.container}>
           {/* Header / Branding */}
           <View style={styles.header}>
@@ -45,11 +51,12 @@ export default function LoginScreen() {
           </View>
 
           {/* Card Login */}
-          <View style={styles.card}>
+          <Card style={{ gap: spacing.md }}>
             <TextField
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
+              keyboardType="email-address"
             />
 
             <TextField
@@ -59,10 +66,7 @@ export default function LoginScreen() {
               onChangeText={setPassword}
             />
 
-            <PrimaryButton
-              title="Sign In"
-              onPress={() => login({ email }, "fake-jwt")}
-            />
+            <PrimaryButton title="Sign In" onPress={handleLogin} />
 
             <View style={styles.footer}>
               <Text style={typography.small}>No account yet?</Text>
@@ -70,11 +74,10 @@ export default function LoginScreen() {
                 <Text style={styles.link}>Create an account</Text>
               </TouchableOpacity>
             </View>
-            
-          </View>
+          </Card>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -88,13 +91,6 @@ const styles = {
     alignItems: "center",
     marginBottom: spacing.xl,
   },
-  card: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: 16,
-    gap: spacing.md,
-    ...shadows.card,
-  },
   footer: {
     marginTop: spacing.md,
     alignItems: "center",
@@ -102,6 +98,6 @@ const styles = {
   link: {
     marginTop: 4,
     color: colors.primary,
-    ontWeight: "600",
+    fontWeight: "600",
   },
 };

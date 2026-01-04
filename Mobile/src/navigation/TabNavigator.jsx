@@ -1,12 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import CustomTabBar from "./CustomTabBar";
 
-import HomeScreen from "../screens/Home/HomeScreen";
 import HomeNavigator from "./HomeNavigator";
-import IncidentsScreen from "../screens/Incidents/IncidentsScreen";
-import CreateReportScreen from "../screens/Report/CreateReportScreen";
-import AlertsScreen from "../screens/Alerts/AlertsScreen";
-import ProfileScreen from "../screens/Profile/ProfileScreen";
+import IncidentsScreen from "../screens/Tab/IncidentsScreen";
+import CreateReportScreen from "../screens/Tab/CreateReportScreen";
+import AlertsScreen from "../screens/Tab/AlertsScreen";
+import ProfileScreen from "../screens/Tab/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 

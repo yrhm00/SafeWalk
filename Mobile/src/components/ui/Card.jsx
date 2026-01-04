@@ -6,7 +6,7 @@ export default function Card({ children, style }) {
     <View
       style={[
         {
-          backgroundColor: colors.white,
+          backgroundColor: colors.surface,
           borderRadius: 16,
           padding: spacing.md,
           marginBottom: spacing.md,

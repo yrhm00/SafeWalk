@@ -1,5 +1,5 @@
 import { View, TouchableOpacity, Text } from "react-native";
-import { colors, spacing, typography, severityColor } from "../../styles";
+import { colors, spacing, typography, markerColors } from "../../styles";
 
 const filters = [
   { key: "all", label: "All" },
@@ -18,7 +18,7 @@ export default function FilterBar({ active, onChange, style }) {
         const activeColor =
           f.key === "all"
             ? colors.primary
-            : severityColor[f.key];
+            : markerColors[f.key];
 
         return (
           <TouchableOpacity

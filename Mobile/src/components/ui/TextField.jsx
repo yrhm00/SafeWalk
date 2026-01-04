@@ -6,6 +6,7 @@ export default function TextField({
   onChangeText,
   placeholder,
   secure = false,
+  keyboardType = "default"
 }) {
   return (
     <View style={styles.container}>
@@ -16,6 +17,7 @@ export default function TextField({
         placeholderTextColor={colors.textMuted}
         secureTextEntry={secure}
         style={styles.input}
+        keyboardType={keyboardType}
       />
     </View>
   );

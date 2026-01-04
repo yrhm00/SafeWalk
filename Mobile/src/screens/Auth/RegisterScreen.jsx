@@ -16,29 +16,49 @@ import {
   colors,
   shadows,
 } from "../../styles";
-import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
+
+import { useDispatch, useSelector } from "react-redux";
+import { registerThunk } from "../../store/authSlice";
+import Card from "../../components/ui/Card";
 
 export default function RegisterScreen() {
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const dispatch = useDispatch();
+  const authError = useSelector((state) => state.auth.error);
+
   const navigation = useNavigation();
 
-  const handleRegister = () => {
-    console.log("REGISTER", { name, email, password, confirmPassword });
-    // plus tard : appel API
+  const handleRegister = async () => {
+    console.log("🟢 HANDLE REGISTER CLICKED");
+
+    if (password !== confirmPassword) {
+      console.log("❌ Passwords do not match");
+      return;
+    }
+
+    const action = await dispatch(
+      registerThunk({ name,username, email, password })
+    );
+
+    console.log("🟡 REGISTER ACTION:", action);
+
+    if (registerThunk.rejected.match(action)) {
+      console.log("❌ Register failed:", action.payload);
+    }
   };
 
   return (
-  
-    <KeyboardAvoidingView
+    
+      <View style={globalStyles.screen}>
+        <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={globalStyles.screen}>
-   
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
@@ -47,13 +67,20 @@ export default function RegisterScreen() {
           </View>
 
           {/* Card */}
-          <View style={styles.card}>
+          <Card style= {{gap: spacing.md}}>
             <TextField placeholder="Name" value={name} onChangeText={setName} />
+
+            <TextField
+              placeholder="Username"
+              value={username}
+              onChangeText={setUsername}
+            />
 
             <TextField
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
+              keyboardType="email-address"
             />
 
             <TextField
@@ -79,10 +106,11 @@ export default function RegisterScreen() {
                 <Text style={styles.link}>Sign in</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </Card>
         </View>
+        </KeyboardAvoidingView>
       </View>
-    </KeyboardAvoidingView>
+    
   );
 }
 
@@ -95,13 +123,6 @@ const styles = {
   header: {
     alignItems: "center",
     marginBottom: spacing.xl,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: 16,
-    gap: spacing.md,
-    ...shadows.card,
   },
   footer: {
     marginTop: spacing.md,

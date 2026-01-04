@@ -1,24 +1,36 @@
-import { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import MapView, { Marker, Callout } from "react-native-maps";
-import { useNavigation } from "@react-navigation/native";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { View, Text, StyleSheet, Alert } from "react-native";
+import { Marker, Callout } from "react-native-maps";
+import MapView from "react-native-map-clustering";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import * as Location from "expo-location";
 
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import FilterBar from "../../components/danger/FilterBar";
-
-import { fakeReports } from "../../data/fakeReports";
 
 import {
   colors,
   spacing,
   globalStyles,
   shadows,
-  severityColor,
+  markerColors,
   typography,
 } from "../../styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useDispatch, useSelector } from "react-redux";
+import { fetchReports } from "../../store/reportSlice";
+
 export default function HomeScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const reports = useSelector((state) => state.reports.list);
+
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(fetchReports());
+    }, [dispatch])
+  );
+
   const insets = useSafeAreaInsets();
   const headerOffset = insets.top + HEADER_HEIGHT;
   const searchTop = headerOffset + spacing.sm;
@@ -26,22 +38,53 @@ export default function HomeScreen({ navigation }) {
 
   const [filter, setFilter] = useState("all");
 
+  // ✅ UTILISATION DES REPORTS REDUX (plus de fakeReports)
   const filteredReports =
-    filter === "all"
-      ? fakeReports
-      : fakeReports.filter((r) => r.severity === filter);
+    filter === "all" ? reports : reports.filter((r) => r.severity === filter);
+
+  const mapRef = useRef(null);
+  const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission required",
+          "Location access is needed to show nearby dangers."
+        );
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setUserLocation(location.coords);
+
+      mapRef.current?.animateToRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      });
+    })();
+  }, []);
 
   return (
     <View style={globalStyles.container}>
       {/* MAP FULL SCREEN */}
       <MapView
         style={StyleSheet.absoluteFillObject}
-        initialRegion={{
-          latitude: 48.8566,
-          longitude: 2.3522,
+        ref={mapRef}
+        showsUserLocation
+        initialRegion={{ // Namur
+          latitude: 50.4674,
+          longitude: 4.8718,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
+        radius={40}
+        extent={512}
+        animationEnabled = {false}
       >
         {filteredReports.map((report) => (
           <Marker
@@ -50,15 +93,22 @@ export default function HomeScreen({ navigation }) {
               latitude: report.latitude,
               longitude: report.longitude,
             }}
-            pinColor={severityColor[report.severity]}
+            pinColor={markerColors[report.severity]}
+            tracksViewChanges={false}
           >
             <Callout
               tooltip
-              onPress={() => navigation.navigate("DangerDetails", { report })}
+              onPress={() =>
+                navigation.navigate("DangerDetails", {
+                  reportId: report.id,
+                })
+              }
             >
               <View style={styles.callout}>
                 <Text style={typography.h3}>{report.title}</Text>
-                <Text style={typography.small}>Severity: {report.severity}</Text>
+                <Text style={typography.small}>
+                  Severity: {report.severity}
+                </Text>
               </View>
             </Callout>
           </Marker>
@@ -150,6 +200,7 @@ const styles = {
     fontSize: 12,
     fontWeight: "600",
   },
+
   callout: {
     backgroundColor: "white",
     padding: 10,

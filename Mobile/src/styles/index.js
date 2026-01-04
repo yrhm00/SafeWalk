@@ -3,4 +3,4 @@ export { spacing } from "./spacing";
 export { typography } from "./typography";
 export { shadows } from "./shadows";
 export { globalStyles } from "./globalStyles";
-export { severityColor } from "./markerColors"
+export { markerColors } from "./markerColors"
