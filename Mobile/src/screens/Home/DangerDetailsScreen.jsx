@@ -1,3 +1,5 @@
+//ajout inutile
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -199,3 +201,4 @@ const styles = StyleSheet.create({
   },
   sendIcon: { marginLeft: spacing.sm, padding: spacing.sm },
 });
+
