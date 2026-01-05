@@ -9,7 +9,7 @@ import Card from "../../components/ui/Card";
 import TextField from "../../components/ui/TextField";
 import PrimaryButton from "../../components/ui/PrimaryButton";
 import api from "../../services/api";
-import { updateUser } from "../../store/authSlice"; // Import crucial
+import { updateUser } from "../../store/authSlice";
 import { useNavigation } from "@react-navigation/native";
 
 export default function EditProfileScreen() {
@@ -40,6 +40,7 @@ export default function EditProfileScreen() {
       const payload = {
         name,
         username,
+        // On n'envoie la base64 que si une nouvelle photo a été prise
         avatar: photo ? `data:image/jpeg;base64,${photo.base64}` : user.avatar,
       };
 
@@ -47,17 +48,16 @@ export default function EditProfileScreen() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // ✅ Met à jour le store Redux pour que ProfileScreen change aussi
-      // pas de pdp dans la bd on enregistre en local
+      // ✅ Mise à jour locale du store Redux pour persister l'image dans la session
       const localUpdate = {
-      ...response.data,
-      avatar: photo ? photo.uri : user.avatar,
-    };
+        ...response.data,
+        avatar: photo ? photo.uri : user.avatar,
+      };
 
-    dispatch(updateUser(localUpdate)); 
+      dispatch(updateUser(localUpdate)); 
       
       Alert.alert("Success", "Profile updated successfully!");
-      navigation.goBack(); // Retour automatique après succès
+      navigation.goBack();
     } catch (error) {
       Alert.alert("Error", "Failed to update profile.");
     } finally {
@@ -71,11 +71,22 @@ export default function EditProfileScreen() {
       <ScrollView contentContainerStyle={{ padding: spacing.md }}>
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={pickImage}>
-            <Image
-              source={{ uri: photo?.uri || user?.avatar || "https://i.pravatar.cc/150?img=47" }}
-              style={styles.avatar}
-            />
-            <View style={styles.cameraIcon}><Ionicons name="camera" size={20} color="white" /></View>
+            {/* ✅ Logique d'affichage de la photo en cours ou de l'icône par défaut */}
+            {photo?.uri || user?.avatar ? (
+              <Image
+                source={{ uri: photo?.uri || user?.avatar }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons name="person" size={60} color={colors.white} />
+              </View>
+            )}
+            
+            {/* Badge icône caméra */}
+            <View style={styles.cameraIcon}>
+              <Ionicons name="camera" size={20} color="white" />
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -87,7 +98,11 @@ export default function EditProfileScreen() {
         </Card>
 
         <View style={{ marginTop: spacing.xl }}>
-          <PrimaryButton title={loading ? "Saving..." : "Save Changes"} onPress={handleSave} disabled={loading} />
+          <PrimaryButton 
+            title={loading ? "Saving..." : "Save Changes"} 
+            onPress={handleSave} 
+            disabled={loading} 
+          />
         </View>
       </ScrollView>
     </View>
@@ -96,6 +111,33 @@ export default function EditProfileScreen() {
 
 const styles = StyleSheet.create({
   avatarSection: { alignItems: "center", marginVertical: spacing.xl },
-  avatar: { width: 120, height: 120, borderRadius: 60, borderWidth: 4, borderColor: colors.primary },
-  cameraIcon: { position: "absolute", bottom: 0, right: 0, backgroundColor: colors.primary, borderRadius: 20, padding: 8, borderWidth: 3, borderColor: colors.white },
+  // Style pour l'image
+  avatar: { 
+    width: 120, 
+    height: 120, 
+    borderRadius: 60, 
+    borderWidth: 4, 
+    borderColor: colors.primary 
+  },
+  // ✅ Style pour le cercle de remplacement avec icône
+  avatarPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 4,
+    borderColor: colors.primary,
+  },
+  cameraIcon: { 
+    position: "absolute", 
+    bottom: 0, 
+    right: 0, 
+    backgroundColor: colors.primary, 
+    borderRadius: 20, 
+    padding: 8, 
+    borderWidth: 3, 
+    borderColor: colors.white 
+  },
 });

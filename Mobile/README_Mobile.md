@@ -1,154 +1,45 @@
 # 📱 SafeWalk – Application Mobile (React Native + Expo)
 
-Bienvenu dans la partie **mobile** du projet SafeWalk.  
+Bienvenue dans la partie **mobile** du projet SafeWalk.  
 Cette application permet d’afficher une carte interactive, de signaler des dangers, de consulter les alertes proches et d’interagir avec l’API SafeWalk.
 
 ---
 
 # 🚀 1. Fonctionnalités principales
 
-- Affichage d’une **carte interactive**
-- Consultation des **dangers signalés**
-- Création d’un signalement (photo, position, type, description)
-- Authentification (login + register)
-- Profil utilisateur
-- Navigation moderne via **React Navigation**
-- Connexion en temps réel avec l’API SafeWalk (backend)
+- **Carte interactive** : Visualisation des zones à risque et de votre position en temps réel.
+- **Signalement d'incidents** : Création de rapports détaillés avec photos, type de danger et description.
+- **Alertes & Notifications** : Liste des activités récentes à proximité pour assurer la sécurité des utilisateurs.
+- **Authentification complète** : Connexion et inscription avec gestion sécurisée des sessions (JWT).
+- **Profil Utilisateur** : Personnalisation du profil et mise à jour des informations personnelles.
 
 ---
 
 # 🛠️ 2. Technologies utilisées
 
-- **React Native**
-- **Expo**
-- **React Navigation**
-- **Axios**
-- **Context API**
-- **AsyncStorage** (plus tard)
-- **React Native Maps** *(sera ajouté plus tard)*
+- **React Native & Expo** : Framework principal pour le développement cross-platform.
+- **Redux Toolkit** : Gestion centralisée de l'état (Auth, Reports, UI).
+- **React Navigation** : Navigation imbriquée via Stack et Tab Navigators.
+- **Axios** : Client HTTP pour la communication avec l'API backend.
+- **Expo SecureStore** : Stockage sécurisé des jetons d'authentification sur l'appareil.
+- **Expo Image Picker** : Gestion de la caméra et de la galerie pour les avatars et rapports.
 
 ---
 
 # 📂 3. Structure du projet
 
-```
+Voici l'organisation actuelle du dossier `src/` basée sur l'architecture du projet :
+
+```text
 Mobile/
-│
-├── App.js
-├── app.json
-├── package.json
-│
-├── assets/
-│   ├── icons/
-│   ├── images/
-│   └── fonts/
-│
-├── src/
-│   ├── api/
-│   ├── components/
-│   ├── context/
-│   ├── hooks/
-│   ├── navigation/
-│   ├── screens/
-│   ├── styles/
-│   └── utils/
-│
-└── README.md
-```
-
----
-
-# 📦 4. Installation du projet
-
-## 4.1. Cloner le projet
-
-```bash
-git clone https://github.com/<ton-repo>/SafeWalk.git
-cd SafeWalk/Mobile
-```
-
----
-
-## 4.2. Installer les dépendances
-
-```bash
-npm install
-```
-
----
-
-# ▶️ 5. Lancer l'application
-
-```bash
-npm run start
-```
-
-Ensuite :
-
-- Scanner le QR code (Expo Go)
-- ou lancer dans un émulateur
-
----
-
-# 🔌 6. Configuration API
-
-```
-src/api/axiosClient.js
-```
-
-```js
-baseURL: "http://10.0.2.2:3001/api";  
-```
-
----
-
-# 🔑 7. Authentification
-
-Gestion via :
-
-- **AuthContext**
-- **React Navigation**
-- Token stocké en mémoire (AsyncStorage bientôt)
-
----
-
-# 🧪 8. Écrans inclus
-
-- Login
-- Register
-- Home
-- DangerDetails
-- CreateReport
-- Profile
-
----
-
-# 🧭 9. Navigation
-
-```
-AppNavigator
-│
-├── AuthNavigator (Login/Register)
-└── TabNavigator
-     ├── HomeNavigator
-     └── ProfileScreen
-```
-
----
-
-# 🗺️ 10. À venir
-
-- Carte interactive
-- Upload photo
-- Notifications
-- Mode offline
-
----
-
-# 🏁 11. Support
-
-Consulte la documentation backend ou contacte l’équipe.
-
----
-
-Merci d’utiliser **SafeWalk Mobile** 🚀
+├── assets/             # Logos (logo.png), splash screen et icônes applicatives
+└── src/
+    ├── components/
+    │   ├── danger/     # Composants liés aux incidents (ex: FilterBar)
+    │   ├── layout/     # SafeWalkHeader, SplashScreen
+    │   └── ui/         # Composants atomiques (Card, TextField, PrimaryButton)
+    ├── navigation/     # Configuration des Navigators et CustomTabBar
+    ├── screens/        # Écrans organisés par modules (Auth, Home, Profile, Tab)
+    ├── services/       # Instances API (Axios) et gestion SecureStore
+    ├── store/          # Redux Store et Slices (authSlice, reportSlice)
+    └── styles/         # Thème global, couleurs, typo et espacements

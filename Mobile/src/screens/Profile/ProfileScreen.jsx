@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -34,29 +34,20 @@ export default function ProfileScreen() {
       >
         {/* Avatar */}
         <View style={{ position: "relative" }}>
-          <Image
-            source={{
-              uri: user?.avatar || "https://i.pravatar.cc/150?img=47",
-            }}
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: 48,
-              borderWidth: 3,
-              borderColor: colors.white,
-            }}
-          />
+          {user?.avatar ? (
+            // Si l'utilisateur a une photo, on affiche l'image
+            <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
+          ) : (
+            // Sinon, on affiche un cercle avec une icône "person"
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons name="person" size={50} color={colors.white} />
+            </View>
+          )}
 
-          {/* Edit avatar */}
+          {/* Bouton Camera pour éditer */}
           <TouchableOpacity
-            style={{
-              position: "absolute",
-              bottom: 0,
-              right: 0,
-              backgroundColor: colors.white,
-              borderRadius: 16,
-              padding: 6,
-            }}
+            style={styles.editBadge}
+            onPress={() => navigation.navigate("EditProfile")}
           >
             <Ionicons name="camera" size={16} color={colors.primary} />
           </TouchableOpacity>
@@ -172,3 +163,37 @@ function ProfileItem({ icon, label, onPress }) {
     </Card>
   );
 }
+
+const styles = StyleSheet.create({
+  
+  avatarImage: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 3,
+    borderColor: colors.white,
+  },
+  avatarPlaceholder: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.border, // Ou une couleur grise/neutre
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: colors.white,
+  },
+  editBadge: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 6,
+    elevation: 4, // Ombre pour Android
+    shadowColor: "#000", // Ombre pour iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+});

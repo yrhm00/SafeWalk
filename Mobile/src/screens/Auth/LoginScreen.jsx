@@ -4,6 +4,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Image, // Importation nécessaire pour le logo
+  StyleSheet,
 } from "react-native";
 import { useState } from "react";
 import TextField from "../../components/ui/TextField";
@@ -19,10 +21,22 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const authError = useSelector((state) => state.auth.error); // Récupère l'erreur du store
+  const authError = useSelector((state) => state.auth.error);
 
   const handleLogin = async () => {
     dispatch(loginThunk({ email, password }));
+  };
+
+  /**
+   * ✅ Affiche l'erreur sans faire planter l'application
+   * si le serveur renvoie un objet au lieu d'une chaîne.
+   */
+  const renderErrorMessage = () => {
+    if (!authError) return null;
+    const message = typeof authError === "string" 
+      ? authError 
+      : (authError.error || authError.message || "Login failed");
+    return <Text style={styles.errorText}>{message}</Text>;
   };
 
   return (
@@ -33,22 +47,18 @@ export default function LoginScreen() {
       >
         <View style={styles.container}>
           <View style={styles.header}>
+            {/* ✅ AJOUT DU LOGO (Mockup) */}
+            <Image 
+              source={require("../../../assets/logo.png")} 
+              style={styles.logo} 
+              resizeMode="contain"
+            />
             <Text style={typography.h1}>SafeWalk</Text>
             <Text style={typography.caption}>Your safety companion</Text>
           </View>
 
           <Card style={{ gap: spacing.md }}>
-            {authError && ( // Affiche l'erreur si elle existe
-              <Text
-                style={{
-                  color: colors.danger,
-                  textAlign: "center",
-                  fontSize: 13,
-                }}
-              >
-                {authError}
-              </Text>
-            )}
+            {renderErrorMessage()}
             <TextField
               placeholder="Email"
               value={email}
@@ -75,9 +85,21 @@ export default function LoginScreen() {
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: spacing.lg },
   header: { alignItems: "center", marginBottom: spacing.xl },
+  // ✅ Style pour le logo circulaire
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: spacing.md,
+  },
   footer: { marginTop: spacing.md, alignItems: "center" },
   link: { marginTop: 4, color: colors.primary, fontWeight: "600" },
-};
+  errorText: {
+    color: colors.danger,
+    textAlign: "center",
+    fontSize: 13,
+    marginBottom: spacing.xs,
+  },
+});
