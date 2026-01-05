@@ -10,6 +10,7 @@ export default function IncidentsScreen() {
       <View style={styles.container}>
         <Text style={typography.caption}>
           Incident list will be displayed here.
+          ici y a la liste des reports
         </Text>
       </View>
     </View>
