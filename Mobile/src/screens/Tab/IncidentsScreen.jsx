@@ -11,6 +11,7 @@ export default function IncidentsScreen() {
         <Text style={typography.caption}>
           Incident list will be displayed here.
           ici y a la liste des reports
+          flo est nul
         </Text>
       </View>
     </View>
