@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,7 +23,7 @@ export default function DangerDetailsScreen() {
   const { params } = useRoute();
   const reportId = params?.reportId;
   const token = useSelector((state) => state.auth.token);
-  
+
   const report = useSelector((state) =>
     state.reports.list.find((r) => String(r.id) === String(reportId))
   );
@@ -32,15 +40,33 @@ export default function DangerDetailsScreen() {
   const fetchSocialData = async () => {
     try {
       const [commentsRes, votesRes] = await Promise.all([
-        api.get(`/api/v1/reports/${reportId}/comments`, { headers: { Authorization: `Bearer ${token}` } }),
-        api.get(`/api/v1/reports/${reportId}/votes`, { headers: { Authorization: `Bearer ${token}` } })
+        api.get(`/api/v1/comments/report/${reportId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        api.get(`/api/v1/votes/report/${reportId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
+
       setComments(commentsRes.data);
+
+      console.log("🗳️ votesRes.data =", votesRes.data);
+
+      const votes = Array.isArray(votesRes.data)
+        ? votesRes.data
+        : Array.isArray(votesRes.data?.data)
+        ? votesRes.data.data
+        : [];
+
       // Logique simplifiée pour compter les votes (true = up, false = down)
-      const stats = votesRes.data.reduce((acc, v) => {
-        v.value ? acc.up++ : acc.down++;
-        return acc;
-      }, { up: 0, down: 0 });
+      const stats = votes.reduce(
+        (acc, v) => {
+          v.value ? acc.up++ : acc.down++;
+          return acc;
+        },
+        { up: 0, down: 0 }
+      );
+
       setVoteStats(stats);
     } catch (err) {
       console.log("Erreur chargement données sociales", err);
@@ -49,9 +75,13 @@ export default function DangerDetailsScreen() {
 
   const handleVote = async (value) => {
     try {
-      await api.post(`/api/v1/reports/${reportId}/votes`, { value }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(
+        `/api/v1/votes`,
+        { report_id: reportId, value },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       Alert.alert("Succès", "Votre vote a été enregistré.");
       fetchSocialData();
     } catch (e) {
@@ -62,9 +92,13 @@ export default function DangerDetailsScreen() {
   const postComment = async () => {
     if (!newComment.trim()) return;
     try {
-      await api.post(`/api/v1/reports/${reportId}/comments`, { content: newComment }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(
+        `/api/v1/comments`,
+        { report_id: reportId, content: newComment },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setNewComment("");
       fetchSocialData();
     } catch (e) {
@@ -77,28 +111,34 @@ export default function DangerDetailsScreen() {
   return (
     <View style={globalStyles.screen}>
       <SafeWalkHeader title="Détails de l'incident" showBack />
-      
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Infos principales */}
         <Card style={styles.mainCard}>
           <Text style={typography.h1}>{report.title}</Text>
-          <Text style={[typography.body, { marginVertical: spacing.sm }]}>{report.description}</Text>
-          <Text style={typography.small}>Statut: {report.status || "En attente"}</Text>
+          <Text style={[typography.body, { marginVertical: spacing.sm }]}>
+            {report.description}
+          </Text>
+          <Text style={typography.small}>
+            Statut: {report.status || "En attente"}
+          </Text>
         </Card>
 
         {/* Section Votes : Confirmer ou Infirmer */}
-        <Text style={[typography.h3, styles.sectionTitle]}>Fiabilité du signalement</Text>
+        <Text style={[typography.h3, styles.sectionTitle]}>
+          Fiabilité du signalement
+        </Text>
         <View style={styles.voteContainer}>
-          <TouchableOpacity 
-            style={[styles.voteButton, { backgroundColor: colors.success }]} 
+          <TouchableOpacity
+            style={[styles.voteButton, { backgroundColor: colors.success }]}
             onPress={() => handleVote(true)}
           >
             <Ionicons name="thumbs-up" size={24} color="white" />
             <Text style={styles.voteText}>Confirmer ({voteStats.up})</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.voteButton, { backgroundColor: colors.danger }]} 
+          <TouchableOpacity
+            style={[styles.voteButton, { backgroundColor: colors.danger }]}
             onPress={() => handleVote(false)}
           >
             <Ionicons name="thumbs-down" size={24} color="white" />
@@ -107,7 +147,9 @@ export default function DangerDetailsScreen() {
         </View>
 
         {/* Section Commentaires */}
-        <Text style={[typography.h3, styles.sectionTitle]}>Commentaires ({comments.length})</Text>
+        <Text style={[typography.h3, styles.sectionTitle]}>
+          Commentaires ({comments.length})
+        </Text>
         <Card>
           {comments.map((item, index) => (
             <View key={index} style={styles.commentItem}>
@@ -115,7 +157,7 @@ export default function DangerDetailsScreen() {
               <Text style={typography.body}>{item.content}</Text>
             </View>
           ))}
-          
+
           <View style={styles.inputRow}>
             <View style={{ flex: 1 }}>
               <TextField
@@ -138,22 +180,30 @@ const styles = StyleSheet.create({
   scrollContent: { padding: spacing.md },
   mainCard: { borderLeftWidth: 5, borderLeftColor: colors.primary },
   sectionTitle: { marginBottom: spacing.sm, marginTop: spacing.md },
-  voteContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: spacing.md },
-  voteButton: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    padding: spacing.md, 
-    borderRadius: 12, 
+  voteContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
+  },
+  voteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: spacing.md,
+    borderRadius: 12,
     width: "48%",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   voteText: { color: "white", fontWeight: "bold", marginLeft: spacing.sm },
-  commentItem: { 
-    paddingVertical: spacing.sm, 
-    borderBottomWidth: 1, 
+  commentItem: {
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    marginBottom: spacing.xs
+    marginBottom: spacing.xs,
   },
-  inputRow: { flexDirection: "row", alignItems: "center", marginTop: spacing.md },
-  sendIcon: { marginLeft: spacing.sm, padding: spacing.sm }
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.md,
+  },
+  sendIcon: { marginLeft: spacing.sm, padding: spacing.sm },
 });
