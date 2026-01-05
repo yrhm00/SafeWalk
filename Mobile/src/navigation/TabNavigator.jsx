@@ -2,10 +2,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import CustomTabBar from "./CustomTabBar";
 
 import HomeNavigator from "./HomeNavigator";
-import IncidentsScreen from "../screens/Tab/IncidentsScreen";
 import CreateReportScreen from "../screens/Tab/CreateReportScreen";
 import AlertsScreen from "../screens/Tab/AlertsScreen";
 import ProfileScreen from "../screens/Tab/ProfileScreen";
+import IncidentsNavigator from "./IncidentsNavigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -25,7 +25,7 @@ export default function TabNavigator() {
 
       <Tab.Screen
         name="Incidents"
-        component={IncidentsScreen}
+        component={IncidentsNavigator}
         options={{
           tabBarIcon: () => "alert-circle",
         }}
