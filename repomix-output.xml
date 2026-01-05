@@ -1,0 +1,2486 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+Mobile/.gitignore
+Mobile/App.js
+Mobile/app.json
+Mobile/assets/adaptive-icon.png
+Mobile/assets/favicon.png
+Mobile/assets/icon.png
+Mobile/assets/splash-icon.png
+Mobile/babel.config.js
+Mobile/index.js
+Mobile/package.json
+Mobile/README_Mobile.md
+Mobile/src/components/danger/FilterBar.jsx
+Mobile/src/components/layout/SafeWalkHeader.jsx
+Mobile/src/components/ui/Card.jsx
+Mobile/src/components/ui/PrimaryButton.jsx
+Mobile/src/components/ui/SelectField.jsx
+Mobile/src/components/ui/TextField.jsx
+Mobile/src/components/ui/UploadBox.jsx
+Mobile/src/data/fakeReports.js
+Mobile/src/navigation/AuthNavigator.jsx
+Mobile/src/navigation/CustomTabBar.jsx
+Mobile/src/navigation/HomeNavigator.jsx
+Mobile/src/navigation/index.js
+Mobile/src/navigation/TabNavigator.jsx
+Mobile/src/screens/Auth/LoginScreen.jsx
+Mobile/src/screens/Auth/RegisterScreen.jsx
+Mobile/src/screens/Home/DangerDetailsScreen.jsx
+Mobile/src/screens/Home/HomeScreen_1.jsx
+Mobile/src/screens/Home/HomeScreen.jsx
+Mobile/src/screens/Tab/AlertsScreen.jsx
+Mobile/src/screens/Tab/CreateReportScreen.jsx
+Mobile/src/screens/Tab/IncidentsScreen.jsx
+Mobile/src/screens/Tab/ProfileScreen.jsx
+Mobile/src/services/api.js
+Mobile/src/services/secureStore.js
+Mobile/src/store/authSlice.js
+Mobile/src/store/reportSlice.js
+Mobile/src/store/store.js
+Mobile/src/styles/colors.js
+Mobile/src/styles/globalStyles.js
+Mobile/src/styles/index.js
+Mobile/src/styles/markerColors.js
+Mobile/src/styles/shadows.js
+Mobile/src/styles/spacing.js
+Mobile/src/styles/typography.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="Mobile/.gitignore">
+# dependencies
+node_modules/
+
+# expo
+.expo/
+.expo-shared/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env
+.env
+</file>
+
+<file path="Mobile/babel.config.js">
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: ['react-native-reanimated/plugin'],
+  };
+};
+</file>
+
+<file path="Mobile/index.js">
+import { registerRootComponent } from 'expo';
+
+import App from './App';
+
+// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
+// It also ensures that whether you load the app in Expo Go or in a native build,
+// the environment is set up appropriately
+registerRootComponent(App);
+</file>
+
+<file path="Mobile/README_Mobile.md">
+# 📱 SafeWalk – Application Mobile (React Native + Expo)
+
+Bienvenu dans la partie **mobile** du projet SafeWalk.  
+Cette application permet d’afficher une carte interactive, de signaler des dangers, de consulter les alertes proches et d’interagir avec l’API SafeWalk.
+
+---
+
+# 🚀 1. Fonctionnalités principales
+
+- Affichage d’une **carte interactive**
+- Consultation des **dangers signalés**
+- Création d’un signalement (photo, position, type, description)
+- Authentification (login + register)
+- Profil utilisateur
+- Navigation moderne via **React Navigation**
+- Connexion en temps réel avec l’API SafeWalk (backend)
+
+---
+
+# 🛠️ 2. Technologies utilisées
+
+- **React Native**
+- **Expo**
+- **React Navigation**
+- **Axios**
+- **Context API**
+- **AsyncStorage** (plus tard)
+- **React Native Maps** *(sera ajouté plus tard)*
+
+---
+
+# 📂 3. Structure du projet
+
+```
+Mobile/
+│
+├── App.js
+├── app.json
+├── package.json
+│
+├── assets/
+│   ├── icons/
+│   ├── images/
+│   └── fonts/
+│
+├── src/
+│   ├── api/
+│   ├── components/
+│   ├── context/
+│   ├── hooks/
+│   ├── navigation/
+│   ├── screens/
+│   ├── styles/
+│   └── utils/
+│
+└── README.md
+```
+
+---
+
+# 📦 4. Installation du projet
+
+## 4.1. Cloner le projet
+
+```bash
+git clone https://github.com/<ton-repo>/SafeWalk.git
+cd SafeWalk/Mobile
+```
+
+---
+
+## 4.2. Installer les dépendances
+
+```bash
+npm install
+```
+
+---
+
+# ▶️ 5. Lancer l'application
+
+```bash
+npm run start
+```
+
+Ensuite :
+
+- Scanner le QR code (Expo Go)
+- ou lancer dans un émulateur
+
+---
+
+# 🔌 6. Configuration API
+
+```
+src/api/axiosClient.js
+```
+
+```js
+baseURL: "http://10.0.2.2:3001/api";  
+```
+
+---
+
+# 🔑 7. Authentification
+
+Gestion via :
+
+- **AuthContext**
+- **React Navigation**
+- Token stocké en mémoire (AsyncStorage bientôt)
+
+---
+
+# 🧪 8. Écrans inclus
+
+- Login
+- Register
+- Home
+- DangerDetails
+- CreateReport
+- Profile
+
+---
+
+# 🧭 9. Navigation
+
+```
+AppNavigator
+│
+├── AuthNavigator (Login/Register)
+└── TabNavigator
+     ├── HomeNavigator
+     └── ProfileScreen
+```
+
+---
+
+# 🗺️ 10. À venir
+
+- Carte interactive
+- Upload photo
+- Notifications
+- Mode offline
+
+---
+
+# 🏁 11. Support
+
+Consulte la documentation backend ou contacte l’équipe.
+
+---
+
+Merci d’utiliser **SafeWalk Mobile** 🚀
+</file>
+
+<file path="Mobile/src/data/fakeReports.js">
+export const fakeReports = [
+  {
+    id: 1,
+    title: "Poor lighting",
+    severity: "low",
+    latitude: 48.8566,
+    longitude: 2.3522,
+  },
+  {
+    id: 2,
+    title: "Suspicious activity",
+    severity: "high",
+    latitude: 48.858,
+    longitude: 2.35,
+  },
+  {
+    id: 3,
+    title: "Icy road",
+    severity: "medium",
+    latitude: 48.855,
+    longitude: 2.349,
+  },
+];
+</file>
+
+<file path="Mobile/src/navigation/CustomTabBar.jsx">
+import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { colors, spacing } from "../styles";
+
+export default function CustomTabBar({ state, descriptors, navigation }) {
+  return (
+    <View style={styles.container}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const isFocused = state.index === index;
+
+        // 🔵 BOUTON CENTRAL "+"
+        if (route.name === "CreateReport") {
+          return (
+            <TouchableOpacity
+              key={route.key}
+              style={styles.addButton}
+              onPress={() => navigation.navigate("CreateReport")}
+            >
+              <Ionicons name="add" size={32} color="white" />
+            </TouchableOpacity>
+          );
+        }
+
+        const iconName = options.tabBarIcon({
+          focused: isFocused,
+          color: isFocused ? colors.primary : colors.textMuted,
+        });
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            style={styles.tab}
+            onPress={() => navigation.navigate(route.name)}
+          >
+            <Ionicons
+              name={iconName}
+              size={22}
+              color={isFocused ? colors.primary : colors.textMuted}
+            />
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    height: 70,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "space-around",
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  tab: {
+    flex: 1,
+    alignItems: "center",
+  },
+  addButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -24, // dépasse la tab bar 
+    elevation: 8,
+  },
+});
+</file>
+
+<file path="Mobile/src/screens/Home/HomeScreen_1.jsx">
+import { View, Text, FlatList } from "react-native";
+import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
+import DangerCard from "../../components/danger/DangerCard";
+import FloatingButton from "../../components/ui/FloatingButton";
+import { globalStyles, spacing } from "../../styles";
+
+const FAKE_DANGERS = [
+  {
+    id: "1",
+    title: "Poor lighting",
+    description: "Street light broken near the park",
+    severity: "medium",
+  },
+  {
+    id: "2",
+    title: "Suspicious activity",
+    description: "Group of people acting strangely",
+    severity: "high",
+  },
+  {
+    id: "3",
+    title: "Broken sidewalk",
+    description: "Sidewalk damaged, hard to walk",
+    severity: "low",
+  },
+];
+
+export default function HomeScreen({ navigation }) {
+  return (
+    <View style={globalStyles.screen}>
+      {/* Header */}
+      <SafeWalkHeader />
+
+      {/* Map placeholder */}
+      <View style={styles.mapPlaceholder}>
+        <Text>🗺️ Map will be here</Text>
+      </View>
+
+      {/* Danger list */}
+      <FlatList
+        data={FAKE_DANGERS}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ padding: spacing.md }}
+        renderItem={({ item }) => (
+          <DangerCard
+            danger={item}
+            onPress={() =>
+              navigation.navigate("DangerDetails", { id: item.id })
+            }
+          />
+        )}
+      />
+
+      {/* Floating action button */}
+      <FloatingButton
+        onPress={() => navigation.navigate("CreateReport")}
+      />
+    </View>
+  );
+}
+
+const styles = {
+  mapPlaceholder: {
+    height: 220,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E5E7EB",
+  },
+};
+</file>
+
+<file path="Mobile/src/screens/Tab/AlertsScreen.jsx">
+import { View, Text } from "react-native";
+import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
+import { globalStyles, typography } from "../../styles";
+
+export default function AlertsScreen() {
+  return (
+    <View style={globalStyles.screen}>
+      <SafeWalkHeader title="Alerts" />
+
+      <View style={styles.container}>
+        <Text style={typography.caption}>
+          Notifications will appear here.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = {
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+</file>
+
+<file path="Mobile/src/screens/Tab/CreateReportScreen.jsx">
+import { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Switch,
+  KeyboardAvoidingView,
+  Platform,
+  Alert
+} from "react-native";
+import { globalStyles, spacing, typography, colors } from "../../styles";
+
+import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
+import Card from "../../components/ui/Card";
+import TextField from "../../components/ui/TextField";
+import SelectField from "../../components/ui/SelectField";
+import UploadBox from "../../components/ui/UploadBox";
+import PrimaryButton from "../../components/ui/PrimaryButton";
+
+import { useSelector } from "react-redux";
+import * as Location from "expo-location";
+import api from "../../services/api";
+import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
+
+export default function CreateReportScreen() {
+  const navigation = useNavigation();
+  const token = useSelector((state) => state.auth.token);
+
+  const [reportTypes, setReportTypes] = useState([]);
+  const [selectedType, setSelectedType] = useState(null);
+
+  const [description, setDescription] = useState("");
+  const [emergency, setEmergency] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [photo, setPhoto] = useState(null);
+
+  //permission localisation
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+
+      const pos = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      });
+    })();
+  }, []);
+
+  //permission galerie et appareil photo
+
+  useEffect(() => {
+    (async () => {
+      // Galerie
+      const mediaPermission =
+        await ImagePicker.getMediaLibraryPermissionsAsync();
+
+      if (!mediaPermission.granted) {
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      }
+
+      // Caméra
+      const cameraPermission = await ImagePicker.getCameraPermissionsAsync();
+
+      if (!cameraPermission.granted) {
+        await ImagePicker.requestCameraPermissionsAsync();
+      }
+    })();
+  }, []);
+
+  const takePhoto = async () => {
+  const result = await ImagePicker.launchCameraAsync({
+    allowsEditing: true,
+    quality: 0.3,
+    base64: true,
+  });
+
+  if (!result.canceled && result.assets?.length > 0) {
+    setPhoto(result.assets[0]);
+  }
+};
+
+const pickFromGallery = async () => {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'],
+    allowsEditing: true,
+    quality: 0.3,
+    base64: true,
+  });
+
+  if (!result.canceled && result.assets?.length > 0) {
+    setPhoto(result.assets[0]);
+  }
+};
+
+const pickImage = () => {
+  Alert.alert(
+    "Add Photo",
+    "Choose a source",
+    [
+      { text: "Camera", onPress: takePhoto },
+      { text: "Gallery", onPress: pickFromGallery },
+      { text: "Cancel", style: "cancel" },
+    ]
+  );
+};
+
+
+  const loadReportTypes = async () => {
+    try {
+      const res = await api.get("/api/v1/report-types");
+      setReportTypes(res.data);
+    } catch (err) {
+      console.log(
+        "❌ Error loading report types",
+        err.response?.data || err.message
+      );
+    }
+  };
+
+  useEffect(() => {
+    loadReportTypes();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!selectedType?.id) {
+      alert("Invalid report type");
+      return;
+    }
+
+    if (!description || !location) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    // 🔥 conversion base64 attendue par l’API
+    let imageBase64 = null;
+    if (photo?.base64) {
+      imageBase64 = `data:image/jpeg;base64,${photo.base64}`;
+    }
+
+    try {
+      const payload = {
+        title: selectedType.label,
+        description,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        image_url: imageBase64, // 👈 EXACTEMENT comme l’API
+        type_id: selectedType.id,
+        severity: emergency ? "high" : "medium",
+      };
+
+      console.log("📤 REPORT PAYLOAD:", payload);
+
+      await api.post("/api/v1/reports", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      alert("Report submitted successfully!");
+
+      // reset
+      setSelectedType(null);
+      setDescription("");
+      setEmergency(false);
+      setPhoto(null);
+
+      navigation.goBack();
+    } catch (e) {
+      console.log("❌ CREATE REPORT ERROR:", e.response?.data || e.message);
+      alert("Error while submitting report");
+    }
+  };
+
+  return (
+    <View style={globalStyles.screen}>
+      <SafeWalkHeader title="Report Incident" showBack />
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: spacing.xl }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Report Type */}
+          <Card>
+            <Text style={typography.h3}>⚠️ Report Type</Text>
+            <View style={{ marginTop: spacing.sm }}>
+              <SelectField
+                value={selectedType}
+                placeholder="Select incident type"
+                options={reportTypes}
+                onSelect={setSelectedType}
+              />
+            </View>
+          </Card>
+
+          {/* Description */}
+          <Card>
+            <Text style={typography.h3}>📝 Description</Text>
+            <View style={{ marginTop: spacing.sm }}>
+              <TextField
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Please describe the incident in detail..."
+              />
+              <Text
+                style={[
+                  typography.small,
+                  { alignSelf: "flex-end", marginTop: spacing.xs },
+                ]}
+              >
+                {description.length}/500
+              </Text>
+            </View>
+          </Card>
+
+          {/* Upload */}
+          <Card>
+            <Text style={typography.h3}>📷 Upload Photo (Optional)</Text>
+            <View style={{ marginTop: spacing.sm }}>
+              <UploadBox onPress={pickImage} photo={photo} />
+            </View>
+          </Card>
+
+          {/* Location */}
+          <Card>
+            <Text style={typography.h3}>📍 Current Location</Text>
+            <View style={{ marginTop: spacing.sm }}>
+              {location ? (
+                <>
+                  <Text style={typography.body}>Current position</Text>
+                  <Text style={typography.small}>
+                    Lat: {location.latitude.toFixed(5)}, Lng:{" "}
+                    {location.longitude.toFixed(5)}
+                  </Text>
+                </>
+              ) : (
+                <Text style={typography.small}>Fetching location...</Text>
+              )}
+            </View>
+          </Card>
+
+          {/* Emergency */}
+          <Card>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <View>
+                <Text style={typography.h3}>🚨 Emergency Report</Text>
+                <Text style={typography.caption}>
+                  Requires immediate attention
+                </Text>
+              </View>
+              <Switch
+                value={emergency}
+                onValueChange={setEmergency}
+                trackColor={{ true: colors.danger }}
+              />
+            </View>
+          </Card>
+
+          {/* Submit */}
+          <PrimaryButton title="Submit Report" onPress={handleSubmit} />
+
+          <Text
+            style={[
+              typography.small,
+              { textAlign: "center", marginTop: spacing.sm },
+            ]}
+          >
+            Your report will be reviewed within 24 hours
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
+  );
+}
+</file>
+
+<file path="Mobile/src/services/secureStore.js">
+import * as SecureStore from "expo-secure-store";
+
+const TOKEN_KEY = "safewalk_token";
+
+export const saveToken = async (token) => {
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
+};
+
+export const getToken = async () => {
+  return await SecureStore.getItemAsync(TOKEN_KEY);
+};
+
+export const removeToken = async () => {
+  await SecureStore.deleteItemAsync(TOKEN_KEY);
+};
+</file>
+
+<file path="Mobile/src/store/authSlice.js">
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../services/api";
+import { saveToken, getToken, removeToken } from "../services/secureStore";
+
+// ✅ 1) RESTORE SESSION (au démarrage)
+export const restoreSession = createAsyncThunk(
+  "auth/restoreSession",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = await getToken();
+      if (!token) return { token: null, user: null };
+
+      // On met le token dans l’état d’abord
+      // puis on appelle /me (axios interceptor utilisera le token, on le fera étape 5)
+      const meRes = await api.get("/api/v1/users/me", {
+        headers: { Authorization: `Bearer ${token}` }, // simple pour l’instant
+      });
+
+      return { token, user: meRes.data };
+    } catch (e) {
+      return rejectWithValue(e.response?.data || e.message);
+    }
+  }
+);
+
+// ✅ 2) LOGIN
+export const loginThunk = createAsyncThunk(
+  "auth/login",
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const res = await api.post("/api/v1/users/login", { email, password });
+      const { token, user } = res.data;
+
+      await saveToken(token);
+
+      return { token, user };
+    } catch (e) {
+      return rejectWithValue(e.response?.data || e.message);
+    }
+  }
+);
+
+// ✅ 2) Register
+export const registerThunk = createAsyncThunk(
+  "auth/register",
+  async ({ name, username, email, password }, { rejectWithValue }) => {
+    try {
+      // 1️⃣ Création du compte
+      await api.post("/api/v1/users/register", {
+        name,
+        username,
+        email,
+        password,
+      });
+
+      // 2️⃣ Login automatique
+      const loginRes = await api.post("/api/v1/users/login", {
+        email,
+        password,
+      });
+
+      const { token, user } = loginRes.data;
+
+      await saveToken(token);
+
+      return { token, user };
+    } catch (e) {
+      return rejectWithValue(e.response?.data || e.message);
+    }
+  }
+);
+
+
+// ✅ 3) LOGOUT
+export const logoutThunk = createAsyncThunk("auth/logout", async () => {
+  await removeToken();
+  return true;
+});
+
+const initialState = {
+  user: null,
+  token: null,
+  loading: true, // au lancement on est en "loading" le temps du restore
+  error: null,
+};
+
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    // (optionnel) si tu veux des actions sync
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    // restoreSession
+    builder
+      .addCase(restoreSession.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(restoreSession.fulfilled, (state, action) => {
+        state.loading = false;
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+      })
+      .addCase(restoreSession.rejected, (state, action) => {
+        state.loading = false;
+        state.token = null;
+        state.user = null;
+        state.error = action.payload || "Restore failed";
+      });
+
+    // loginThunk
+    builder
+      .addCase(loginThunk.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(loginThunk.fulfilled, (state, action) => {
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+      })
+      .addCase(loginThunk.rejected, (state, action) => {
+        state.error = action.payload || "Login failed";
+      });
+
+    // register
+    builder
+      .addCase(registerThunk.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(registerThunk.fulfilled, (state, action) => {
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+      })
+      .addCase(registerThunk.rejected, (state, action) => {
+        state.error = action.payload || "Register failed";
+      });
+
+    // logoutThunk
+    builder.addCase(logoutThunk.fulfilled, (state) => {
+      state.token = null;
+      state.user = null;
+    });
+  },
+});
+
+export const { clearError } = authSlice.actions;
+export default authSlice.reducer;
+</file>
+
+<file path="Mobile/src/store/reportSlice.js">
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../services/api";
+
+// 🔄 Récupérer tous les reports
+export const fetchReports = createAsyncThunk(
+  "reports/fetchAll",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const token = getState().auth.token;
+
+      const res = await api.get("/api/v1/reports", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data;
+    } catch (e) {
+      return rejectWithValue(e.response?.data || e.message);
+    }
+  }
+);
+
+const reportSlice = createSlice({
+  name: "reports",
+  initialState: {
+    list: [],
+    loading: false,
+    error: null,
+    filter: "all", // all | low | medium | high
+  },
+  reducers: {
+    setFilter: (state, action) => {
+      state.filter = action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchReports.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchReports.fulfilled, (state, action) => {
+        state.loading = false;
+        state.list = action.payload;
+      })
+      .addCase(fetchReports.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
+
+export const { setFilter } = reportSlice.actions;
+export default reportSlice.reducer;
+</file>
+
+<file path="Mobile/src/store/store.js">
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "./authSlice";
+import reportReducer from "./reportSlice";
+
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    reports: reportReducer,
+  },
+});
+</file>
+
+<file path="Mobile/src/styles/shadows.js">
+export const shadows = {
+  card: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+};
+</file>
+
+<file path="Mobile/src/styles/spacing.js">
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+};
+</file>
+
+<file path="Mobile/src/styles/typography.js">
+import { colors } from "./colors";
+
+export const typography = {
+  h1: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  h2: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  h3: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  body: {
+    fontSize: 16,
+    fontWeight: "400",
+    color: colors.textPrimary,
+  },
+  caption: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  small: {
+    fontSize: 12,
+    color: colors.textMuted,
+  },
+};
+</file>
+
+<file path="Mobile/app.json">
+{
+  "expo": {
+    "name": "SafeWalk_App",
+    "slug": "SafeWalk_App",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
+</file>
+
+<file path="Mobile/src/components/danger/FilterBar.jsx">
+import { View, TouchableOpacity, Text } from "react-native";
+import { colors, spacing, typography, markerColors } from "../../styles";
+
+const filters = [
+  { key: "all", label: "All" },
+  { key: "low", label: "Low" },
+  { key: "medium", label: "Medium" },
+  { key: "high", label: "High" },
+];
+
+export default function FilterBar({ active, onChange, style }) {
+  return (
+    <View style={[styles.container, style]}>
+      {filters.map((f) => {
+        const isActive = active === f.key;
+
+         // 🎯 couleur dynamique
+        const activeColor =
+          f.key === "all"
+            ? colors.primary
+            : markerColors[f.key];
+
+        return (
+          <TouchableOpacity
+            key={f.key}
+            style={[
+              styles.chip,
+              isActive && {backgroundColor: activeColor},
+            ]}
+            onPress={() => onChange(f.key)}
+          >
+            <Text
+              style={[
+                typography.caption,
+                isActive && styles.activeText,
+              ]}
+            >
+              {f.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+const styles = {
+  container: {
+    position: "absolute",
+    top: 120,
+    left: spacing.md,
+    right: spacing.md,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  chip: {
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  activeText: {
+    color: colors.white,
+  },
+};
+</file>
+
+<file path="Mobile/src/components/ui/Card.jsx">
+import { View } from "react-native";
+import { colors, spacing, shadows } from "../../styles";
+
+export default function Card({ children, style }) {
+  return (
+    <View
+      style={[
+        {
+          backgroundColor: colors.surface,
+          borderRadius: 16,
+          padding: spacing.md,
+          marginBottom: spacing.md,
+          ...shadows.card,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+</file>
+
+<file path="Mobile/src/components/ui/PrimaryButton.jsx">
+import { Text, TouchableOpacity } from "react-native";
+import { colors, spacing, typography } from "../../styles";
+
+export default function PrimaryButton({ title, onPress }) {
+  return (
+    <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.85}>
+      <Text style={styles.text}>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+
+const styles = {
+  button: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  text: {
+    color: colors.white,
+    fontSize: typography.body.fontSize,
+    fontWeight: "600",
+  },
+};
+</file>
+
+<file path="Mobile/src/components/ui/SelectField.jsx">
+import { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import { spacing, colors, typography } from "../../styles";
+import { Ionicons } from "@expo/vector-icons";
+
+export default function SelectField({
+  value,
+  placeholder = "Select an option",
+  options = [],
+  onSelect,
+}) {
+  const [open, setOpen] = useState(false);
+
+  const handleSelect = (item) => {
+    onSelect(item);
+    setOpen(false);
+  };
+
+  return (
+    <View>
+      {/* Champ principal */}
+      <TouchableOpacity
+        onPress={() => setOpen((prev) => !prev)}
+        activeOpacity={0.8}
+        style={{
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 12,
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm,
+          backgroundColor: colors.white,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Text
+          style={[
+            typography.body,
+            { color: value ? colors.textPrimary : colors.textMuted },
+          ]}
+        >
+          {value ? value.label : placeholder}
+        </Text>
+
+        <Ionicons
+          name={open ? "chevron-up" : "chevron-down"}
+          size={20}
+          color={colors.textMuted}
+        />
+      </TouchableOpacity>
+
+      {/* Liste déroulante */}
+      {open && (
+        <View
+          style={{
+            marginTop: spacing.xs,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 12,
+            backgroundColor: colors.white,
+            overflow: "hidden",
+          }}
+        >
+          {options.length > 0 ? (
+            options.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => handleSelect(item)}
+                style={{
+                  paddingVertical: spacing.sm,
+                  paddingHorizontal: spacing.md,
+                  borderBottomWidth: 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <Text style={typography.body}>{item.label}</Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={[typography.caption, { padding: spacing.sm }]}>
+              No options available
+            </Text>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+</file>
+
+<file path="Mobile/src/components/ui/UploadBox.jsx">
+import { TouchableOpacity, Text, View, Image } from "react-native";
+import { colors, spacing, typography } from "../../styles";
+import { Ionicons } from "@expo/vector-icons";
+
+export default function UploadBox({ onPress, photo }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.85}
+      style={{
+        borderWidth: 1,
+        borderStyle: "dashed",
+        borderColor: colors.border,
+        borderRadius: 12,
+        padding: spacing.lg,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.white,
+      }}
+    >
+      {photo ? (
+        <>
+          {/* Aperçu image */}
+          <Image
+            source={{ uri: photo.uri }}
+            style={{
+              width: "100%",
+              height: 160,
+              borderRadius: 10,
+            }}
+            resizeMode="cover"
+            pointerEvents="none"
+          />
+
+          <View
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              bottom: 8,
+              right: 8,
+              backgroundColor: "rgba(0,0,0,0.6)",
+              borderRadius: 20,
+              padding: 6,
+            }}
+          >
+            <Ionicons name="pencil" size={16} color="white" />
+          </View>
+        </>
+      ) : (
+        <>
+          {/* État vide */}
+          <Ionicons
+            name="cloud-upload-outline"
+            size={28}
+            color={colors.textMuted}
+          />
+          <Text style={[typography.caption, { marginTop: spacing.sm }]}>
+            Tap to upload a photo
+          </Text>
+          <Text style={typography.small}>JPG, PNG up to 10MB</Text>
+        </>
+      )}
+    </TouchableOpacity>
+  );
+}
+</file>
+
+<file path="Mobile/src/navigation/AuthNavigator.jsx">
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import LoginScreen from "../screens/Auth/LoginScreen";
+import RegisterScreen from "../screens/Auth/RegisterScreen";
+
+const Stack = createNativeStackNavigator();
+
+export default function AuthNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false}}>
+      <Stack.Screen 
+        name="Login" 
+        component={LoginScreen}
+      />
+
+      <Stack.Screen 
+        name="Register" 
+        component={RegisterScreen}
+      />
+    </Stack.Navigator>
+  );
+}
+</file>
+
+<file path="Mobile/src/screens/Tab/ProfileScreen.jsx">
+import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { Ionicons } from "@expo/vector-icons";
+
+import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
+import Card from "../../components/ui/Card";
+import PrimaryButton from "../../components/ui/PrimaryButton";
+
+import { globalStyles, colors, spacing, typography } from "../../styles";
+import { logoutThunk } from "../../store/authSlice";
+
+export default function ProfileScreen() {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
+
+  const handleLogout = () => {
+    dispatch(logoutThunk());
+  };
+
+  return (
+    <View style={globalStyles.screen}>
+      <SafeWalkHeader title="Profile" />
+
+      {/* ===== HEADER PROFILE ===== */}
+      <View
+        style={{
+          backgroundColor: colors.primary,
+          paddingVertical: spacing.xl,
+          alignItems: "center",
+        }}
+      >
+        {/* Avatar */}
+        <View style={{ position: "relative" }}>
+          <Image
+            source={{
+              uri: user?.avatar || "https://i.pravatar.cc/150?img=47",
+            }}
+            style={{
+              width: 96,
+              height: 96,
+              borderRadius: 48,
+              borderWidth: 3,
+              borderColor: colors.white,
+            }}
+          />
+
+          {/* Edit avatar */}
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              backgroundColor: colors.white,
+              borderRadius: 16,
+              padding: 6,
+            }}
+          >
+            <Ionicons name="camera" size={16} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Name */}
+        <Text
+          style={[
+            typography.h2,
+            { color: colors.white, marginTop: spacing.sm },
+          ]}
+        >
+          {user?.name || "User"}
+        </Text>
+
+        {/* Email */}
+        <Text
+          style={[typography.caption, { color: colors.white, opacity: 0.9 }]}
+        >
+          {user?.email}
+        </Text>
+      </View>
+
+      {/* ===== OPTIONS ===== */}
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: spacing.xl }}
+        showsVerticalScrollIndicator={false}
+      >
+        <ProfileItem icon="person-outline" label="Edit Profile" />
+        <ProfileItem icon="notifications-outline" label="Notifications" />
+        <ProfileItem icon="shield-checkmark-outline" label="Privacy Settings" />
+        <ProfileItem icon="help-circle-outline" label="Help & Support" />
+
+        {/* ===== LOGOUT ===== */}
+        <Card
+          style={{
+            marginTop: spacing.lg,
+            borderWidth: 1,
+            borderColor: colors.danger,
+            backgroundColor: "#FFF5F5",
+          }}
+        >
+          <TouchableOpacity
+            onPress={handleLogout}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: spacing.md,
+            }}
+          >
+            <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+            <Text
+              style={{
+                color: colors.danger,
+                fontWeight: "600",
+                marginLeft: spacing.sm,
+              }}
+            >
+              Logout
+            </Text>
+          </TouchableOpacity>
+        </Card>
+      </ScrollView>
+    </View>
+  );
+}
+
+/* ===== ITEM COMPONENT ===== */
+function ProfileItem({ icon, label, onPress }) {
+  return (
+    <Card>
+      <TouchableOpacity
+        onPress={onPress}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              padding: spacing.sm,
+              borderRadius: 10,
+              marginRight: spacing.md,
+            }}
+          >
+            <Ionicons name={icon} size={20} color={colors.primary} />
+          </View>
+          <Text style={typography.body}>{label}</Text>
+        </View>
+
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      </TouchableOpacity>
+    </Card>
+  );
+}
+</file>
+
+<file path="Mobile/src/services/api.js">
+import axios from "axios";
+
+const API_URL = "http://192.168.2.52:3001"; // <-- change avec "ton ipv4 local" + :3001 
+
+const api = axios.create({
+  baseURL: API_URL,
+  timeout: 5000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export default api;
+</file>
+
+<file path="Mobile/src/styles/colors.js">
+export const colors = {
+  // Brand
+  primary: "#1E88E5",
+  primaryDark: "#1565C0",
+
+  // Status
+  danger: "#E53935",
+  warning: "#FB8C00",
+  success: "#43A047",
+
+  // Neutrals
+  background: "#FFFFFF",
+  surface: "#F7F9FC",
+  border: "#E0E0E0",
+
+  // Text
+  textPrimary: "#111111",
+  textSecondary: "#6B7280",
+  textMuted: "#9CA3AF",
+
+  // Others
+  white: "#FFFFFF",
+  black: "#000000",
+};
+</file>
+
+<file path="Mobile/src/styles/globalStyles.js">
+import { colors } from "./colors";
+
+export const globalStyles = {
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+};
+</file>
+
+<file path="Mobile/src/styles/markerColors.js">
+export const markerColors = {
+  low: "green",
+  medium: "orange",
+  high: "red",
+};
+</file>
+
+<file path="Mobile/App.js">
+import { Provider } from "react-redux";
+import { store } from "./src/store/store";
+import Navigation from "./src/navigation";
+
+
+
+export default function App() {
+  return (
+      <Provider store={store}>
+        <Navigation />
+      </Provider>
+  );
+}
+</file>
+
+<file path="Mobile/src/components/layout/SafeWalkHeader.jsx">
+import { View, Text, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { typography, spacing, colors, shadows } from "../../styles";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function SafeWalkHeader({
+  title = "SafeWalk",
+  showBack = false,
+}) {
+  const navigation = useNavigation();
+
+  return (
+    <SafeAreaView style={styles.safe} edges={["top"]}>
+      <View style={styles.container}>
+        {showBack ? (
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 24 }} />
+        )}
+
+        <Text style={typography.h2}>{title}</Text>
+
+        <TouchableOpacity>
+          <Ionicons
+            name="person-circle-outline"
+            size={30}
+            color={colors.textPrimary}
+          />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = {
+  safe: {
+    backgroundColor: colors.white,
+  },
+  // SafeWalkHeader styles
+  container: {
+    height: 56,
+    paddingHorizontal: spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.white,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    ...shadows.card,
+  },
+};
+</file>
+
+<file path="Mobile/src/components/ui/TextField.jsx">
+import { TextInput, View } from "react-native";
+import { colors, spacing, typography } from "../../styles";
+
+export default function TextField({
+  value,
+  onChangeText,
+  placeholder,
+  secure = false,
+  keyboardType = "default"
+}) {
+  return (
+    <View style={styles.container}>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.textMuted}
+        secureTextEntry={secure}
+        style={styles.input}
+        keyboardType={keyboardType}
+      />
+    </View>
+  );
+}
+
+const styles = {
+  container: {
+    width: "100%",
+  },
+  input: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: typography.body.fontSize,
+    color: colors.textPrimary,
+  },
+};
+</file>
+
+<file path="Mobile/src/navigation/index.js">
+import { useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { restoreSession } from "../store/authSlice";
+import AuthNavigator from "./AuthNavigator";
+import TabNavigator from "./TabNavigator";
+import { NavigationContainer } from "@react-navigation/native";
+
+export default function Navigation() {
+  const dispatch = useDispatch();
+  const { token, loading } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(restoreSession());
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  const isAuthenticated = !!token;
+
+  return (
+    <NavigationContainer>
+      {isAuthenticated ? <TabNavigator /> : <AuthNavigator />}
+    </NavigationContainer>
+  );
+}
+</file>
+
+<file path="Mobile/src/screens/Auth/LoginScreen.jsx">
+import {
+  View,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+} from "react-native";
+import { useState } from "react";
+import TextField from "../../components/ui/TextField";
+import PrimaryButton from "../../components/ui/PrimaryButton";
+import {
+  globalStyles,
+  typography,
+  spacing,
+  colors,
+  shadows,
+} from "../../styles";
+import { useNavigation } from "@react-navigation/native";
+
+import { useDispatch, useSelector } from "react-redux";
+import { loginThunk } from "../../store/authSlice";
+import Card from "../../components/ui/Card";
+
+export default function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const navigation = useNavigation();
+
+  const dispatch = useDispatch();
+  const authError = useSelector((state) => state.auth.error);
+
+  const handleLogin = async () => {
+    const action = await dispatch(loginThunk({ email, password }));
+    if (loginThunk.rejected.match(action)) {
+      console.log("❌ Login failed:", action.payload);
+    }
+  };
+
+  return (
+    <View style={globalStyles.screen}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
+          {/* Header / Branding */}
+          <View style={styles.header}>
+            <Text style={typography.h1}>SafeWalk</Text>
+            <Text style={typography.caption}>Your safety companion</Text>
+          </View>
+
+          {/* Card Login */}
+          <Card style={{ gap: spacing.md }}>
+            <TextField
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+
+            <TextField
+              placeholder="Password"
+              value={password}
+              secure
+              onChangeText={setPassword}
+            />
+
+            <PrimaryButton title="Sign In" onPress={handleLogin} />
+
+            <View style={styles.footer}>
+              <Text style={typography.small}>No account yet?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+                <Text style={styles.link}>Create an account</Text>
+              </TouchableOpacity>
+            </View>
+          </Card>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
+  );
+}
+
+const styles = {
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: spacing.xl,
+  },
+  footer: {
+    marginTop: spacing.md,
+    alignItems: "center",
+  },
+  link: {
+    marginTop: 4,
+    color: colors.primary,
+    fontWeight: "600",
+  },
+};
+</file>
+
+<file path="Mobile/src/screens/Tab/IncidentsScreen.jsx">
+import { View, Text } from "react-native";
+import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
+import { globalStyles, typography } from "../../styles";
+
+export default function IncidentsScreen() {
+  return (
+    <View style={globalStyles.screen}>
+      <SafeWalkHeader title="Incidents" />
+
+      <View style={styles.container}>
+        <Text style={typography.caption}>
+          Incident list will be displayed here.
+          ici y a la liste des reports
+          flo est nul
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = {
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+</file>
+
+<file path="Mobile/src/styles/index.js">
+export { colors } from "./colors";
+export { spacing } from "./spacing";
+export { typography } from "./typography";
+export { shadows } from "./shadows";
+export { globalStyles } from "./globalStyles";
+export { markerColors } from "./markerColors"
+</file>
+
+<file path="Mobile/package.json">
+{
+  "name": "safewalk_app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@gorhom/bottom-sheet": "^4.4.7",
+    "@react-navigation/bottom-tabs": "^7.8.12",
+    "@react-navigation/native": "^7.1.25",
+    "@react-navigation/native-stack": "^7.8.6",
+    "@reduxjs/toolkit": "^2.11.2",
+    "axios": "^1.13.2",
+    "expo": "~54.0.26",
+    "expo-image-picker": "~17.0.10",
+    "expo-location": "~19.0.8",
+    "expo-secure-store": "~15.0.8",
+    "expo-status-bar": "~3.0.8",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-map-clustering": "^4.0.0",
+    "react-native-maps": "1.20.1",
+    "react-native-safe-area-context": "^5.6.2",
+    "react-native-screens": "~4.16.0",
+    "react-redux": "^9.2.0",
+    "zustand": "^5.0.9"
+  },
+  "private": true,
+  "devDependencies": {
+    "babel-preset-expo": "^54.0.9"
+  }
+}
+</file>
+
+<file path="Mobile/src/navigation/HomeNavigator.jsx">
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import HomeScreen from "../screens/Home/HomeScreen";
+import DangerDetailsScreen from "../screens/Home/DangerDetailsScreen";
+import CreateReportScreen from "../screens/Tab/CreateReportScreen";
+
+const Stack = createNativeStackNavigator();
+
+export default function HomeNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{headerShown: false}}>
+
+      <Stack.Screen 
+        name="Home" 
+        component={HomeScreen}
+      />
+
+      <Stack.Screen 
+        name="DangerDetails" 
+        component={DangerDetailsScreen}
+        options={{ title: "Danger Details" }}
+      />
+
+      <Stack.Screen 
+        name="CreateReport" 
+        component={CreateReportScreen}
+        options={{ title: "New Report" }}
+      />
+
+    </Stack.Navigator>
+  );
+}
+</file>
+
+<file path="Mobile/src/navigation/TabNavigator.jsx">
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import CustomTabBar from "./CustomTabBar";
+
+import HomeNavigator from "./HomeNavigator";
+import IncidentsScreen from "../screens/Tab/IncidentsScreen";
+import CreateReportScreen from "../screens/Tab/CreateReportScreen";
+import AlertsScreen from "../screens/Tab/AlertsScreen";
+import ProfileScreen from "../screens/Tab/ProfileScreen";
+
+const Tab = createBottomTabNavigator();
+
+export default function TabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+    >
+      <Tab.Screen
+        name="Map"
+        component={HomeNavigator}
+        options={{
+          tabBarIcon: () => "map",
+        }}
+      />
+
+      <Tab.Screen
+        name="Incidents"
+        component={IncidentsScreen}
+        options={{
+          tabBarIcon: () => "alert-circle",
+        }}
+      />
+
+      {/* TAB CENTRALE */}
+      <Tab.Screen
+        name="CreateReport"
+        component={CreateReportScreen}
+        options={{
+          tabBarIcon: () => null,
+        }}
+      />
+
+      <Tab.Screen
+        name="Alerts"
+        component={AlertsScreen}
+        options={{
+          tabBarIcon: () => "notifications",
+        }}
+      />
+
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: () => "person",
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+</file>
+
+<file path="Mobile/src/screens/Home/DangerDetailsScreen.jsx">
+import { View, Text } from "react-native";
+import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
+import { globalStyles, typography, spacing } from "../../styles";
+
+import { useRoute } from "@react-navigation/native";
+import { useSelector } from "react-redux";
+
+export default function DangerDetailsScreen() {
+  const { params } = useRoute();
+  const reportId = params?.reportId;
+
+  const report = useSelector((state) =>
+    state.reports.list.find(
+      (r) => String(r.id) === String(reportId)
+    )
+  );
+
+  if (!report) {
+    return (
+      <View style={globalStyles.screen}>
+        <SafeWalkHeader title="Danger details" showBack />
+        <View style={styles.container}>
+          <Text style={typography.h2}>Report not found</Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={globalStyles.screen}>
+      <SafeWalkHeader title="Danger details" showBack />
+
+      <View style={styles.container}>
+        <Text style={typography.h2}>{report.title}</Text>
+
+        <Text style={typography.body}>{report.description}</Text>
+
+        <Text style={typography.caption}>
+          Severity: {report.severity}
+          Type : {report.type_id}
+        </Text>
+
+        <Text style={typography.caption}>
+          Status: {report.status}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = {
+  container: {
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
+};
+</file>
+
+<file path="Mobile/src/screens/Auth/RegisterScreen.jsx">
+import {
+  View,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+} from "react-native";
+import { useState } from "react";
+import TextField from "../../components/ui/TextField";
+import PrimaryButton from "../../components/ui/PrimaryButton";
+import { useNavigation } from "@react-navigation/native";
+import {
+  globalStyles,
+  typography,
+  spacing,
+  colors,
+  shadows,
+} from "../../styles";
+
+import { useDispatch, useSelector } from "react-redux";
+import { registerThunk } from "../../store/authSlice";
+import Card from "../../components/ui/Card";
+
+export default function RegisterScreen() {
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const dispatch = useDispatch();
+  const authError = useSelector((state) => state.auth.error);
+
+  const navigation = useNavigation();
+
+  const handleRegister = async () => {
+    console.log("🟢 HANDLE REGISTER CLICKED");
+
+    if (password !== confirmPassword) {
+      console.log("❌ Passwords do not match");
+      return;
+    }
+
+    const action = await dispatch(
+      registerThunk({ name,username, email, password })
+    );
+
+    console.log("🟡 REGISTER ACTION:", action);
+
+    if (registerThunk.rejected.match(action)) {
+      console.log("❌ Register failed:", action.payload);
+    }
+  };
+
+  return (
+    
+      <View style={globalStyles.screen}>
+        <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={typography.h1}>Create account</Text>
+            <Text style={typography.caption}>Join SafeWalk and stay safe</Text>
+          </View>
+
+          {/* Card */}
+          <Card style= {{gap: spacing.md}}>
+            <TextField placeholder="Name" value={name} onChangeText={setName} />
+
+            <TextField
+              placeholder="Username"
+              value={username}
+              onChangeText={setUsername}
+            />
+
+            <TextField
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+
+            <TextField
+              placeholder="Password"
+              secure
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            <TextField
+              placeholder="Confirm password"
+              secure
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+
+            <PrimaryButton title="Register" onPress={handleRegister} />
+
+            <View style={styles.footer}>
+              <Text style={typography.small}>Already have an account?</Text>
+
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text style={styles.link}>Sign in</Text>
+              </TouchableOpacity>
+            </View>
+          </Card>
+        </View>
+        </KeyboardAvoidingView>
+      </View>
+    
+  );
+}
+
+const styles = {
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: spacing.xl,
+  },
+  footer: {
+    marginTop: spacing.md,
+    alignItems: "center",
+  },
+  link: {
+    marginTop: 4,
+    color: colors.primary,
+    fontWeight: "600",
+  },
+};
+</file>
+
+<file path="Mobile/src/screens/Home/HomeScreen.jsx">
+import { useState, useRef, useEffect, useCallback } from "react";
+import { View, Text, StyleSheet, Alert } from "react-native";
+import { Marker, Callout } from "react-native-maps";
+import MapView from "react-native-map-clustering";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import * as Location from "expo-location";
+
+import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
+import FilterBar from "../../components/danger/FilterBar";
+
+import {
+  colors,
+  spacing,
+  globalStyles,
+  shadows,
+  markerColors,
+  typography,
+} from "../../styles";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { useDispatch, useSelector } from "react-redux";
+import { fetchReports } from "../../store/reportSlice";
+
+export default function HomeScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const reports = useSelector((state) => state.reports.list);
+
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(fetchReports());
+    }, [dispatch])
+  );
+
+  const insets = useSafeAreaInsets();
+  const headerOffset = insets.top + HEADER_HEIGHT;
+  const searchTop = headerOffset + spacing.sm;
+  const filtersTop = searchTop + SEARCH_HEIGHT + spacing.sm;
+
+  const [filter, setFilter] = useState("all");
+
+  // ✅ UTILISATION DES REPORTS REDUX (plus de fakeReports)
+  const filteredReports =
+    filter === "all" ? reports : reports.filter((r) => r.severity === filter);
+
+  const mapRef = useRef(null);
+  const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission required",
+          "Location access is needed to show nearby dangers."
+        );
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setUserLocation(location.coords);
+
+      mapRef.current?.animateToRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      });
+    })();
+  }, []);
+
+  return (
+    <View style={globalStyles.container}>
+      {/* MAP FULL SCREEN */}
+      <MapView
+        style={StyleSheet.absoluteFillObject}
+        ref={mapRef}
+        showsUserLocation
+        initialRegion={{ // Namur
+          latitude: 50.4674,
+          longitude: 4.8718,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }}
+        radius={40}
+        extent={512}
+        animationEnabled = {false}
+      >
+        {filteredReports.map((report) => (
+          <Marker
+            key={report.id}
+            coordinate={{
+              latitude: report.latitude,
+              longitude: report.longitude,
+            }}
+            pinColor={markerColors[report.severity]}
+            tracksViewChanges={false}
+          >
+            <Callout
+              tooltip
+              onPress={() =>
+                navigation.navigate("DangerDetails", {
+                  reportId: report.id,
+                })
+              }
+            >
+              <View style={styles.callout}>
+                <Text style={typography.h3}>{report.title}</Text>
+                <Text style={typography.small}>
+                  Severity: {report.severity}
+                </Text>
+              </View>
+            </Callout>
+          </Marker>
+        ))}
+      </MapView>
+
+      {/* HEADER */}
+      <View style={styles.header}>
+        <SafeWalkHeader />
+      </View>
+
+      {/* SEARCH BAR */}
+      <View style={[styles.search, { top: searchTop }]}>
+        <Text style={styles.searchPlaceholder}>🔍 Search location...</Text>
+      </View>
+
+      {/* FILTERS */}
+      <FilterBar
+        active={filter}
+        onChange={setFilter}
+        style={{ top: filtersTop }}
+      />
+    </View>
+  );
+}
+
+const HEADER_HEIGHT = 56;
+const SEARCH_HEIGHT = 44;
+
+const styles = {
+  container: {
+    flex: 1,
+  },
+
+  /* MAP FULL SCREEN */
+  map: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#E5F4FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mapText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+  },
+
+  /* OVERLAYS */
+  header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+
+  search: {
+    position: "absolute",
+    left: spacing.md,
+    right: spacing.md,
+    height: SEARCH_HEIGHT,
+    backgroundColor: colors.white,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.md,
+    borderRadius: 14,
+    ...shadows.card,
+    justifyContent: "center",
+  },
+  searchPlaceholder: {
+    color: colors.textMuted,
+    fontSize: 15,
+  },
+
+  filters: {
+    position: "absolute",
+    left: spacing.md,
+    right: spacing.md,
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+
+  filterChip: {
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderRadius: 20,
+    elevation: 2,
+  },
+
+  filterText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  callout: {
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 10,
+    minWidth: 140,
+  },
+};
+</file>
+
+</files>
