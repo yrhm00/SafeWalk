@@ -38,40 +38,32 @@ export default function DangerDetailsScreen() {
   }, [reportId]);
 
   const fetchSocialData = async () => {
-    try {
-      const [commentsRes, votesRes] = await Promise.all([
-        api.get(`/api/v1/comments/report/${reportId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        api.get(`/api/v1/votes/report/${reportId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+  try {
+    const [commentsRes, votesRes] = await Promise.all([
+      api.get(`/api/v1/comments/report/${reportId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      api.get(`/api/v1/votes/report/${reportId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]);
 
-      setComments(commentsRes.data);
+    setComments(commentsRes.data);
 
-      console.log("🗳️ votesRes.data =", votesRes.data);
+    console.log("🗳️ votesRes.data =", votesRes.data);
 
-      const votes = Array.isArray(votesRes.data)
-        ? votesRes.data
-        : Array.isArray(votesRes.data?.data)
-        ? votesRes.data.data
-        : [];
+    const summary = votesRes.data.summary;
 
-      // Logique simplifiée pour compter les votes (true = up, false = down)
-      const stats = votes.reduce(
-        (acc, v) => {
-          v.value ? acc.up++ : acc.down++;
-          return acc;
-        },
-        { up: 0, down: 0 }
-      );
+    setVoteStats({
+      up: Number(summary.upvotes),
+      down: Number(summary.downvotes),
+    });
+  } catch (err) {
+    console.log("Erreur chargement données sociales", err);
+  }
+};
 
-      setVoteStats(stats);
-    } catch (err) {
-      console.log("Erreur chargement données sociales", err);
-    }
-  };
+
 
   const handleVote = async (value) => {
     try {
