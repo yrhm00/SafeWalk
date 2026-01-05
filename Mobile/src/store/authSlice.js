@@ -2,149 +2,102 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../services/api";
 import { saveToken, getToken, removeToken } from "../services/secureStore";
 
-// ✅ 1) RESTORE SESSION (au démarrage)
-export const restoreSession = createAsyncThunk(
-  "auth/restoreSession",
-  async (_, { rejectWithValue }) => {
-    try {
-      const token = await getToken();
-      if (!token) return { token: null, user: null };
+// --- ACTIONS ASYNCHRONES (Celles qui parlent à l'API) ---
 
-      // On met le token dans l’état d’abord
-      // puis on appelle /me (axios interceptor utilisera le token, on le fera étape 5)
-      const meRes = await api.get("/api/v1/users/me", {
-        headers: { Authorization: `Bearer ${token}` }, // simple pour l’instant
-      });
-
-      return { token, user: meRes.data };
-    } catch (e) {
-      return rejectWithValue(e.response?.data || e.message);
-    }
+// Récupère la session au démarrage de l'app
+export const restoreSession = createAsyncThunk("auth/restoreSession", async (_, { rejectWithValue }) => {
+  try {
+    const token = await getToken();
+    if (!token) return { token: null, user: null };
+    const meRes = await api.get("/api/v1/users/me", { headers: { Authorization: `Bearer ${token}` } });
+    return { token, user: meRes.data };
+  } catch (e) {
+    return rejectWithValue(e.message);
   }
-);
+});
 
-// ✅ 2) LOGIN
-export const loginThunk = createAsyncThunk(
-  "auth/login",
-  async ({ email, password }, { rejectWithValue }) => {
-    try {
-      const res = await api.post("/api/v1/users/login", { email, password });
-      const { token, user } = res.data;
-
-      await saveToken(token);
-
-      return { token, user };
-    } catch (e) {
-      return rejectWithValue(e.response?.data || e.message);
-    }
+// Connexion
+export const loginThunk = createAsyncThunk("auth/login", async ({ email, password }, { rejectWithValue }) => {
+  try {
+    const res = await api.post("/api/v1/users/login", { email, password });
+    await saveToken(res.data.token);
+    return res.data; // contient { token, user }
+  } catch (e) {
+    return rejectWithValue(e.response?.data || "Erreur de connexion");
   }
-);
+});
 
-// ✅ 2) Register
-export const registerThunk = createAsyncThunk(
-  "auth/register",
-  async ({ name, username, email, password }, { rejectWithValue }) => {
-    try {
-      // 1️⃣ Création du compte
-      await api.post("/api/v1/users/register", {
-        name,
-        username,
-        email,
-        password,
-      });
-
-      // 2️⃣ Login automatique
-      const loginRes = await api.post("/api/v1/users/login", {
-        email,
-        password,
-      });
-
-      const { token, user } = loginRes.data;
-
-      await saveToken(token);
-
-      return { token, user };
-    } catch (e) {
-      return rejectWithValue(e.response?.data || e.message);
-    }
+// Inscription + Connexion automatique
+export const registerThunk = createAsyncThunk("auth/register", async (userData, { rejectWithValue }) => {
+  try {
+    await api.post("/api/v1/users/register", userData);
+    const loginRes = await api.post("/api/v1/users/login", { email: userData.email, password: userData.password });
+    await saveToken(loginRes.data.token);
+    return loginRes.data;
+  } catch (e) {
+    return rejectWithValue(e.response?.data || "Erreur d'inscription");
   }
-);
+});
 
-
-// ✅ 3) LOGOUT
+// Déconnexion
 export const logoutThunk = createAsyncThunk("auth/logout", async () => {
   await removeToken();
   return true;
 });
 
-const initialState = {
-  user: null,
-  token: null,
-  loading: true, // au lancement on est en "loading" le temps du restore
-  error: null,
-};
+// --- LE SLICE (Le cerveau de l'authentification) ---
 
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: {
+    user: null,   // Infos de l'utilisateur (nom, email, etc.)
+    token: null,  // Le jeton de sécurité
+    loading: true, // Est-ce qu'on est en train de charger ?
+    error: null,  // Message d'erreur s'il y en a un
+  },
   reducers: {
-    // (optionnel) si tu veux des actions sync
-    clearError: (state) => {
-      state.error = null;
+    // Action simple pour vider les erreurs
+    clearError: (state) => { state.error = null; },
+    
+    // ✅ CETTE ACTION MANQUAIT : Elle met à jour le store après un Edit Profile
+    updateUser: (state, action) => {
+      state.user = { ...state.user, ...action.payload };
     },
   },
   extraReducers: (builder) => {
-    // restoreSession
-    builder
-      .addCase(restoreSession.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(restoreSession.fulfilled, (state, action) => {
-        state.loading = false;
-        state.token = action.payload.token;
-        state.user = action.payload.user;
-      })
-      .addCase(restoreSession.rejected, (state, action) => {
-        state.loading = false;
-        state.token = null;
-        state.user = null;
-        state.error = action.payload || "Restore failed";
-      });
+    // 1. Gestion de la session au démarrage
+    builder.addCase(restoreSession.fulfilled, (state, action) => {
+      state.loading = false;
+      state.token = action.payload.token;
+      state.user = action.payload.user;
+    });
+    builder.addCase(restoreSession.rejected, (state) => {
+      state.loading = false;
+    });
 
-    // loginThunk
-    builder
-      .addCase(loginThunk.pending, (state) => {
-        state.error = null;
-      })
-      .addCase(loginThunk.fulfilled, (state, action) => {
-        state.token = action.payload.token;
-        state.user = action.payload.user;
-      })
-      .addCase(loginThunk.rejected, (state, action) => {
-        state.error = action.payload || "Login failed";
-      });
+    // 2. Gestion commune pour Login et Register (ils font la même chose en cas de succès)
+    const handleAuthFullfilled = (state, action) => {
+      state.token = action.payload.token;
+      state.user = action.payload.user;
+      state.error = null;
+    };
 
-    // register
-    builder
-      .addCase(registerThunk.pending, (state) => {
-        state.error = null;
-      })
-      .addCase(registerThunk.fulfilled, (state, action) => {
-        state.token = action.payload.token;
-        state.user = action.payload.user;
-      })
-      .addCase(registerThunk.rejected, (state, action) => {
-        state.error = action.payload || "Register failed";
-      });
+    builder.addCase(loginThunk.fulfilled, handleAuthFullfilled);
+    builder.addCase(registerThunk.fulfilled, handleAuthFullfilled);
 
-    // logoutThunk
+    // 3. Déconnexion
     builder.addCase(logoutThunk.fulfilled, (state) => {
       state.token = null;
       state.user = null;
     });
+
+     // 4. Gestion des erreurs
+    builder.addMatcher(
+      (action) => action.type.endsWith("/rejected"),
+      (state, action) => { state.error = action.payload; }
+    );
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, updateUser } = authSlice.actions;
 export default authSlice.reducer;

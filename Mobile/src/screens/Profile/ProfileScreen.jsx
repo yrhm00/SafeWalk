@@ -85,7 +85,11 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         showsVerticalScrollIndicator={false}
       >
-        <ProfileItem icon="person-outline" label="Edit Profile" />
+        <ProfileItem
+          icon="person-outline"
+          label="Edit Profile"
+          onPress={() => navigation.navigate("EditProfile")} // Ajoutez cette ligne
+        />
         <ProfileItem
           icon="notifications-outline"
           label="Notifications"

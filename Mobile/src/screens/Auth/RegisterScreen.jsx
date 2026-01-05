@@ -9,14 +9,7 @@ import { useState } from "react";
 import TextField from "../../components/ui/TextField";
 import PrimaryButton from "../../components/ui/PrimaryButton";
 import { useNavigation } from "@react-navigation/native";
-import {
-  globalStyles,
-  typography,
-  spacing,
-  colors,
-  shadows,
-} from "../../styles";
-
+import { globalStyles, typography, spacing, colors } from "../../styles";
 import { useDispatch, useSelector } from "react-redux";
 import { registerThunk } from "../../store/authSlice";
 import Card from "../../components/ui/Card";
@@ -30,107 +23,81 @@ export default function RegisterScreen() {
 
   const dispatch = useDispatch();
   const authError = useSelector((state) => state.auth.error);
-
   const navigation = useNavigation();
 
   const handleRegister = async () => {
-    console.log("🟢 HANDLE REGISTER CLICKED");
-
     if (password !== confirmPassword) {
-      console.log("❌ Passwords do not match");
+      alert("Passwords do not match");
       return;
     }
-
-    const action = await dispatch(
-      registerThunk({ name,username, email, password })
-    );
-
-    console.log("🟡 REGISTER ACTION:", action);
-
-    if (registerThunk.rejected.match(action)) {
-      console.log("❌ Register failed:", action.payload);
-    }
+    dispatch(registerThunk({ name, username, email, password }));
   };
 
   return (
-    
-      <View style={globalStyles.screen}>
-        <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <View style={globalStyles.screen}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <View style={styles.container}>
-          {/* Header */}
           <View style={styles.header}>
             <Text style={typography.h1}>Create account</Text>
             <Text style={typography.caption}>Join SafeWalk and stay safe</Text>
           </View>
 
-          {/* Card */}
-          <Card style= {{gap: spacing.md}}>
+          <Card style={{ gap: spacing.md }}>
+            {authError && (
+              <Text
+                style={{
+                  color: colors.danger,
+                  textAlign: "center",
+                  fontSize: 13,
+                }}
+              >
+                {authError}
+              </Text>
+            )}
             <TextField placeholder="Name" value={name} onChangeText={setName} />
-
             <TextField
               placeholder="Username"
               value={username}
               onChangeText={setUsername}
             />
-
             <TextField
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
             />
-
             <TextField
               placeholder="Password"
               secure
               value={password}
               onChangeText={setPassword}
             />
-
             <TextField
               placeholder="Confirm password"
               secure
               value={confirmPassword}
               onChangeText={setConfirmPassword}
             />
-
             <PrimaryButton title="Register" onPress={handleRegister} />
-
             <View style={styles.footer}>
               <Text style={typography.small}>Already have an account?</Text>
-
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text style={styles.link}>Sign in</Text>
               </TouchableOpacity>
             </View>
           </Card>
         </View>
-        </KeyboardAvoidingView>
-      </View>
-    
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = {
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: spacing.lg,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: spacing.xl,
-  },
-  footer: {
-    marginTop: spacing.md,
-    alignItems: "center",
-  },
-  link: {
-    marginTop: 4,
-    color: colors.primary,
-    fontWeight: "600",
-  },
+  container: { flex: 1, justifyContent: "center", padding: spacing.lg },
+  header: { alignItems: "center", marginBottom: spacing.xl },
+  footer: { marginTop: spacing.md, alignItems: "center" },
+  link: { marginTop: 4, color: colors.primary, fontWeight: "600" },
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,20 +15,24 @@ import {
   markerColors,
 } from "../../styles";
 
-import { useNavigation } from "@react-navigation/native";
+// Navigation & Redux
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchReports } from "../../store/reportSlice";
 
 // Layout & UI
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import Card from "../../components/ui/Card";
 import FilterBar from "../../components/danger/FilterBar";
 
-import api from "../../services/api";
-
 export default function IncidentsScreen() {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
-  const [incidents, setIncidents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // ✅ Utilisation du store Redux au lieu du state local
+  const incidents = useSelector((state) => state.reports.list);
+  const loading = useSelector((state) => state.reports.loading);
+  
   const [activeStatus, setActiveStatus] = useState("all");
 
   const statusOptions = [
@@ -38,21 +42,12 @@ export default function IncidentsScreen() {
     { key: "resolved", label: "Resolved" },
   ];
 
-  useEffect(() => {
-    loadIncidents();
-  }, []);
-
-  const loadIncidents = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/api/v1/reports");
-      setIncidents(res.data);
-    } catch (err) {
-      console.log("❌ Error loading incidents:", err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ✅ Rafraîchit les données de l'API dès que l'écran est affiché
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(fetchReports());
+    }, [dispatch])
+  );
 
   const filteredIncidents = useMemo(() => {
     if (activeStatus === "all") return incidents;
@@ -62,9 +57,7 @@ export default function IncidentsScreen() {
     );
   }, [activeStatus, incidents]);
 
-  // Fonction pour récupérer la couleur de sévérité
   const getSeverityColor = (severity) => {
-    // On utilise les couleurs de markerColors.js
     return markerColors[severity?.toLowerCase()] || colors.textMuted;
   };
 
@@ -81,7 +74,6 @@ export default function IncidentsScreen() {
     }
   };
 
-  //affichage de la date du report
   const formatTimeAgo = (dateString) => {
     if (!dateString) return "Unknown time";
 
@@ -99,14 +91,13 @@ export default function IncidentsScreen() {
     if (diffInDays === 1) return "Yesterday";
     if (diffInDays < 7) return `${diffInDays}d ago`;
 
-    return past.toLocaleDateString(); // Affiche la date complète après une semaine
+    return past.toLocaleDateString();
   };
 
   const renderIncident = ({ item }) => (
     <Card>
       <View style={styles.cardHeader}>
         <View style={styles.iconTitleRow}>
-          {/* Cercle de couleur SANS icône, basé sur la sévérité */}
           <View
             style={[
               styles.severityIndicator,
@@ -169,7 +160,8 @@ export default function IncidentsScreen() {
         />
       </View>
 
-      {loading ? (
+      {/* ✅ Utilisation de loading provenant du store Redux */}
+      {loading && incidents.length === 0 ? (
         <ActivityIndicator color={colors.primary} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
@@ -204,15 +196,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   iconTitleRow: { flexDirection: "row", alignItems: "center" },
-
-  // Nouveau style pour l'indicateur de sévérité (pastille de couleur)
   severityIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
     marginRight: spacing.sm,
   },
-
   statusBadge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,

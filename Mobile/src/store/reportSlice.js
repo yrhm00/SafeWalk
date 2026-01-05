@@ -1,19 +1,17 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../services/api";
 
-// 🔄 Récupérer tous les reports
+// --- ACTIONS ASYNCHRONES ---
+
+// Récupérer tous les rapports depuis l'API
 export const fetchReports = createAsyncThunk(
   "reports/fetchAll",
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-
       const res = await api.get("/api/v1/reports", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       return res.data;
     } catch (e) {
       return rejectWithValue(e.response?.data || e.message);
@@ -21,17 +19,24 @@ export const fetchReports = createAsyncThunk(
   }
 );
 
+// --- LE SLICE ---
+
 const reportSlice = createSlice({
   name: "reports",
   initialState: {
     list: [],
     loading: false,
     error: null,
-    filter: "all", // all | low | medium | high
+    filter: "all",
   },
   reducers: {
     setFilter: (state, action) => {
       state.filter = action.payload;
+    },
+    // ✅ CETTE ACTION PERMET LA MISE À JOUR AUTOMATIQUE
+    // On ajoute le nouveau rapport au début de la liste existante
+    addReport: (state, action) => {
+      state.list = [action.payload, ...state.list];
     },
   },
   extraReducers: (builder) => {
@@ -51,5 +56,5 @@ const reportSlice = createSlice({
   },
 });
 
-export const { setFilter } = reportSlice.actions;
+export const { setFilter, addReport } = reportSlice.actions;
 export default reportSlice.reducer;

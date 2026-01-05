@@ -7,17 +7,22 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  TouchableOpacity,
+  Modal,
+  FlatList,
+  StyleSheet,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { globalStyles, spacing, typography, colors } from "../../styles";
 
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import Card from "../../components/ui/Card";
 import TextField from "../../components/ui/TextField";
-import SelectField from "../../components/ui/SelectField";
 import UploadBox from "../../components/ui/UploadBox";
 import PrimaryButton from "../../components/ui/PrimaryButton";
 
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { addReport } from "../../store/reportSlice";
 import * as Location from "expo-location";
 import api from "../../services/api";
 import { useNavigation } from "@react-navigation/native";
@@ -25,17 +30,18 @@ import * as ImagePicker from "expo-image-picker";
 
 export default function CreateReportScreen() {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
 
   const [reportTypes, setReportTypes] = useState([]);
   const [selectedType, setSelectedType] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false); // État pour la Modal
 
   const [description, setDescription] = useState("");
   const [emergency, setEmergency] = useState(false);
   const [location, setLocation] = useState(null);
   const [photo, setPhoto] = useState(null);
 
-  //permission localisation
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -49,21 +55,14 @@ export default function CreateReportScreen() {
     })();
   }, []);
 
-  //permission galerie et appareil photo
-
   useEffect(() => {
     (async () => {
-      // Galerie
       const mediaPermission =
         await ImagePicker.getMediaLibraryPermissionsAsync();
-
       if (!mediaPermission.granted) {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       }
-
-      // Caméra
       const cameraPermission = await ImagePicker.getCameraPermissionsAsync();
-
       if (!cameraPermission.granted) {
         await ImagePicker.requestCameraPermissionsAsync();
       }
@@ -76,7 +75,6 @@ export default function CreateReportScreen() {
       quality: 0.3,
       base64: true,
     });
-
     if (!result.canceled && result.assets?.length > 0) {
       setPhoto(result.assets[0]);
     }
@@ -89,7 +87,6 @@ export default function CreateReportScreen() {
       quality: 0.3,
       base64: true,
     });
-
     if (!result.canceled && result.assets?.length > 0) {
       setPhoto(result.assets[0]);
     }
@@ -119,11 +116,8 @@ export default function CreateReportScreen() {
     loadReportTypes();
   }, []);
 
-  // degré d'importance manque dans les reponse api
   const getSeverityByLabel = (label) => {
     const t = label?.toLowerCase() || "";
-
-    // LOW : Problèmes d'infrastructure mineurs
     if (
       t.includes("sidewalk") ||
       t.includes("trottoir") ||
@@ -132,8 +126,6 @@ export default function CreateReportScreen() {
     ) {
       return "low";
     }
-
-    // MEDIUM : Dangers environnementaux
     if (
       t.includes("flooded") ||
       t.includes("inondée") ||
@@ -142,36 +134,27 @@ export default function CreateReportScreen() {
     ) {
       return "medium";
     }
-
-    // HIGH : Sécurité des personnes
     if (t.includes("suspicious") || t.includes("suspecte")) {
       return "high";
     }
-
-    return "medium"; // Sécurité : ne jamais renvoyer undefined
+    return "medium";
   };
 
   const handleSubmit = async () => {
-    if (!selectedType?.id) {
-      alert("Invalid report type");
-      return;
-    }
-
-    if (!description || !location) {
+    if (!selectedType?.id || !description || !location) {
       alert("Please fill all required fields");
       return;
-    }
-
-    // 🔥 conversion base64 attendue par l’API
-    let imageBase64 = null;
-    if (photo?.base64) {
-      imageBase64 = `data:image/jpeg;base64,${photo.base64}`;
     }
 
     try {
       const calculatedSeverity = emergency
         ? "high"
         : getSeverityByLabel(selectedType.label);
+
+      // Vérification de la présence de la base64
+      const imageBase64 = photo?.base64
+        ? `data:image/jpeg;base64,${photo.base64}`
+        : null;
 
       const payload = {
         title: selectedType.label,
@@ -180,30 +163,32 @@ export default function CreateReportScreen() {
         longitude: location.longitude,
         image_url: imageBase64,
         type_id: selectedType.id,
-        severity: calculatedSeverity, // Utilisation de la variable calculée
+        severity: calculatedSeverity,
       };
 
-      console.log("📤 REPORT PAYLOAD:", payload);
+      console.log("Envoi du rapport...", payload); // Debug
 
-      await api.post("/api/v1/reports", payload, {
+      const res = await api.post("/api/v1/reports", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
 
+      dispatch(addReport(res.data));
       alert("Report submitted successfully!");
-
-      // reset
       setSelectedType(null);
       setDescription("");
       setEmergency(false);
       setPhoto(null);
-
       navigation.goBack();
     } catch (e) {
-      console.log("❌ CREATE REPORT ERROR:", e.response?.data || e.message);
-      alert("Error while submitting report");
+      // Affiche l'erreur précise dans la console pour vous aider
+      console.error("Détails de l'erreur API:", e.response?.data || e.message);
+      alert(
+        "Error while submitting report: " +
+          (e.response?.data?.message || "Server error")
+      );
     }
   };
 
@@ -220,20 +205,28 @@ export default function CreateReportScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Report Type */}
+          {/* Report Type avec Trigger Modal */}
           <Card>
             <Text style={typography.h3}>⚠️ Report Type</Text>
-            <View style={{ marginTop: spacing.sm }}>
-              <SelectField
-                value={selectedType}
-                placeholder="Select incident type"
-                options={reportTypes}
-                onSelect={setSelectedType}
+            <TouchableOpacity
+              style={styles.modalTrigger}
+              onPress={() => setIsModalVisible(true)}
+            >
+              <Text
+                style={
+                  selectedType ? typography.body : { color: colors.textMuted }
+                }
+              >
+                {selectedType ? selectedType.label : "Select incident type"}
+              </Text>
+              <Ionicons
+                name="chevron-down"
+                size={20}
+                color={colors.textMuted}
               />
-            </View>
+            </TouchableOpacity>
           </Card>
 
-          {/* Description */}
           <Card>
             <Text style={typography.h3}>📝 Description</Text>
             <View style={{ marginTop: spacing.sm }}>
@@ -242,18 +235,9 @@ export default function CreateReportScreen() {
                 onChangeText={setDescription}
                 placeholder="Please describe the incident in detail..."
               />
-              <Text
-                style={[
-                  typography.small,
-                  { alignSelf: "flex-end", marginTop: spacing.xs },
-                ]}
-              >
-                {description.length}/500
-              </Text>
             </View>
           </Card>
 
-          {/* Upload */}
           <Card>
             <Text style={typography.h3}>📷 Upload Photo (Optional)</Text>
             <View style={{ marginTop: spacing.sm }}>
@@ -261,33 +245,22 @@ export default function CreateReportScreen() {
             </View>
           </Card>
 
-          {/* Location */}
           <Card>
             <Text style={typography.h3}>📍 Current Location</Text>
             <View style={{ marginTop: spacing.sm }}>
               {location ? (
-                <>
-                  <Text style={typography.body}>Current position</Text>
-                  <Text style={typography.small}>
-                    Lat: {location.latitude.toFixed(5)}, Lng:{" "}
-                    {location.longitude.toFixed(5)}
-                  </Text>
-                </>
+                <Text style={typography.small}>
+                  Lat: {location.latitude.toFixed(5)}, Lng:{" "}
+                  {location.longitude.toFixed(5)}
+                </Text>
               ) : (
                 <Text style={typography.small}>Fetching location...</Text>
               )}
             </View>
           </Card>
 
-          {/* Emergency */}
           <Card>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+            <View style={styles.emergencyRow}>
               <View>
                 <Text style={typography.h3}>🚨 Emergency Report</Text>
                 <Text style={typography.caption}>
@@ -302,19 +275,114 @@ export default function CreateReportScreen() {
             </View>
           </Card>
 
-          {/* Submit */}
           <PrimaryButton title="Submit Report" onPress={handleSubmit} />
-
-          <Text
-            style={[
-              typography.small,
-              { textAlign: "center", marginTop: spacing.sm },
-            ]}
-          >
-            Your report will be reviewed within 24 hours
-          </Text>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* MODAL DE SÉLECTION */}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={typography.h2}>Incident Type</Text>
+              <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+                <Ionicons name="close" size={28} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={reportTypes}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.typeItem,
+                    selectedType?.id === item.id && styles.selectedItem,
+                  ]}
+                  onPress={() => {
+                    setSelectedType(item);
+                    setIsModalVisible(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      typography.body,
+                      selectedType?.id === item.id && {
+                        color: colors.primary,
+                        fontWeight: "700",
+                      },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                  {selectedType?.id === item.id && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={22}
+                      color={colors.primary}
+                    />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  modalTrigger: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginTop: spacing.sm,
+  },
+  emergencyRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: spacing.lg,
+    maxHeight: "70%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  typeItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  selectedItem: {
+    backgroundColor: colors.primary + "10",
+    paddingHorizontal: spacing.sm,
+    borderRadius: 8,
+  },
+});

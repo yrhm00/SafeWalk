@@ -8,15 +8,8 @@ import {
 import { useState } from "react";
 import TextField from "../../components/ui/TextField";
 import PrimaryButton from "../../components/ui/PrimaryButton";
-import {
-  globalStyles,
-  typography,
-  spacing,
-  colors,
-  shadows,
-} from "../../styles";
+import { globalStyles, typography, spacing, colors } from "../../styles";
 import { useNavigation } from "@react-navigation/native";
-
 import { useDispatch, useSelector } from "react-redux";
 import { loginThunk } from "../../store/authSlice";
 import Card from "../../components/ui/Card";
@@ -24,17 +17,12 @@ import Card from "../../components/ui/Card";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const navigation = useNavigation();
-
   const dispatch = useDispatch();
-  const authError = useSelector((state) => state.auth.error);
+  const authError = useSelector((state) => state.auth.error); // Récupère l'erreur du store
 
   const handleLogin = async () => {
-    const action = await dispatch(loginThunk({ email, password }));
-    if (loginThunk.rejected.match(action)) {
-      console.log("❌ Login failed:", action.payload);
-    }
+    dispatch(loginThunk({ email, password }));
   };
 
   return (
@@ -44,30 +32,36 @@ export default function LoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.container}>
-          {/* Header / Branding */}
           <View style={styles.header}>
             <Text style={typography.h1}>SafeWalk</Text>
             <Text style={typography.caption}>Your safety companion</Text>
           </View>
 
-          {/* Card Login */}
           <Card style={{ gap: spacing.md }}>
+            {authError && ( // Affiche l'erreur si elle existe
+              <Text
+                style={{
+                  color: colors.danger,
+                  textAlign: "center",
+                  fontSize: 13,
+                }}
+              >
+                {authError}
+              </Text>
+            )}
             <TextField
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
             />
-
             <TextField
               placeholder="Password"
               value={password}
               secure
               onChangeText={setPassword}
             />
-
             <PrimaryButton title="Sign In" onPress={handleLogin} />
-
             <View style={styles.footer}>
               <Text style={typography.small}>No account yet?</Text>
               <TouchableOpacity onPress={() => navigation.navigate("Register")}>
@@ -82,22 +76,8 @@ export default function LoginScreen() {
 }
 
 const styles = {
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: spacing.lg,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: spacing.xl,
-  },
-  footer: {
-    marginTop: spacing.md,
-    alignItems: "center",
-  },
-  link: {
-    marginTop: 4,
-    color: colors.primary,
-    fontWeight: "600",
-  },
+  container: { flex: 1, justifyContent: "center", padding: spacing.lg },
+  header: { alignItems: "center", marginBottom: spacing.xl },
+  footer: { marginTop: spacing.md, alignItems: "center" },
+  link: { marginTop: 4, color: colors.primary, fontWeight: "600" },
 };
