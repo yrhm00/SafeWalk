@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://meningeal-overemotionally-remedios.ngrok-free.dev/"; // <-- change avec "ton ipv4 local" + :3001 
+const API_URL = "http://192.168.2.52:3001"; // <-- change avec "ton ipv4 local" + :3001 
 
 const api = axios.create({
   baseURL: API_URL,
