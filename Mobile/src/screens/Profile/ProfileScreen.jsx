@@ -2,6 +2,8 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 
+import { useNavigation } from "@react-navigation/native";
+
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import Card from "../../components/ui/Card";
 import PrimaryButton from "../../components/ui/PrimaryButton";
@@ -10,6 +12,7 @@ import { globalStyles, colors, spacing, typography } from "../../styles";
 import { logoutThunk } from "../../store/authSlice";
 
 export default function ProfileScreen() {
+  const navigation = useNavigation();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
 
@@ -83,9 +86,21 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <ProfileItem icon="person-outline" label="Edit Profile" />
-        <ProfileItem icon="notifications-outline" label="Notifications" />
-        <ProfileItem icon="shield-checkmark-outline" label="Privacy Settings" />
-        <ProfileItem icon="help-circle-outline" label="Help & Support" />
+        <ProfileItem
+          icon="notifications-outline"
+          label="Notifications"
+          onPress={() => navigation.navigate("Alerts")}
+        />
+        <ProfileItem
+          icon="shield-checkmark-outline"
+          label="Privacy Settings"
+          onPress={() => navigation.navigate("PrivacySettings")}
+        />
+        <ProfileItem
+          icon="help-circle-outline"
+          label="Help & Support"
+          onPress={() => navigation.navigate("HelpSupport")}
+        />
 
         {/* ===== LOGOUT ===== */}
         <Card

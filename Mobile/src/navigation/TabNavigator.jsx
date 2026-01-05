@@ -4,8 +4,9 @@ import CustomTabBar from "./CustomTabBar";
 import HomeNavigator from "./HomeNavigator";
 import CreateReportScreen from "../screens/Tab/CreateReportScreen";
 import AlertsScreen from "../screens/Tab/AlertsScreen";
-import ProfileScreen from "../screens/Tab/ProfileScreen";
+import ProfileScreen from "../screens/Profile/ProfileScreen";
 import IncidentsNavigator from "./IncidentsNavigator";
+import ProfileNavigator from "./ProfileNavigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -50,7 +51,7 @@ export default function TabNavigator() {
 
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileNavigator}
         options={{
           tabBarIcon: () => "person",
         }}
