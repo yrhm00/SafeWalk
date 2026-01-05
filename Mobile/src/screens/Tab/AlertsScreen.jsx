@@ -3,12 +3,17 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native
 import { Ionicons } from "@expo/vector-icons";
 import { globalStyles, colors, spacing, typography, shadows } from "../../styles";
 
-// Composants UI
+// Importation des composants de mise en page et d'interface utilisateur
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import Card from "../../components/ui/Card";
 
+/**
+ * Écran des alertes et notifications.
+ * Affiche une liste de notifications concernant les rapports de l'utilisateur et les incidents à proximité.
+ */
 export default function AlertsScreen() {
-  // Simulation de données basées sur le mockup
+  // Simulation de données de notifications (Mockup)
+  // Chaque objet contient un type pour définir la couleur et une icône spécifique
   const [alerts, setAlerts] = useState([
     {
       id: "1",
@@ -16,7 +21,7 @@ export default function AlertsScreen() {
       title: "Your report was validated",
       description: "Your incident report #2847 has been reviewed and validated by our safety team.",
       time: "2 minutes ago",
-      unread: true,
+      unread: true, // Définit si le point de notification doit être affiché
       icon: "checkmark-circle",
     },
     {
@@ -48,26 +53,33 @@ export default function AlertsScreen() {
     },
   ]);
 
+  /**
+   * Helper : Retourne les styles de couleur (texte et fond) en fonction du type d'alerte.
+   * @param {string} type - Le type d'alerte (success, danger, info, etc.)
+   */
   const getIconStyles = (type) => {
     switch (type) {
-      case "success": return { color: colors.success, bg: colors.success + "20" };
-      case "danger": return { color: colors.danger, bg: colors.danger + "20" };
-      default: return { color: colors.textMuted, bg: colors.border + "40" };
+      case "success": return { color: colors.success, bg: colors.success + "20" }; // Vert avec opacité
+      case "danger": return { color: colors.danger, bg: colors.danger + "20" };   // Rouge avec opacité
+      default: return { color: colors.textMuted, bg: colors.border + "40" };      // Gris par défaut
     }
   };
 
+  /**
+   * Rendu individuel d'une notification dans la liste.
+   */
   const renderAlert = ({ item }) => {
     const iconStyle = getIconStyles(item.type);
 
     return (
       <Card style={styles.alertCard}>
         <View style={styles.cardContent}>
-          {/* Icône à gauche */}
+          {/* Section icône : Cercle de couleur avec icône Ionicons */}
           <View style={[styles.iconContainer, { backgroundColor: iconStyle.bg }]}>
             <Ionicons name={item.icon} size={24} color={iconStyle.color} />
           </View>
 
-          {/* Texte central */}
+          {/* Section texte : Titre, description tronquée et temps écoulé */}
           <View style={styles.textContainer}>
             <Text style={typography.h3}>{item.title}</Text>
             <Text style={[typography.body, styles.description]} numberOfLines={2}>
@@ -76,7 +88,7 @@ export default function AlertsScreen() {
             <Text style={[typography.small, styles.time]}>{item.time}</Text>
           </View>
 
-          {/* Point de notification non lu */}
+          {/* Point indicateur : S'affiche uniquement si la notification est non lue */}
           {item.unread && <View style={styles.unreadDot} />}
         </View>
       </Card>
@@ -85,17 +97,12 @@ export default function AlertsScreen() {
 
   return (
     <View style={globalStyles.screen}>
-      <SafeWalkHeader title="SafeWalk" />
+      {/* ✅ Titre de la page intégré dans le Header personnalisé */}
+      <SafeWalkHeader title="Alerts & Notifications" />
 
       <View style={styles.container}>
-        {/* En-tête de section */}
-        <View style={styles.headerSection}>
-          <Text style={typography.h1}>Alerts & Notifications</Text>
-          <Text style={[typography.body, { color: colors.textSecondary }]}>
-            Stay updated on your reports and nearby incidents
-          </Text>
-        </View>
-
+        
+        {/* Sous-en-tête affichant le nombre de messages non lus */}
         <View style={styles.subHeader}>
           <Text style={[typography.h3, { fontSize: 14 }]}>Recent Activity</Text>
           <Text style={[typography.small, { color: colors.textMuted }]}>
@@ -103,6 +110,7 @@ export default function AlertsScreen() {
           </Text>
         </View>
 
+        {/* Liste défilante des notifications */}
         <FlatList
           data={alerts}
           keyExtractor={(item) => item.id}
@@ -119,10 +127,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: spacing.md,
-  },
-  headerSection: {
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
+    marginTop: spacing.md, // Espace ajouté après la suppression du titre interne
   },
   subHeader: {
     flexDirection: "row",

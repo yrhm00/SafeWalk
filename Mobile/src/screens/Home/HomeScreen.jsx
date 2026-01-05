@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+// Ajout de TouchableOpacity dans l'import react-native
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native"; 
 import { Marker, Callout } from "react-native-maps";
 import MapView from "react-native-map-clustering";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import * as Location from "expo-location";
+import { Ionicons } from "@expo/vector-icons"; // Import pour l'icône de recentrage
 
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import FilterBar from "../../components/danger/FilterBar";
@@ -37,13 +39,29 @@ export default function HomeScreen({ navigation }) {
   const filtersTop = searchTop + SEARCH_HEIGHT + spacing.sm;
 
   const [filter, setFilter] = useState("all");
-
-  // ✅ UTILISATION DES REPORTS REDUX (plus de fakeReports)
   const filteredReports =
     filter === "all" ? reports : reports.filter((r) => r.severity === filter);
 
   const mapRef = useRef(null);
   const [userLocation, setUserLocation] = useState(null);
+
+  // Fonction pour recentrer la carte sur l'utilisateur
+  const recenterMap = async () => {
+    try {
+      const location = await Location.getCurrentPositionAsync({});
+      const coords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+
+      setUserLocation(location.coords);
+      mapRef.current?.animateToRegion(coords, 1000); // Animation fluide
+    } catch (error) {
+      Alert.alert("Error", "Could not fetch your current location.");
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -71,12 +89,11 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={globalStyles.container}>
-      {/* MAP FULL SCREEN */}
       <MapView
         style={StyleSheet.absoluteFillObject}
         ref={mapRef}
         showsUserLocation
-        initialRegion={{ // Namur
+        initialRegion={{
           latitude: 50.4674,
           longitude: 4.8718,
           latitudeDelta: 0.05,
@@ -84,7 +101,7 @@ export default function HomeScreen({ navigation }) {
         }}
         radius={40}
         extent={512}
-        animationEnabled = {false}
+        animationEnabled={false}
       >
         {filteredReports.map((report) => (
           <Marker
@@ -115,22 +132,27 @@ export default function HomeScreen({ navigation }) {
         ))}
       </MapView>
 
-      {/* HEADER */}
       <View style={styles.header}>
         <SafeWalkHeader />
       </View>
 
-      {/* SEARCH BAR */}
       <View style={[styles.search, { top: searchTop }]}>
         <Text style={styles.searchPlaceholder}>🔍 Search location...</Text>
       </View>
 
-      {/* FILTERS */}
       <FilterBar
         active={filter}
         onChange={setFilter}
         style={{ top: filtersTop }}
       />
+
+      {/* BOUTON RECENTER */}
+      <TouchableOpacity 
+        style={[styles.recenterButton, { bottom: spacing.lg + 20 }]} 
+        onPress={recenterMap}
+      >
+        <Ionicons name="locate" size={26} color={colors.primary} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -139,30 +161,12 @@ const HEADER_HEIGHT = 56;
 const SEARCH_HEIGHT = 44;
 
 const styles = {
-  container: {
-    flex: 1,
-  },
-
-  /* MAP FULL SCREEN */
-  map: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#E5F4FF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  mapText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-  },
-
-  /* OVERLAYS */
   header: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
   },
-
   search: {
     position: "absolute",
     left: spacing.md,
@@ -179,32 +183,23 @@ const styles = {
     color: colors.textMuted,
     fontSize: 15,
   },
-
-  filters: {
-    position: "absolute",
-    left: spacing.md,
-    right: spacing.md,
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-
-  filterChip: {
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    borderRadius: 20,
-    elevation: 2,
-  },
-
-  filterText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
   callout: {
     backgroundColor: "white",
     padding: 10,
     borderRadius: 10,
     minWidth: 140,
+  },
+  // Style pour le bouton de recentrage
+  recenterButton: {
+    position: "absolute",
+    right: spacing.md,
+    backgroundColor: colors.white,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    ...shadows.card,
+    elevation: 5,
   },
 };
