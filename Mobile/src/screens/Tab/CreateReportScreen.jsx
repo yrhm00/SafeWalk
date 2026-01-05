@@ -6,7 +6,7 @@ import {
   Switch,
   KeyboardAvoidingView,
   Platform,
-  Alert
+  Alert,
 } from "react-native";
 import { globalStyles, spacing, typography, colors } from "../../styles";
 
@@ -71,42 +71,37 @@ export default function CreateReportScreen() {
   }, []);
 
   const takePhoto = async () => {
-  const result = await ImagePicker.launchCameraAsync({
-    allowsEditing: true,
-    quality: 0.3,
-    base64: true,
-  });
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.3,
+      base64: true,
+    });
 
-  if (!result.canceled && result.assets?.length > 0) {
-    setPhoto(result.assets[0]);
-  }
-};
+    if (!result.canceled && result.assets?.length > 0) {
+      setPhoto(result.assets[0]);
+    }
+  };
 
-const pickFromGallery = async () => {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ['images'],
-    allowsEditing: true,
-    quality: 0.3,
-    base64: true,
-  });
+  const pickFromGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      quality: 0.3,
+      base64: true,
+    });
 
-  if (!result.canceled && result.assets?.length > 0) {
-    setPhoto(result.assets[0]);
-  }
-};
+    if (!result.canceled && result.assets?.length > 0) {
+      setPhoto(result.assets[0]);
+    }
+  };
 
-const pickImage = () => {
-  Alert.alert(
-    "Add Photo",
-    "Choose a source",
-    [
+  const pickImage = () => {
+    Alert.alert("Add Photo", "Choose a source", [
       { text: "Camera", onPress: takePhoto },
       { text: "Gallery", onPress: pickFromGallery },
       { text: "Cancel", style: "cancel" },
-    ]
-  );
-};
-
+    ]);
+  };
 
   const loadReportTypes = async () => {
     try {
@@ -123,6 +118,38 @@ const pickImage = () => {
   useEffect(() => {
     loadReportTypes();
   }, []);
+
+  // degré d'importance manque dans les reponse api
+  const getSeverityByLabel = (label) => {
+    const t = label?.toLowerCase() || "";
+
+    // LOW : Problèmes d'infrastructure mineurs
+    if (
+      t.includes("sidewalk") ||
+      t.includes("trottoir") ||
+      t.includes("lighting") ||
+      t.includes("lampadaire")
+    ) {
+      return "low";
+    }
+
+    // MEDIUM : Dangers environnementaux
+    if (
+      t.includes("flooded") ||
+      t.includes("inondée") ||
+      t.includes("icy") ||
+      t.includes("gelée")
+    ) {
+      return "medium";
+    }
+
+    // HIGH : Sécurité des personnes
+    if (t.includes("suspicious") || t.includes("suspecte")) {
+      return "high";
+    }
+
+    return "medium"; // Sécurité : ne jamais renvoyer undefined
+  };
 
   const handleSubmit = async () => {
     if (!selectedType?.id) {
@@ -142,14 +169,18 @@ const pickImage = () => {
     }
 
     try {
+      const calculatedSeverity = emergency
+        ? "high"
+        : getSeverityByLabel(selectedType.label);
+
       const payload = {
         title: selectedType.label,
         description,
         latitude: location.latitude,
         longitude: location.longitude,
-        image_url: imageBase64, // 👈 EXACTEMENT comme l’API
+        image_url: imageBase64,
         type_id: selectedType.id,
-        severity: emergency ? "high" : "medium",
+        severity: calculatedSeverity, // Utilisation de la variable calculée
       };
 
       console.log("📤 REPORT PAYLOAD:", payload);
