@@ -3,17 +3,10 @@ import * as userModel from "../model/user.js";
 import * as personModel from "../model/person.js";
 import { hashPassword } from "../../utils/password.js";
 import { generateToken } from "../../utils/jwt.js";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ error: "Email and password required" });
-        }
 
         const person = await personModel.readPerson(pool, { email, password });
 
@@ -67,13 +60,34 @@ export const getUserById = async (req, res) => {
     }
 };
 
+export const register = async (req, res) => {
+    try {
+        const { name, username, email, password } = req.body;
+
+        const password_hash = await hashPassword(password);
+
+        const newUser = await userModel.createUser(pool, {
+            name,
+            username,
+            email,
+            password_hash,
+            role: 'citizen'
+        });
+
+        res.status(201).json(newUser);
+    } catch (error) {
+        console.error(error);
+        if (error.code === '23505') {
+            res.status(409).json({ error: "Email or username already exists" });
+        } else {
+            res.sendStatus(500);
+        }
+    }
+};
+
 export const createUser = async (req, res) => {
     try {
         const { name, username, email, password, role } = req.body;
-
-        if (password.length < 8) {
-            return res.status(400).json({ error: "Password must be at least 8 characters long" });
-        }
 
         const password_hash = await hashPassword(password);
 
@@ -101,9 +115,6 @@ export const updateUser = async (req, res) => {
         let updateData = { ...req.body };
 
         if (updateData.password) {
-            if (updateData.password.length < 8) {
-                return res.status(400).json({ error: "Password must be at least 8 characters long" });
-            }
             updateData.password_hash = await hashPassword(updateData.password);
             delete updateData.password;
         }
@@ -164,9 +175,6 @@ export const updateUserById = async (req, res) => {
         let updateData = { ...req.body };
 
         if (updateData.password) {
-            if (updateData.password.length < 8) {
-                return res.status(400).json({ error: "Password must be at least 8 characters long" });
-            }
             updateData.password_hash = await hashPassword(updateData.password);
             delete updateData.password;
         }

@@ -2,6 +2,8 @@ import express from "express";
 import * as controler from "../controler/user.js";
 import { checkJWT } from "../../middleware/identification/jwt.js";
 import { checkRole } from "../../middleware/autorisation/checkRole.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { loginSchema, registerSchema, createUserSchema, updateUserSchema } from "../../validation/userSchemas.js";
 
 const router = express.Router();
 
@@ -58,7 +60,7 @@ const router = express.Router();
  *       404:
  *         description: Utilisateur non trouvé ou mot de passe incorrect
  */
-router.post('/login', controler.login);
+router.post('/login', validate(loginSchema), controler.login);
 
 /**
  * @swagger
@@ -79,7 +81,7 @@ router.post('/login', controler.login);
  *       409:
  *         description: Email ou Username déjà utilisé
  */
-router.post('/register', controler.createUser);
+router.post('/register', validate(registerSchema), controler.register);
 
 
 
@@ -123,7 +125,7 @@ router.get('/me', checkJWT, controler.getMyProfile);
  *       200:
  *         description: Profil mis à jour
  */
-router.patch('/me', checkJWT, controler.updateUser);
+router.patch('/me', checkJWT, validate(updateUserSchema), controler.updateUser);
 
 
 
@@ -149,7 +151,7 @@ router.patch('/me', checkJWT, controler.updateUser);
  */
 router.get('/', checkJWT, checkRole(['admin']), controler.getAllUsers);
 
-router.post('/', checkJWT, checkRole(['admin']), controler.createUser);
+router.post('/', checkJWT, checkRole(['admin']), validate(createUserSchema), controler.createUser);
 
 /**
  * @swagger
@@ -173,7 +175,7 @@ router.post('/', checkJWT, checkRole(['admin']), controler.createUser);
  */
 router.get('/:id', checkJWT, checkRole(['admin']), controler.getUserById);
 
-router.patch('/:id', checkJWT, checkRole(['admin']), controler.updateUserById);
+router.patch('/:id', checkJWT, checkRole(['admin']), validate(updateUserSchema), controler.updateUserById);
 
 /**
  * @swagger
