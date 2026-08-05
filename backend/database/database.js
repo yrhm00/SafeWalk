@@ -1,17 +1,35 @@
+import 'dotenv/config';
 import pg from "pg";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const pgPool = new pg.Pool({
-    user: process.env.USERDB,
     host: process.env.HOSTDB,
-    database: process.env.DBNAME,
+    user: process.env.USERDB,
     password: process.env.PASSWORDDB,
-    port: 5432
+    database: process.env.DBNAME
 });
 
 export const pool = {
+    connect: async () => {
+        try {
+            const client = await pgPool.connect();
+            return {
+                query: async (query, params) => {
+                    try {
+                        return await client.query(query, params);
+                    } catch (e) {
+                        console.error(e);
+                        throw e;
+                    }
+                },
+                release: () => {
+                    return client.release();
+                }
+            };
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    },
     query: async (query, params) => {
         try {
             return await pgPool.query(query, params);
@@ -19,9 +37,6 @@ export const pool = {
             console.error(e);
             throw e;
         }
-    },
-    connect: async () => {
-        return await pgPool.connect();
     },
     end: () => {
         return pgPool.end();

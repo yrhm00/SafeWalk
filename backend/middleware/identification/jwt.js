@@ -8,9 +8,9 @@ export const checkJWT = async (req, res, next) => {
             req.session = verifyToken(jwtEncoded);
             next();
         } catch (e) {
-            res.status(401).send(e.message);
+            res.status(401).json({ error: e.message });
         }
     } else {
-        res.status(401).send('No jwt');
+        res.status(401).json({ error: 'No jwt' });
     }
 };

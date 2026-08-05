@@ -2,10 +2,10 @@ import { pool } from "../../database/database.js";
 import { readPerson } from "../../src/model/person.js";
 
 export const checkBasic = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Basic ')) {
-        return res.sendStatus(401);
+        return res.status(401).json({ error: 'No basic authorization given' });
     }
 
     const base64Credentials = authHeader.split(' ')[1];
@@ -13,7 +13,7 @@ export const checkBasic = async (req, res, next) => {
     const [email, password] = credentials.split(':');
 
     if (!email || !password) {
-        return res.sendStatus(401);
+        return res.status(401).json({ error: 'Invalid credentials format' });
     }
 
     const person = await readPerson(pool, { email, password });
@@ -25,6 +25,6 @@ export const checkBasic = async (req, res, next) => {
         };
         next();
     } else {
-        res.sendStatus(401);
+        res.status(401).json({ error: 'Invalid credentials' });
     }
 };
