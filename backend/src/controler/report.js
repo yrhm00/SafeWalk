@@ -2,22 +2,31 @@ import { pool } from "../../database/database.js";
 import * as reportModel from "../model/report.js";
 import * as voteModel from "../model/vote.js";
 import * as commentModel from "../model/comment.js";
+import { logError } from "../../utils/logger.js";
 
 export const getAllReports = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 20;
         const offset = parseInt(req.query.offset) || 0;
 
-        // Extraction des filtres
         const params = {};
         if (req.query.severity) params.severity = req.query.severity;
         if (req.query.days) params.days = parseInt(req.query.days);
         if (req.query.type_id) params.type_id = parseInt(req.query.type_id);
 
-        const reports = await reportModel.readAllReports(pool, limit, offset, params);
-        res.json(reports);
+        const { reports, total } = await reportModel.readAllReports(pool, limit, offset, params);
+
+        res.json({
+            data: reports,
+            pagination: {
+                total,
+                limit,
+                offset,
+                hasMore: offset + reports.length < total
+            }
+        });
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -36,7 +45,7 @@ export const getReportById = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -71,7 +80,7 @@ export const createReport = async (req, res) => {
         res.status(201).json(newReport);
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     } finally {
         client.release();
@@ -107,7 +116,7 @@ export const updateReport = async (req, res) => {
         }
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     } finally {
         client.release();
@@ -128,7 +137,7 @@ export const deleteReport = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -138,7 +147,7 @@ export const getMyReports = async (req, res) => {
         const reports = await reportModel.readReportsByUserId(pool, req.session.id);
         res.json(reports);
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };

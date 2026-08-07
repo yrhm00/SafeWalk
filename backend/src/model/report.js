@@ -2,7 +2,34 @@
  * Lire tous les rapports avec filtres optionnels
  */
 export const readAllReports = async (SQLClient, limit = 20, offset = 0, params = {}) => {
-    let query = `
+    const buildFilters = (startIndex) => {
+        const clauses = [];
+        const values = [];
+        let i = startIndex;
+
+        if (params.severity) {
+            clauses.push(`r.severity = $${i}`);
+            values.push(params.severity);
+            i++;
+        }
+        if (params.type_id) {
+            clauses.push(`r.type_id = $${i}`);
+            values.push(params.type_id);
+            i++;
+        }
+        if (params.days) {
+            clauses.push(`r.created_at >= NOW() - INTERVAL '1 day' * $${i}`);
+            values.push(params.days);
+            i++;
+        }
+
+        return { clauses, values };
+    };
+
+    const { clauses: mainClauses, values: mainValues } = buildFilters(3);
+    const mainWhere = mainClauses.length ? ` AND ${mainClauses.join(" AND ")}` : "";
+
+    const query = `
         SELECT r.id, r.user_id, r.type_id, r.zone_id, r.title, r.description, r.latitude, r.longitude,
                r.image_url, r.status, r.severity, r.created_at,
                u.name as user_name, rt.label as type_label, z.name as zone_name,
@@ -13,37 +40,12 @@ export const readAllReports = async (SQLClient, limit = 20, offset = 0, params =
         LEFT JOIN report_type rt ON r.type_id = rt.id
         LEFT JOIN zone z ON r.zone_id = z.id
         LEFT JOIN vote v ON r.id = v.report_id
-        WHERE 1=1
-    `;
-
-    const queryParams = [limit, offset];
-    let paramCounter = 3;
-
-    if (params.severity) {
-        query += ` AND r.severity = $${paramCounter}`;
-        queryParams.push(params.severity);
-        paramCounter++;
-    }
-
-    if (params.type_id) {
-        query += ` AND r.type_id = $${paramCounter}`;
-        queryParams.push(params.type_id);
-        paramCounter++;
-    }
-
-    if (params.days) {
-        query += ` AND r.created_at >= NOW() - INTERVAL '1 day' * $${paramCounter}`;
-        queryParams.push(params.days);
-        paramCounter++;
-    }
-
-    query += `
+        WHERE 1=1${mainWhere}
         GROUP BY r.id, u.name, rt.label, z.name
         ORDER BY r.created_at DESC
         LIMIT $1 OFFSET $2
     `;
-
-    const reportsResult = await SQLClient.query(query, queryParams);
+    const reportsResult = await SQLClient.query(query, [limit, offset, ...mainValues]);
     const reports = reportsResult.rows;
 
     const commentsQuery = `
@@ -59,7 +61,14 @@ export const readAllReports = async (SQLClient, limit = 20, offset = 0, params =
         report.comments = allComments.filter(comment => comment.report_id === report.id);
     }
 
-    return reports;
+    const { clauses: countClauses, values: countValues } = buildFilters(1);
+    const countWhere = countClauses.length ? ` AND ${countClauses.join(" AND ")}` : "";
+    const countResult = await SQLClient.query(
+        `SELECT COUNT(*) FROM report r WHERE 1=1${countWhere}`,
+        countValues
+    );
+
+    return { reports, total: parseInt(countResult.rows[0].count) };
 };
 
 /**

@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine';
+import { logError } from "../../utils/logger.js";
 
 export const validate = (schema) => {
     return async (req, res, next) => {
@@ -13,7 +14,7 @@ export const validate = (schema) => {
                     details: error.messages,
                 });
             }
-            console.error('Validation error:', error);
+            logError(error);
             return res.status(400).json({ error: 'Validation failed' });
         }
     };

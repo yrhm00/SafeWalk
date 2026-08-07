@@ -5,6 +5,7 @@ import morgan from "morgan";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import router from "./src/routes/index.js";
+import { accessLogStream, logError } from "./utils/logger.js";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -45,6 +46,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(morgan("dev"));
+app.use(morgan("combined", { stream: accessLogStream }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -72,7 +74,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error(err);
+    logError(err);
     res.status(500).json({ error: 'Internal Server Error' });
 });
 

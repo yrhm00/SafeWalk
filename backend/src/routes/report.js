@@ -63,15 +63,53 @@ const router = express.Router();
  *     summary: Récupérer tous les signalements
  *     tags: [Reports]
  *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *       - in: query
+ *         name: severity
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high]
+ *       - in: query
+ *         name: type_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
- *         description: Liste complète des signalements
+ *         description: Liste paginée des signalements
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Report'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Report'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
  */
 router.get('/', controler.getAllReports);
 

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "nodemon -L server.js"
   },
   "dependencies": {
     "@vinejs/vine": "^1.0.0",

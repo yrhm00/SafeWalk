@@ -1,5 +1,7 @@
 import { pool } from "../../database/database.js";
 import * as voteModel from "../model/vote.js";
+import { logError } from "../../utils/logger.js";
+
 export const getVotesByReport = async (req, res) => {
     try {
         const report_id = parseInt(req.params.reportId);
@@ -17,7 +19,7 @@ export const getVotesByReport = async (req, res) => {
             summary
         });
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -34,7 +36,7 @@ export const addVote = async (req, res) => {
 
         res.status(201).json(vote);
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -54,7 +56,7 @@ export const removeVote = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -77,7 +79,7 @@ export const getMyVote = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };

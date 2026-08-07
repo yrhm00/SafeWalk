@@ -31,6 +31,8 @@ services:
       - PORT=${PORT}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
       - PEPPER=${PEPPER}
     volumes:
       - ./backend:/app

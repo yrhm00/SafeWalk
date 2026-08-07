@@ -1,5 +1,6 @@
 import { pool } from "../../database/database.js";
 import * as commentModel from "../model/comment.js";
+import { logError } from "../../utils/logger.js";
 
 export const getCommentsByReport = async (req, res) => {
     try {
@@ -8,10 +9,22 @@ export const getCommentsByReport = async (req, res) => {
             return res.sendStatus(400);
         }
 
-        const comments = await commentModel.readCommentsByReportId(pool, report_id);
-        res.json(comments);
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = parseInt(req.query.offset) || 0;
+
+        const { comments, total } = await commentModel.readCommentsByReportId(pool, report_id, limit, offset);
+
+        res.json({
+            data: comments,
+            pagination: {
+                total,
+                limit,
+                offset,
+                hasMore: offset + comments.length < total
+            }
+        });
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -28,7 +41,7 @@ export const createComment = async (req, res) => {
 
         res.status(201).json(newComment);
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -56,7 +69,7 @@ export const updateComment = async (req, res) => {
         const updatedComment = await commentModel.updateComment(pool, id, { content });
         res.json(updatedComment);
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -85,7 +98,7 @@ export const deleteComment = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };

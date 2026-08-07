@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import pg from "pg";
+import { logError } from "../utils/logger.js";
 
 const pgPool = new pg.Pool({
     host: process.env.HOSTDB,
@@ -17,7 +18,7 @@ export const pool = {
                     try {
                         return await client.query(query, params);
                     } catch (e) {
-                        console.error(e);
+                        logError(e);
                         throw e;
                     }
                 },
@@ -26,7 +27,7 @@ export const pool = {
                 }
             };
         } catch (e) {
-            console.error(e);
+            logError(e);
             throw e;
         }
     },
@@ -34,7 +35,7 @@ export const pool = {
         try {
             return await pgPool.query(query, params);
         } catch (e) {
-            console.error(e);
+            logError(e);
             throw e;
         }
     },

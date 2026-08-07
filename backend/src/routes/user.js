@@ -3,7 +3,7 @@ import * as controler from "../controler/user.js";
 import { checkJWT } from "../../middleware/identification/jwt.js";
 import { checkRole } from "../../middleware/autorisation/checkRole.js";
 import { validate } from "../../middleware/validation/validate.js";
-import { loginSchema, registerSchema, createUserSchema, updateUserSchema, updateUserByAdminSchema } from "../../validation/userSchemas.js";
+import { loginSchema, registerSchema, createUserSchema, updateUserSchema, updateUserByAdminSchema, refreshTokenSchema } from "../../validation/userSchemas.js";
 
 const router = express.Router();
 
@@ -57,13 +57,39 @@ const router = express.Router();
  *                 type: string
  *     responses:
  *       201:
- *         description: Connexion réussie (Token retourné)
+ *         description: Connexion réussie (access token + refresh token retournés)
  *       400:
  *         description: Identifiants manquants
  *       404:
  *         description: Utilisateur non trouvé ou mot de passe incorrect
  */
 router.post('/login', validate(loginSchema), controler.login);
+
+/**
+ * @swagger
+ * /users/refresh:
+ *   post:
+ *     summary: Renouveler un token d'accès à partir d'un refresh token
+ *     tags: [Users]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Nouveau token d'accès généré
+ *       401:
+ *         description: Refresh token invalide ou expiré
+ */
+router.post('/refresh', validate(refreshTokenSchema), controler.refreshToken);
 
 /**
  * @swagger
@@ -159,15 +185,40 @@ router.patch('/me', checkJWT, validate(updateUserSchema), controler.updateUser);
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
  *     responses:
  *       200:
- *         description: Liste des utilisateurs
+ *         description: Liste paginée des utilisateurs
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
  *       403:
  *         description: Accès interdit (Admin requis)
  */

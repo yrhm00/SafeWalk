@@ -4,10 +4,14 @@ export const readUserByEmail = async (SQLClient, { email }) => {
     return rows[0];
 };
 
-export const readAllUsers = async (SQLClient) => {
-    const query = "SELECT id, name, username, email, role, created_at FROM users";
-    const { rows } = await SQLClient.query(query);
-    return rows;
+export const readAllUsers = async (SQLClient, limit = 20, offset = 0) => {
+    const query = "SELECT id, name, username, email, role, created_at FROM users ORDER BY id LIMIT $1 OFFSET $2";
+    const { rows } = await SQLClient.query(query, [limit, offset]);
+
+    const countResult = await SQLClient.query("SELECT COUNT(*) FROM users");
+    const total = parseInt(countResult.rows[0].count);
+
+    return { users: rows, total };
 };
 
 export const readUserById = async (SQLClient, id) => {

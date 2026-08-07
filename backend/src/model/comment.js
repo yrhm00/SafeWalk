@@ -1,13 +1,21 @@
-export const readCommentsByReportId = async (SQLClient, report_id) => {
+export const readCommentsByReportId = async (SQLClient, report_id, limit = 20, offset = 0) => {
     const query = `
         SELECT c.*, u.name as user_name, u.username
         FROM comment c
         LEFT JOIN users u ON c.user_id = u.id
         WHERE c.report_id = $1
         ORDER BY c.created_at ASC
+        LIMIT $2 OFFSET $3
     `;
-    const { rows } = await SQLClient.query(query, [report_id]);
-    return rows;
+    const { rows } = await SQLClient.query(query, [report_id, limit, offset]);
+
+    const countResult = await SQLClient.query(
+        "SELECT COUNT(*) FROM comment WHERE report_id = $1",
+        [report_id]
+    );
+    const total = parseInt(countResult.rows[0].count);
+
+    return { comments: rows, total };
 };
 
 export const readCommentById = async (SQLClient, id) => {

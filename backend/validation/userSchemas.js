@@ -5,6 +5,10 @@ export const loginSchema = vine.object({
     password: vine.string()
 });
 
+export const refreshTokenSchema = vine.object({
+    refreshToken: vine.string()
+});
+
 export const registerSchema = vine.object({
     name: vine.string().trim().minLength(2).maxLength(120),
     username: vine.string().trim().minLength(3).maxLength(60).optional(),
