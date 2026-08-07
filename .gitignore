@@ -1,10 +1,5 @@
 # Dependencies
 node_modules/
-package-lock.json
-# Keep package-lock.json if you want to lock versions, but sometimes it's ignored in simple student projects. 
-# However, standard practice is to keep it. I will keep it in the repo, but ignore node_modules.
-# If the user specifically asked to remove "trucs inutiles", sometimes they mean lock files if they don't understand them, 
-# but I should follow best practices unless told otherwise. I'll NOT ignore package-lock.json.
 
 # Secrets
 .env

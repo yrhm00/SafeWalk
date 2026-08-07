@@ -1,0 +1,21 @@
+meta {
+  name: Delete User (admin)
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{baseUrl}}/users/{{createdUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("status is 204", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

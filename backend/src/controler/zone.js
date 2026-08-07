@@ -1,12 +1,13 @@
 import { pool } from "../../database/database.js";
 import * as zoneModel from "../model/zone.js";
+import { logError } from "../../utils/logger.js";
 
 export const getAllZones = async (req, res) => {
     try {
         const zones = await zoneModel.readAllZones(pool);
         res.json(zones);
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -25,7 +26,7 @@ export const getZoneById = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -42,7 +43,7 @@ export const createZone = async (req, res) => {
 
         res.status(201).json(newZone);
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -62,7 +63,7 @@ export const updateZone = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -81,7 +82,7 @@ export const deleteZone = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };

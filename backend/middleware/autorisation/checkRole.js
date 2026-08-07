@@ -1,7 +1,7 @@
 export const checkRole = (allowedRoles) => {
     return (req, res, next) => {
         if (!req.session || !req.session.role) {
-            return res.sendStatus(401);
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
         if (allowedRoles.includes(req.session.role)) {

@@ -2,26 +2,22 @@ import { pool } from "../../database/database.js";
 import * as userModel from "../model/user.js";
 import * as personModel from "../model/person.js";
 import { hashPassword } from "../../utils/password.js";
-import { generateToken } from "../../utils/jwt.js";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { generateToken, generateRefreshToken, verifyRefreshToken } from "../../utils/jwt.js";
+import { logError } from "../../utils/logger.js";
 
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email || !password) {
-            return res.status(400).json({ error: "Email and password required" });
-        }
-
         const person = await personModel.readPerson(pool, { email, password });
 
         if (person.id && person.role) {
             const token = generateToken({ id: person.id, role: person.role });
+            const refreshToken = generateRefreshToken({ id: person.id, role: person.role });
 
             res.status(201).json({
                 token,
+                refreshToken,
                 user: {
                     id: person.id,
                     username: person.username,
@@ -33,17 +29,41 @@ export const login = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (err) {
-        console.error(err);
+        logError(err);
         res.sendStatus(500);
+    }
+};
+
+export const refreshToken = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        const payload = verifyRefreshToken(refreshToken);
+        const token = generateToken({ id: payload.id, role: payload.role });
+
+        res.status(201).json({ token });
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid refresh token' });
     }
 };
 
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await userModel.readAllUsers(pool);
-        res.json(users);
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = parseInt(req.query.offset) || 0;
+
+        const { users, total } = await userModel.readAllUsers(pool, limit, offset);
+
+        res.json({
+            data: users,
+            pagination: {
+                total,
+                limit,
+                offset,
+                hasMore: offset + users.length < total
+            }
+        });
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -62,18 +82,39 @@ export const getUserById = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
+    }
+};
+
+export const register = async (req, res) => {
+    try {
+        const { name, username, email, password } = req.body;
+
+        const password_hash = await hashPassword(password);
+
+        const newUser = await userModel.createUser(pool, {
+            name,
+            username,
+            email,
+            password_hash,
+            role: 'citizen'
+        });
+
+        res.status(201).json(newUser);
+    } catch (error) {
+        logError(error);
+        if (error.code === '23505') {
+            res.status(409).json({ error: "Email or username already exists" });
+        } else {
+            res.sendStatus(500);
+        }
     }
 };
 
 export const createUser = async (req, res) => {
     try {
         const { name, username, email, password, role } = req.body;
-
-        if (password.length < 8) {
-            return res.status(400).json({ error: "Password must be at least 8 characters long" });
-        }
 
         const password_hash = await hashPassword(password);
 
@@ -87,7 +128,7 @@ export const createUser = async (req, res) => {
 
         res.status(201).json(newUser);
     } catch (error) {
-        console.error(error);
+        logError(error);
         if (error.code === '23505') {
             res.status(409).json({ error: "Email or username already exists" });
         } else {
@@ -101,9 +142,6 @@ export const updateUser = async (req, res) => {
         let updateData = { ...req.body };
 
         if (updateData.password) {
-            if (updateData.password.length < 8) {
-                return res.status(400).json({ error: "Password must be at least 8 characters long" });
-            }
             updateData.password_hash = await hashPassword(updateData.password);
             delete updateData.password;
         }
@@ -116,7 +154,7 @@ export const updateUser = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -135,7 +173,7 @@ export const deleteUser = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -149,7 +187,7 @@ export const getMyProfile = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -164,9 +202,6 @@ export const updateUserById = async (req, res) => {
         let updateData = { ...req.body };
 
         if (updateData.password) {
-            if (updateData.password.length < 8) {
-                return res.status(400).json({ error: "Password must be at least 8 characters long" });
-            }
             updateData.password_hash = await hashPassword(updateData.password);
             delete updateData.password;
         }
@@ -179,7 +214,7 @@ export const updateUserById = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };

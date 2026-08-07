@@ -74,17 +74,6 @@ Cette commande va créer la base de données, l'initialiser avec les tables néc
 
 ---
 
-## 🛡 Comptes de Test
-
-Voici les comptes pré-configurés pour tester l'application :
-
-| Rôle | Username | Password |
-| :--- | :--- | :--- |
-| **Administrateur** | `admin` | `admin` |
-| **Utilisateur** | `yassin` | `password` |
-
----
-
 ## 🛠 Technologies Utilisées
 
 *   **Backend** : Node.js, Express, PostgreSQL, Swagger.

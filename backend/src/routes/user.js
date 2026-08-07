@@ -2,6 +2,8 @@ import express from "express";
 import * as controler from "../controler/user.js";
 import { checkJWT } from "../../middleware/identification/jwt.js";
 import { checkRole } from "../../middleware/autorisation/checkRole.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { loginSchema, registerSchema, createUserSchema, updateUserSchema, updateUserByAdminSchema, refreshTokenSchema } from "../../validation/userSchemas.js";
 
 const router = express.Router();
 
@@ -45,6 +47,9 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
  *             properties:
  *               email:
  *                 type: string
@@ -52,13 +57,39 @@ const router = express.Router();
  *                 type: string
  *     responses:
  *       201:
- *         description: Connexion réussie (Token retourné)
+ *         description: Connexion réussie (access token + refresh token retournés)
  *       400:
  *         description: Identifiants manquants
  *       404:
  *         description: Utilisateur non trouvé ou mot de passe incorrect
  */
-router.post('/login', controler.login);
+router.post('/login', validate(loginSchema), controler.login);
+
+/**
+ * @swagger
+ * /users/refresh:
+ *   post:
+ *     summary: Renouveler un token d'accès à partir d'un refresh token
+ *     tags: [Users]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Nouveau token d'accès généré
+ *       401:
+ *         description: Refresh token invalide ou expiré
+ */
+router.post('/refresh', validate(refreshTokenSchema), controler.refreshToken);
 
 /**
  * @swagger
@@ -72,14 +103,28 @@ router.post('/login', controler.login);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
  *     responses:
  *       201:
- *         description: Compte créé avec succès
+ *         description: Compte créé avec succès (role forcé à "citizen")
  *       409:
  *         description: Email ou Username déjà utilisé
  */
-router.post('/register', controler.createUser);
+router.post('/register', validate(registerSchema), controler.register);
 
 
 
@@ -117,13 +162,18 @@ router.get('/me', checkJWT, controler.getMyProfile);
  *             properties:
  *               name:
  *                 type: string
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
  *               password:
  *                 type: string
  *     responses:
  *       200:
  *         description: Profil mis à jour
  */
-router.patch('/me', checkJWT, controler.updateUser);
+router.patch('/me', checkJWT, validate(updateUserSchema), controler.updateUser);
 
 
 
@@ -135,21 +185,87 @@ router.patch('/me', checkJWT, controler.updateUser);
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
  *     responses:
  *       200:
- *         description: Liste des utilisateurs
+ *         description: Liste paginée des utilisateurs
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
  *       403:
  *         description: Accès interdit (Admin requis)
  */
 router.get('/', checkJWT, checkRole(['admin']), controler.getAllUsers);
 
-router.post('/', checkJWT, checkRole(['admin']), controler.createUser);
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Créer un utilisateur (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [citizen, admin]
+ *     responses:
+ *       201:
+ *         description: Utilisateur créé avec succès
+ *       400:
+ *         description: Données invalides
+ *       403:
+ *         description: Accès interdit (Admin requis)
+ *       409:
+ *         description: Email ou Username déjà utilisé
+ */
+router.post('/', checkJWT, checkRole(['admin']), validate(createUserSchema), controler.createUser);
 
 /**
  * @swagger
@@ -173,7 +289,49 @@ router.post('/', checkJWT, checkRole(['admin']), controler.createUser);
  */
 router.get('/:id', checkJWT, checkRole(['admin']), controler.getUserById);
 
-router.patch('/:id', checkJWT, checkRole(['admin']), controler.updateUserById);
+/**
+ * @swagger
+ * /users/{id}:
+ *   patch:
+ *     summary: Modifier un utilisateur, y compris son rôle (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [citizen, admin]
+ *     responses:
+ *       200:
+ *         description: Utilisateur mis à jour
+ *       403:
+ *         description: Accès interdit (Admin requis)
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       409:
+ *         description: Email ou Username déjà utilisé
+ */
+router.patch('/:id', checkJWT, checkRole(['admin']), validate(updateUserByAdminSchema), controler.updateUserById);
 
 /**
  * @swagger

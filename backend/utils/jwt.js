@@ -1,14 +1,21 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
+import jwt from "jsonwebtoken";
 
-const SECRET = process.env.JWT_SECRET || "TaCleSecreteJWT";
-const EXPIRATION = "24h";
+const EXPIRATION = process.env.JWT_EXPIRATION || "24h";
+const REFRESH_EXPIRATION = process.env.JWT_REFRESH_EXPIRATION || "7d";
 
-export function generateToken(payload) {
-    return jwt.sign(payload, SECRET, { expiresIn: EXPIRATION });
-}
+export const generateToken = (payload) => {
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: EXPIRATION });
+};
 
-export function verifyToken(token) {
-    return jwt.verify(token, SECRET);
-}
+export const verifyToken = (token) => {
+    return jwt.verify(token, process.env.JWT_SECRET);
+};
+
+export const generateRefreshToken = (payload) => {
+    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: REFRESH_EXPIRATION });
+};
+
+export const verifyRefreshToken = (token) => {
+    return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+};

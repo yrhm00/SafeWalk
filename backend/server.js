@@ -1,17 +1,14 @@
+import 'dotenv/config';
 import express from "express";
 import cors from "cors";
+import morgan from "morgan";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import userRoutes from "./src/routes/user.js";
-import reportRoutes from "./src/routes/report.js";
-import commentRoutes from "./src/routes/comment.js";
-import zoneRoutes from "./src/routes/zone.js";
-import voteRoutes from "./src/routes/vote.js";
-import reportTypeRoutes from "./src/routes/reportType.js";
-import morgan from "morgan";
+import router from "./src/routes/index.js";
+import { accessLogStream, logError } from "./utils/logger.js";
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 const apiVersion = '/api/v1';
 
 const swaggerOptions = {
@@ -43,16 +40,17 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use(morgan("dev"));
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
 }));
+app.use(morgan("dev"));
+app.use(morgan("combined", { stream: accessLogStream }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/', (req, res) => {
     res.json({
@@ -69,28 +67,17 @@ app.get('/', (req, res) => {
     });
 });
 
-
-const cacheMiddleware = (req, res, next) => {
-    res.set('Cache-Control', 'public, max-age=3600');
-    next();
-};
-
-app.use(apiVersion + '/users', userRoutes);
-app.use(apiVersion + '/reports', reportRoutes);
-app.use(apiVersion + '/comments', commentRoutes);
-app.use(apiVersion + '/zones', zoneRoutes);
-app.use(apiVersion + '/votes', voteRoutes);
-app.use(apiVersion + '/report-types', reportTypeRoutes);
+app.use(apiVersion, router);
 
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
 
 app.use((err, req, res, next) => {
-    console.error(err);
+    logError(err);
     res.status(500).json({ error: 'Internal Server Error' });
 });
 
 app.listen(port, () => {
-    console.log(`🚀 SafeWalk API running on http://localhost:${port}`);
+    console.log(`SafeWalk API running on http://localhost:${port}`);
 });

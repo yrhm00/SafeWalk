@@ -1,0 +1,33 @@
+meta {
+  name: Login Citizen
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/users/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "florian@mail.com",
+    "password": "password"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("citizenToken", res.body.token);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("role is citizen", function() {
+    expect(res.body.user.role).to.equal("citizen");
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Register Duplicate Email
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/users/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Bruno Test User",
+    "email": "brunotest@mail.com",
+    "password": "password123"
+  }
+}
+
+tests {
+  test("status is 409 (email already used)", function() {
+    expect(res.getStatus()).to.equal(409);
+  });
+}

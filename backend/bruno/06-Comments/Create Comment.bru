@@ -1,0 +1,34 @@
+meta {
+  name: Create Comment
+  type: http
+  seq: 25
+}
+
+post {
+  url: {{baseUrl}}/comments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{citizenToken}}
+}
+
+body:json {
+  {
+    "report_id": {{createdReportId}},
+    "content": "Commentaire de test Bruno."
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("createdCommentId", res.body.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

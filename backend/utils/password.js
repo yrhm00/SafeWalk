@@ -1,21 +1,17 @@
 import argon2 from "argon2";
 
-const PEPPER = Buffer.from("cecinestpasunpepper");
+const PEPPER = Buffer.from(process.env.PEPPER);
 
-export async function hashPassword(plainPassword) {
-  if (typeof plainPassword !== 'string' || !plainPassword.trim()) {
-    throw new Error('Mot de passe invalide');
-  }
+export const hashPassword = async (plainPassword) => {
+    return await argon2.hash(plainPassword, {
+        type: argon2.argon2id,
+        secret: PEPPER
+    });
+};
 
-  return await argon2.hash(plainPassword, {
-    type: argon2.argon2id,
-    secret: PEPPER
-  });
-}
-
-export async function verifyPassword(hash, plainPassword) {
-  if (!hash || !plainPassword) return false;
-  return await argon2.verify(hash, plainPassword, {
-    secret: PEPPER
-  });
-}
+export const verifyPassword = async (hash, plainPassword) => {
+    if (!hash) return false;
+    return await argon2.verify(hash, plainPassword, {
+        secret: PEPPER
+    });
+};

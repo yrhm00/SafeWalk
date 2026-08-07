@@ -1,12 +1,13 @@
 import { pool } from "../../database/database.js";
 import * as reportTypeModel from "../model/reportType.js";
+import { logError } from "../../utils/logger.js";
 
 export const getAllReportTypes = async (req, res) => {
     try {
         const reportTypes = await reportTypeModel.readAllReportTypes(pool);
         res.json(reportTypes);
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -25,7 +26,7 @@ export const getReportTypeById = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };
@@ -38,7 +39,7 @@ export const createReportType = async (req, res) => {
 
         res.status(201).json(newReportType);
     } catch (error) {
-        console.error(error);
+        logError(error);
         if (error.code === '23505') { // Violation de contrainte unique
             res.status(409).json({ error: "Report type already exists" });
         } else {
@@ -63,7 +64,7 @@ export const updateReportType = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         if (error.code === '23505') {
             res.status(409).json({ error: "Report type already exists" });
         } else {
@@ -86,7 +87,7 @@ export const deleteReportType = async (req, res) => {
             res.sendStatus(404);
         }
     } catch (error) {
-        console.error(error);
+        logError(error);
         res.sendStatus(500);
     }
 };

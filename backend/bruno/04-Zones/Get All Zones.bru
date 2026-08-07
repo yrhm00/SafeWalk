@@ -1,0 +1,24 @@
+meta {
+  name: Get All Zones
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/zones
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("returns 2 seeded zones", function() {
+    expect(res.body).to.be.an("array");
+    expect(res.body.length).to.equal(2);
+  });
+  test("geom is a GeoJSON string", function() {
+    expect(res.body[0].geom).to.include("Polygon");
+  });
+}

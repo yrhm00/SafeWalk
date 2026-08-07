@@ -1,0 +1,42 @@
+meta {
+  name: Create Report
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{baseUrl}}/reports
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{citizenToken}}
+}
+
+body:json {
+  {
+    "type_id": 1,
+    "zone_id": 1,
+    "title": "Signalement Bruno Test",
+    "description": "Signalement créé automatiquement par la collection Bruno.",
+    "latitude": 50.845,
+    "longitude": 4.355,
+    "severity": "medium"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("createdReportId", res.body.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("generated PostGIS 'point' column is not exposed in JSON", function() {
+    expect(res.body.point).to.be.undefined;
+  });
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Refresh Token
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/users/refresh
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refreshToken": "{{adminRefreshToken}}"
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("returns a new access token", function() {
+    expect(res.body.token).to.be.a("string");
+  });
+}

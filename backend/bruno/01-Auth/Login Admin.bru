@@ -1,0 +1,40 @@
+meta {
+  name: Login Admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/users/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@safewalk.local",
+    "password": "admin"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("adminToken", res.body.token);
+    bru.setEnvVar("adminRefreshToken", res.body.refreshToken);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("returns a token", function() {
+    expect(res.body.token).to.be.a("string");
+  });
+  test("returns a refresh token", function() {
+    expect(res.body.refreshToken).to.be.a("string");
+  });
+  test("role is admin", function() {
+    expect(res.body.user.role).to.equal("admin");
+  });
+}

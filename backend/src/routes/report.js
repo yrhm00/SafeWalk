@@ -2,6 +2,8 @@ import express from "express";
 import * as controler from "../controler/report.js";
 import { checkJWT } from "../../middleware/identification/jwt.js";
 import { checkRole } from "../../middleware/autorisation/checkRole.js";
+import { validate } from "../../middleware/validation/validate.js";
+import { createReportSchema, updateReportSchema } from "../../validation/reportSchemas.js";
 
 const router = express.Router();
 
@@ -12,7 +14,9 @@ const router = express.Router();
  *     Report:
  *       type: object
  *       required:
+ *         - type_id
  *         - title
+ *         - description
  *         - latitude
  *         - longitude
  *       properties:
@@ -33,7 +37,7 @@ const router = express.Router();
  *           format: float
  *         status:
  *           type: string
- *           enum: [open, validated, resolved, rejected]
+ *           enum: [pending, validated, resolved]
  *           description: Statut actuel
  *         user_id:
  *           type: integer
@@ -59,15 +63,53 @@ const router = express.Router();
  *     summary: Récupérer tous les signalements
  *     tags: [Reports]
  *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *       - in: query
+ *         name: severity
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high]
+ *       - in: query
+ *         name: type_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
- *         description: Liste complète des signalements
+ *         description: Liste paginée des signalements
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Report'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Report'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
  */
 router.get('/', controler.getAllReports);
 
@@ -134,11 +176,11 @@ router.get('/user/me', checkJWT, controler.getMyReports);
  *           schema:
  *             type: object
  *             required:
+ *               - type_id
  *               - title
+ *               - description
  *               - latitude
  *               - longitude
- *               - type_id
- *               - zone_id
  *             properties:
  *               title:
  *                 type: string
@@ -165,7 +207,7 @@ router.get('/user/me', checkJWT, controler.getMyReports);
  *       401:
  *         description: Non authentifié
  */
-router.post('/', checkJWT, controler.createReport);
+router.post('/', checkJWT, validate(createReportSchema), controler.createReport);
 
 
 
@@ -189,11 +231,20 @@ router.post('/', checkJWT, controler.createReport);
  *           schema:
  *             type: object
  *             properties:
- *               status:
- *                 type: string
- *                 enum: [validated, resolved, rejected]
  *               title:
  *                 type: string
+ *               description:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [pending, validated, resolved]
+ *               severity:
+ *                 type: string
+ *                 enum: [low, medium, high]
+ *               type_id:
+ *                 type: integer
+ *               zone_id:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Mis à jour avec succès
@@ -202,7 +253,7 @@ router.post('/', checkJWT, controler.createReport);
  *       404:
  *         description: Signalement non trouvé
  */
-router.patch('/:id', checkJWT, checkRole(['admin']), controler.updateReport);
+router.patch('/:id', checkJWT, checkRole(['admin']), validate(updateReportSchema), controler.updateReport);
 
 /**
  * @swagger

@@ -1,0 +1,30 @@
+meta {
+  name: Create Report Type As Admin
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/report-types
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "label": "Type Bruno Test"
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("label matches", function() {
+    expect(res.body.label).to.equal("Type Bruno Test");
+  });
+}

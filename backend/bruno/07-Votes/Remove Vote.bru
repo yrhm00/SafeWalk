@@ -1,0 +1,27 @@
+meta {
+  name: Remove Vote
+  type: http
+  seq: 29
+}
+
+delete {
+  url: {{baseUrl}}/votes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testToken}}
+}
+
+body:json {
+  {
+    "report_id": {{createdReportId}}
+  }
+}
+
+tests {
+  test("status is 204", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+}
