@@ -1,0 +1,17 @@
+meta {
+  name: Get Report Invalid Id
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{baseUrl}}/reports/abc
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 400 (non-numeric id)", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+}

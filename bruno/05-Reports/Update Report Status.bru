@@ -1,0 +1,30 @@
+meta {
+  name: Update Report Status
+  type: http
+  seq: 24
+}
+
+patch {
+  url: {{baseUrl}}/reports/{{createdReportId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "status": "validated"
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("status was updated to validated", function() {
+    expect(res.body.status).to.equal("validated");
+  });
+}

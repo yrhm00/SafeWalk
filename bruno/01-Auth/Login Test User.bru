@@ -1,0 +1,30 @@
+meta {
+  name: Login Test User
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/users/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "brunotest@mail.com",
+    "password": "password123"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("testToken", res.body.token);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

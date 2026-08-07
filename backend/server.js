@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
@@ -6,7 +7,7 @@ import swaggerUi from "swagger-ui-express";
 import router from "./src/routes/index.js";
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 const apiVersion = '/api/v1';
 
 const swaggerOptions = {

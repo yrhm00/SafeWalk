@@ -1,0 +1,27 @@
+meta {
+  name: Update Report As Citizen
+  type: http
+  seq: 23
+}
+
+patch {
+  url: {{baseUrl}}/reports/{{createdReportId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{citizenToken}}
+}
+
+body:json {
+  {
+    "status": "validated"
+  }
+}
+
+tests {
+  test("status is 403 (admin only route)", function() {
+    expect(res.getStatus()).to.equal(403);
+  });
+}

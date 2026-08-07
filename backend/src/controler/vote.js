@@ -26,10 +26,6 @@ export const addVote = async (req, res) => {
     try {
         const { report_id, value } = req.body;
 
-        if (typeof value !== 'boolean') {
-            return res.status(400).json({ error: "Value must be a boolean" });
-        }
-
         const vote = await voteModel.createOrUpdateVote(pool, {
             report_id,
             user_id: req.session.id,

@@ -1,12 +1,9 @@
 import vine from '@vinejs/vine';
 
 export const createReportTypeSchema = vine.object({
-  name: vine.string().trim().minLength(2).maxLength(100),
-  description: vine.string().trim().minLength(3).optional(),
-});
-export const updateReportTypeSchema = vine.object({
-  id: vine.number(),
-  name: vine.string().trim().minLength(2).maxLength(100).optional(),
-  description: vine.string().trim().minLength(3).optional(),
+    label: vine.string().trim().minLength(2).maxLength(80)
 });
 
+export const updateReportTypeSchema = vine.object({
+    label: vine.string().trim().minLength(2).maxLength(80)
+});

@@ -1,0 +1,30 @@
+meta {
+  name: Update Comment As Owner
+  type: http
+  seq: 27
+}
+
+patch {
+  url: {{baseUrl}}/comments/{{createdCommentId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{citizenToken}}
+}
+
+body:json {
+  {
+    "content": "Commentaire modifié par Bruno."
+  }
+}
+
+tests {
+  test("status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("content was updated", function() {
+    expect(res.body.content).to.equal("Commentaire modifié par Bruno.");
+  });
+}

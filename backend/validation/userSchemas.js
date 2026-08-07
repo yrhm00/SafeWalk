@@ -26,3 +26,11 @@ export const updateUserSchema = vine.object({
     email: vine.string().trim().email().optional(),
     password: vine.string().minLength(8).optional()
 });
+
+export const updateUserByAdminSchema = vine.object({
+    name: vine.string().trim().minLength(2).maxLength(120).optional(),
+    username: vine.string().trim().minLength(3).maxLength(60).optional(),
+    email: vine.string().trim().email().optional(),
+    password: vine.string().minLength(8).optional(),
+    role: vine.enum(['admin', 'citizen']).optional()
+});

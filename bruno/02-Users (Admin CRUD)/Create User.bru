@@ -1,0 +1,39 @@
+meta {
+  name: Create User
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "name": "Admin Created User",
+    "email": "admincreated@mail.com",
+    "password": "password123",
+    "role": "citizen"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("createdUserId", res.body.id);
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("returns the created id", function() {
+    expect(res.body.id).to.be.a("number");
+  });
+}

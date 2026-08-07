@@ -79,14 +79,14 @@ export const createReport = async (req, res) => {
 };
 
 export const updateReport = async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+        return res.sendStatus(400);
+    }
+
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-
-        const id = parseInt(req.params.id);
-        if (isNaN(id)) {
-            return res.sendStatus(400);
-        }
 
         const updatedReport = await reportModel.updateReport(client, id, req.body);
 

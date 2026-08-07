@@ -1,0 +1,29 @@
+meta {
+  name: Register New User
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/users/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Bruno Test User",
+    "email": "brunotest@mail.com",
+    "password": "password123",
+    "role": "admin"
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("role is forced to citizen despite role:admin in body", function() {
+    expect(res.body.role).to.equal("citizen");
+  });
+}

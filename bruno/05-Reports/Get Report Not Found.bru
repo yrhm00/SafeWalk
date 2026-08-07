@@ -1,0 +1,17 @@
+meta {
+  name: Get Report Not Found
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{baseUrl}}/reports/999999
+  body: none
+  auth: none
+}
+
+tests {
+  test("status is 404", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+}

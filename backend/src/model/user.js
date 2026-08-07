@@ -26,7 +26,7 @@ export const createUser = async (SQLClient, { name, username, email, password_ha
     return rows[0];
 };
 
-export const updateUser = async (SQLClient, id, { name, username, email, password_hash }) => {
+export const updateUser = async (SQLClient, id, { name, username, email, password_hash, role }) => {
     let query = "UPDATE users SET ";
     const querySet = [];
     const queryValues = [];
@@ -47,10 +47,14 @@ export const updateUser = async (SQLClient, id, { name, username, email, passwor
         queryValues.push(password_hash);
         querySet.push(`password_hash = $${queryValues.length}`);
     }
+    if (role !== undefined) {
+        queryValues.push(role);
+        querySet.push(`role = $${queryValues.length}`);
+    }
 
     if (queryValues.length > 0) {
         queryValues.push(id);
-        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING id, name, username, email, role`;
+        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING id, name, username, email, role, created_at`;
         const { rows } = await SQLClient.query(query, queryValues);
         return rows[0];
     } else {

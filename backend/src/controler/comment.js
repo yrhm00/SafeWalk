@@ -37,11 +37,11 @@ export const createComment = async (req, res) => {
 export const updateComment = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-        const { content } = req.body;
-
-        if (isNaN(id) || !content) {
+        if (isNaN(id)) {
             return res.sendStatus(400);
         }
+
+        const { content } = req.body;
 
         const comment = await commentModel.readCommentById(pool, id);
 

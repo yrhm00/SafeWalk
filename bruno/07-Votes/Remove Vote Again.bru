@@ -1,0 +1,27 @@
+meta {
+  name: Remove Vote Again
+  type: http
+  seq: 30
+}
+
+delete {
+  url: {{baseUrl}}/votes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testToken}}
+}
+
+body:json {
+  {
+    "report_id": {{createdReportId}}
+  }
+}
+
+tests {
+  test("status is 404 (vote already removed)", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+}

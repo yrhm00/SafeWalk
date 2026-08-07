@@ -1,12 +1,11 @@
 /**
- * Lire tous les rapports
- */
-/**
  * Lire tous les rapports avec filtres optionnels
  */
 export const readAllReports = async (SQLClient, limit = 20, offset = 0, params = {}) => {
     let query = `
-        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name,
+        SELECT r.id, r.user_id, r.type_id, r.zone_id, r.title, r.description, r.latitude, r.longitude,
+               r.image_url, r.status, r.severity, r.created_at,
+               u.name as user_name, rt.label as type_label, z.name as zone_name,
                COUNT(CASE WHEN v.value = TRUE THEN 1 END) as upvotes,
                COUNT(CASE WHEN v.value = FALSE THEN 1 END) as downvotes
         FROM report r
@@ -68,7 +67,9 @@ export const readAllReports = async (SQLClient, limit = 20, offset = 0, params =
  */
 export const readReportById = async (SQLClient, id) => {
     const query = `
-        SELECT r.*, u.name as user_name, rt.label as type_label, z.name as zone_name
+        SELECT r.id, r.user_id, r.type_id, r.zone_id, r.title, r.description, r.latitude, r.longitude,
+               r.image_url, r.status, r.severity, r.created_at,
+               u.name as user_name, rt.label as type_label, z.name as zone_name
         FROM report r
         LEFT JOIN users u ON r.user_id = u.id
         LEFT JOIN report_type rt ON r.type_id = rt.id
@@ -86,7 +87,7 @@ export const createReport = async (SQLClient, { user_id, type_id, zone_id, title
     const query = `
         INSERT INTO report (user_id, type_id, zone_id, title, description, latitude, longitude, image_url, severity)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING *
+        RETURNING id, user_id, type_id, zone_id, title, description, latitude, longitude, image_url, status, severity, created_at
     `;
     const { rows } = await SQLClient.query(query, [user_id, type_id, zone_id, title, description, latitude, longitude, image_url, severity]);
     return rows[0];
@@ -127,7 +128,7 @@ export const updateReport = async (SQLClient, id, { title, description, status, 
 
     if (queryValues.length > 0) {
         queryValues.push(id);
-        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING *`;
+        query += `${querySet.join(", ")} WHERE id = $${queryValues.length} RETURNING id, user_id, type_id, zone_id, title, description, latitude, longitude, image_url, status, severity, created_at`;
         const { rows } = await SQLClient.query(query, queryValues);
         return rows[0];
     } else {
@@ -146,7 +147,9 @@ export const deleteReport = async (SQLClient, id) => {
 
 export const readReportsByUserId = async (SQLClient, user_id) => {
     const query = `
-        SELECT r.*, rt.label as type_label, z.name as zone_name
+        SELECT r.id, r.user_id, r.type_id, r.zone_id, r.title, r.description, r.latitude, r.longitude,
+               r.image_url, r.status, r.severity, r.created_at,
+               rt.label as type_label, z.name as zone_name
         FROM report r
         LEFT JOIN report_type rt ON r.type_id = rt.id
         LEFT JOIN zone z ON r.zone_id = z.id

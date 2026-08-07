@@ -1,0 +1,30 @@
+meta {
+  name: Create Report Invalid Data
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseUrl}}/reports
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{citizenToken}}
+}
+
+body:json {
+  {
+    "type_id": 1,
+    "title": "ab",
+    "latitude": 50,
+    "longitude": 4
+  }
+}
+
+tests {
+  test("status is 400 (title too short, description missing)", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+}

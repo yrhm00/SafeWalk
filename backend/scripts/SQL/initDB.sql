@@ -88,16 +88,14 @@ CREATE TABLE vote (
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
--- users (Générés avec Argon2 + Pepper 'cecinestpasunpepper')
+
 -- Mot de passe Admin : 'admin'
 -- Mot de passe Citoyens : 'password'
 INSERT INTO users (name, username, email, password_hash, role) VALUES
-('Admin SafeWalk', 'admin', 'admin@safewalk.local', '$argon2id$v=19$m=65536,t=3,p=4$kVS7ToU1lNU+0M/F/CwNBQ$twzDADpN63spGSnzae1CW2O7ndJkOntZ4Exj7oL3gEE', 'admin'),
-('Yassin Rhouma', 'yassin', 'yassin@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3SRVPFYX2s80NGa54HQnsA$pQSmZVTtn3UvRxdofUagfQvDzodsIxcCmpxU+Knv/DY', 'citizen'),
-('Florian Dupont', 'florian', 'florian@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3SRVPFYX2s80NGa54HQnsA$pQSmZVTtn3UvRxdofUagfQvDzodsIxcCmpxU+Knv/DY', 'citizen'),
-('Abou Bakar', 'aboub', 'aboub@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3SRVPFYX2s80NGa54HQnsA$pQSmZVTtn3UvRxdofUagfQvDzodsIxcCmpxU+Knv/DY', 'citizen'),
-('Emmanuel Lemoine', 'emma', 'emma@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3SRVPFYX2s80NGa54HQnsA$pQSmZVTtn3UvRxdofUagfQvDzodsIxcCmpxU+Knv/DY', 'citizen'),
-('Yassin Admin', 'yassadmin', 'yassinadmin@admin.com', '$argon2id$v=19$m=65536,t=3,p=4$kVS7ToU1lNU+0M/F/CwNBQ$twzDADpN63spGSnzae1CW2O7ndJkOntZ4Exj7oL3gEE', 'admin');
+('Admin SafeWalk', 'admin', 'admin@safewalk.local', '$argon2id$v=19$m=65536,t=3,p=4$DjvSYMad58gnhfbv69yC7Q$Qbjiyj/Y7VSz8kkoa8GKGxE7JCTzJJoLrQJhMQkGzYk', 'admin'),
+('Florian Fichet', 'florian', 'florian@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$PRanaSldZhXI/Z725faKkA$+HbJu0ZeLEHJOik2TJl9NZ/w+qvdHe4uCuafdimQCj0', 'citizen'),
+('Abou Bakar', 'aboub', 'aboub@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$3ZGAzn+FxczkepCguqUwCA$x3zIaligsUOPSxjK4a4U2/B7oAvcHLwYs1QK1RcV438', 'citizen'),
+('Emmanuel Hogas', 'emma', 'emma@mail.com', '$argon2id$v=19$m=65536,t=3,p=4$40XO5Tu8MsEfSfmcF4tSGA$ZxUjAGV55ZKTLp+6wOTznHsxIMkcZ2zxNc0zO1uoV/I', 'admin');
 
 
 
@@ -117,23 +115,23 @@ INSERT INTO zone (name, description, geom) VALUES
 -- report
 INSERT INTO report (user_id, type_id, zone_id, title, description, latitude, longitude, image_url, status, severity) VALUES
                                                                                                                         (2, 1, 1, 'Lampadaire cassé', 'Aucun éclairage dans la rue principale depuis 3 jours.', 50.845, 4.355, NULL, 'pending', 'medium'),
-                                                                                                                        (3, 2, 1, 'Route gelée', 'Très glissante ce matin à cause du gel.', 50.846, 4.357, NULL, 'validated', 'high'),
-                                                                                                                        (4, 4, 2, 'Personne suspecte', 'Individu tournant autour des voitures la nuit.', 50.847, 4.338, NULL, 'pending', 'medium'),
-                                                                                                                        (5, 3, 2, 'Trottoir abîmé', 'Impossible de passer avec une poussette.', 50.843, 4.334, NULL, 'resolved', 'low'),
-                                                                                                                        (2, 5, 1, 'Rue inondée', 'Après la pluie, la rue devient impraticable.', 50.844, 4.352, NULL, 'pending', 'high');
+                                                                                                                        (2, 2, 1, 'Route gelée', 'Très glissante ce matin à cause du gel.', 50.846, 4.357, NULL, 'validated', 'high'),
+                                                                                                                        (3, 4, 2, 'Personne suspecte', 'Individu tournant autour des voitures la nuit.', 50.847, 4.338, NULL, 'pending', 'medium'),
+                                                                                                                        (4, 3, 2, 'Trottoir abîmé', 'Impossible de passer avec une poussette.', 50.843, 4.334, NULL, 'resolved', 'low'),
+                                                                                                                        (3, 5, 1, 'Rue inondée', 'Après la pluie, la rue devient impraticable.', 50.844, 4.352, NULL, 'pending', 'high');
 
 -- comment
 INSERT INTO comment (report_id, user_id, content) VALUES
-                                                      (1, 3, 'Oui c’est très dangereux, surtout le soir !'),
-                                                      (2, 4, 'J’ai glissé moi aussi ce matin.'),
+                                                      (1, 2, 'Oui c’est très dangereux, surtout le soir !'),
+                                                      (2, 3, 'J’ai glissé moi aussi ce matin.'),
                                                       (3, 2, 'Alertez la police municipale rapidement.'),
-                                                      (4, 5, 'J’ai pris une photo, je la joins bientôt.');
+                                                      (4, 4, 'J’ai pris une photo, je la joins bientôt.');
 
 -- Votes
 INSERT INTO vote (report_id, user_id, value) VALUES
+                                                 (1, 2, TRUE),
                                                  (1, 3, TRUE),
-                                                 (1, 4, TRUE),
-                                                 (2, 5, TRUE),
-                                                 (3, 2, FALSE),
-                                                 (4, 3, TRUE),
-                                                 (5, 5, TRUE);
+                                                 (2, 4, TRUE),
+                                                 (3, 3, FALSE),
+                                                 (4, 2, TRUE),
+                                                 (5, 4, TRUE);

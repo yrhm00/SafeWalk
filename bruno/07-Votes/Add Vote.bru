@@ -1,0 +1,31 @@
+meta {
+  name: Add Vote
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{baseUrl}}/votes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testToken}}
+}
+
+body:json {
+  {
+    "report_id": {{createdReportId}},
+    "value": true
+  }
+}
+
+tests {
+  test("status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("value is true", function() {
+    expect(res.body.value).to.equal(true);
+  });
+}

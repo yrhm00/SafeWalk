@@ -1,13 +1,10 @@
 import vine from '@vinejs/vine';
 
-export const setVoteSchema = vine.object({
-  user_id: vine.number(),
-  report_id: vine.number(),
-  value: vine.enum([1, -1]),
+export const createVoteSchema = vine.object({
+    report_id: vine.number().positive(),
+    value: vine.boolean()
 });
 
-export const removeVoteSchema = vine.object({
-  user_id: vine.number(),
-  report_id: vine.number(),
+export const deleteVoteSchema = vine.object({
+    report_id: vine.number().positive()
 });
-

@@ -1,0 +1,21 @@
+meta {
+  name: Get All Users As Citizen
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{citizenToken}}
+}
+
+tests {
+  test("status is 403 (admin only route)", function() {
+    expect(res.getStatus()).to.equal(403);
+  });
+}

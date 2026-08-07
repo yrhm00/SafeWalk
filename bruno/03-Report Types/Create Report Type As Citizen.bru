@@ -1,0 +1,27 @@
+meta {
+  name: Create Report Type As Citizen
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/report-types
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{citizenToken}}
+}
+
+body:json {
+  {
+    "label": "Type Bruno Test"
+  }
+}
+
+tests {
+  test("status is 403 (admin only route)", function() {
+    expect(res.getStatus()).to.equal(403);
+  });
+}
