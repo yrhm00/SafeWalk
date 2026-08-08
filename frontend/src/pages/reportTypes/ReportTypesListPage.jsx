@@ -17,9 +17,9 @@ function ReportTypesListPage() {
     setError('');
     try {
       const data = await listReportTypes();
-      setTypes(Array.isArray(data) ? data : data.rows || []);
-    } catch (e) {
-      setError(e.message);
+      setTypes(data);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
     }
@@ -35,8 +35,8 @@ function ReportTypesListPage() {
       await deleteReportType(toDelete.id);
       setToDelete(null);
       await load();
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
     }
   };
 

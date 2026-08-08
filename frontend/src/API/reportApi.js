@@ -1,23 +1,27 @@
 import apiClient from './http.js';
 
-export function listReports({ page = 1, size = 20 } = {}) {
-  const params = new URLSearchParams({ page, size });
-  return apiClient.get(`/reports?${params.toString()}`).then(res => res.data);
+export async function listReports({ limit = 20, offset = 0 } = {}) {
+  const params = new URLSearchParams({ limit, offset });
+  const response = await apiClient.get(`/reports?${params.toString()}`);
+  return response.data;
 }
 
-export function getReportById(id) {
-  return apiClient.get(`/reports/${id}`).then(res => res.data);
+export async function getReportById(id) {
+  const response = await apiClient.get(`/reports/${id}`);
+  return response.data;
 }
 
-export function createReport(payload) {
-  return apiClient.post('/reports', payload).then(res => res.data);
+export async function createReport(payload) {
+  const response = await apiClient.post('/reports', payload);
+  return response.data;
 }
 
-export function updateReport(id, payload) {
-  return apiClient.patch(`/reports/${id}`, { id, ...payload }).then(res => res.data);
+export async function updateReport(id, payload) {
+  const response = await apiClient.patch(`/reports/${id}`, payload);
+  return response.data;
 }
 
-export function deleteReport(id) {
-  return apiClient.delete(`/reports/${id}`);
+export async function deleteReport(id) {
+  await apiClient.delete(`/reports/${id}`);
 }
 

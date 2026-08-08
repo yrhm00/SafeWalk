@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import Alert from '../../component/Alert.jsx';
 import { createReportType, getReportTypeById, updateReportType } from '../../API/reportTypeApi.js';
 
 function ReportTypeFormPage({ mode }) {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [values, setValues] = useState({ id: undefined, label: '' });
+  const [values, setValues] = useState({ label: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -15,8 +16,8 @@ function ReportTypeFormPage({ mode }) {
         try {
           const type = await getReportTypeById(id);
           setValues(type);
-        } catch (e) {
-          setError(e.message);
+        } catch (err) {
+          setError(err.response?.data?.error || err.message);
         }
       })();
     }
@@ -34,11 +35,11 @@ function ReportTypeFormPage({ mode }) {
       if (mode === 'create') {
         await createReportType({ label: values.label });
       } else {
-        await updateReportType(values.id, values);
+        await updateReportType(id, { label: values.label });
       }
       navigate('/admin/report-types');
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
     }
   };
 
@@ -61,6 +62,10 @@ function ReportTypeFormPage({ mode }) {
     </div>
   );
 }
+
+ReportTypeFormPage.propTypes = {
+  mode: PropTypes.oneOf(['create', 'edit']).isRequired,
+};
 
 export default ReportTypeFormPage;
 

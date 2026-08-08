@@ -5,9 +5,13 @@ import ConfirmDialog from '../../component/ConfirmDialog.jsx';
 import Alert from '../../component/Alert.jsx';
 import { listUsers, deleteUser } from '../../API/userApi.js';
 
+const PAGE_SIZE = 20;
+
 function UsersListPage() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [pagination, setPagination] = useState({ total: 0, hasMore: false });
+  const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toDelete, setToDelete] = useState(null);
@@ -16,10 +20,11 @@ function UsersListPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await listUsers();
-      setUsers(Array.isArray(data) ? data : data.rows || []);
-    } catch (e) {
-      setError(e.message);
+      const result = await listUsers({ limit: PAGE_SIZE, offset });
+      setUsers(result.data || []);
+      setPagination(result.pagination || { total: 0, hasMore: false });
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
     }
@@ -27,7 +32,7 @@ function UsersListPage() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [offset]);
 
   const handleConfirmDelete = async () => {
     if (!toDelete) return;
@@ -35,10 +40,13 @@ function UsersListPage() {
       await deleteUser(toDelete.id);
       setToDelete(null);
       await load();
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
     }
   };
+
+  const handlePrevious = () => setOffset(prev => Math.max(prev - PAGE_SIZE, 0));
+  const handleNext = () => setOffset(prev => prev + PAGE_SIZE);
 
   const columns = [
     { key: 'id', label: 'ID' },
@@ -65,6 +73,11 @@ function UsersListPage() {
         onEdit={row => navigate(`${row.id}/edit`)}
         onDelete={row => setToDelete(row)}
       />
+
+      <div className="form-actions">
+        <button onClick={handlePrevious} disabled={offset === 0}>Précédent</button>
+        <button onClick={handleNext} disabled={!pagination.hasMore}>Suivant</button>
+      </div>
 
       <ConfirmDialog
         open={!!toDelete}

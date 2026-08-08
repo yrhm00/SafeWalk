@@ -1,27 +1,32 @@
 import apiClient from './http.js';
 
-export function getMyProfile() {
-  return apiClient.get('/users/me').then(res => res.data);
+export async function getMyProfile() {
+  const response = await apiClient.get('/users/me');
+  return response.data;
 }
 
-export function listUsers({ limit = 20, offset = 0 } = {}) {
+export async function listUsers({ limit = 20, offset = 0 } = {}) {
   const params = new URLSearchParams({ limit, offset });
-  return apiClient.get(`/users?${params.toString()}`).then(res => res.data);
+  const response = await apiClient.get(`/users?${params.toString()}`);
+  return response.data;
 }
 
-export function getUserById(id) {
-  return apiClient.get(`/users/${id}`).then(res => res.data);
+export async function getUserById(id) {
+  const response = await apiClient.get(`/users/${id}`);
+  return response.data;
 }
 
-export function createUser(payload) {
-  return apiClient.post('/users', payload).then(res => res.data);
+export async function createUser(payload) {
+  const response = await apiClient.post('/users', payload);
+  return response.data;
 }
 
-export function updateUser(id, payload) {
-  return apiClient.patch(`/users/${id}`, payload).then(res => res.data);
+export async function updateUser(id, payload) {
+  const response = await apiClient.patch(`/users/${id}`, payload);
+  return response.data;
 }
 
-export function deleteUser(id) {
-  return apiClient.delete(`/users/${id}`);
+export async function deleteUser(id) {
+  await apiClient.delete(`/users/${id}`);
 }
 
