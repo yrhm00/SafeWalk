@@ -13,6 +13,7 @@ export const getAllReports = async (req, res) => {
         if (req.query.severity) params.severity = req.query.severity;
         if (req.query.days) params.days = parseInt(req.query.days);
         if (req.query.type_id) params.type_id = parseInt(req.query.type_id);
+        if (req.query.search) params.search = req.query.search;
 
         const { reports, total } = await reportModel.readAllReports(pool, limit, offset, params);
 

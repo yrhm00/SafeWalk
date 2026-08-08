@@ -1,7 +1,15 @@
-export const readAllReportTypes = async (SQLClient) => {
-    const query = "SELECT * FROM report_type ORDER BY label";
-    const { rows } = await SQLClient.query(query);
-    return rows;
+export const readAllReportTypes = async (SQLClient, limit = 20, offset = 0, search = '') => {
+    const searchPattern = `%${search}%`;
+    const query = "SELECT * FROM report_type WHERE label ILIKE $3 ORDER BY label LIMIT $1 OFFSET $2";
+    const { rows } = await SQLClient.query(query, [limit, offset, searchPattern]);
+
+    const countResult = await SQLClient.query(
+        "SELECT COUNT(*) FROM report_type WHERE label ILIKE $1",
+        [searchPattern]
+    );
+    const total = parseInt(countResult.rows[0].count);
+
+    return { reportTypes: rows, total };
 };
 
 export const readReportTypeById = async (SQLClient, id) => {

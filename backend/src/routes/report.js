@@ -87,6 +87,11 @@ const router = express.Router();
  *         name: days
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Recherche insensible à la casse dans le titre et la description
  *     responses:
  *       200:
  *         description: Liste paginée des signalements

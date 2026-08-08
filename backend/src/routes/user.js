@@ -196,6 +196,11 @@ router.patch('/me', checkJWT, validate(updateUserSchema), controler.updateUser);
  *         schema:
  *           type: integer
  *           default: 0
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Recherche insensible à la casse dans le nom, le username et l'email
  *     responses:
  *       200:
  *         description: Liste paginée des utilisateurs

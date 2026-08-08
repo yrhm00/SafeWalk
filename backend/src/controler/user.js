@@ -50,8 +50,9 @@ export const getAllUsers = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 20;
         const offset = parseInt(req.query.offset) || 0;
+        const search = req.query.search || '';
 
-        const { users, total } = await userModel.readAllUsers(pool, limit, offset);
+        const { users, total } = await userModel.readAllUsers(pool, limit, offset, search);
 
         res.json({
             data: users,
