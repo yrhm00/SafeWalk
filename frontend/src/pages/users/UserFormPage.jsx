@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import Alert from '../../component/Alert.jsx';
 import { createUser, getUserById, updateUser } from '../../API/userApi.js';
+import { getErrorMessage } from '../../API/errors.js';
 
 function UserFormPage({ mode }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [values, setValues] = useState({
-    id: undefined,
     name: '',
     username: '',
     email: '',
@@ -22,8 +23,8 @@ function UserFormPage({ mode }) {
         try {
           const user = await getUserById(id);
           setValues(v => ({ ...v, ...user, password: '' }));
-        } catch (e) {
-          setError(e.message);
+        } catch (err) {
+          setError(getErrorMessage(err));
         }
       })();
     }
@@ -37,19 +38,20 @@ function UserFormPage({ mode }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    const { id: _userId, ...rest } = values;
+    const payload = { ...rest };
+    if (!payload.password) delete payload.password;
+
     try {
       if (mode === 'create') {
-        const payload = { ...values };
-        if (!payload.password) delete payload.password;
         await createUser(payload);
       } else {
-        const payload = { ...values };
-        if (!payload.password) delete payload.password;
-        await updateUser(values.id, payload);
+        await updateUser(id, payload);
       }
       navigate('/admin/users');
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
   };
 
@@ -72,7 +74,13 @@ function UserFormPage({ mode }) {
         </label>
         <label>
           Mot de passe
-          <input type="password" name="password" value={values.password} onChange={handleChange} />
+          <input
+            type="password"
+            name="password"
+            value={values.password}
+            onChange={handleChange}
+            required={mode === 'create'}
+          />
         </label>
         <label>
           Rôle
@@ -91,6 +99,10 @@ function UserFormPage({ mode }) {
     </div>
   );
 }
+
+UserFormPage.propTypes = {
+  mode: PropTypes.oneOf(['create', 'edit']).isRequired,
+};
 
 export default UserFormPage;
 

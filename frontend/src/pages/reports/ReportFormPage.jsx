@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import Alert from '../../component/Alert.jsx';
 import { createReport, getReportById, updateReport } from '../../API/reportApi.js';
 import { listReportTypes } from '../../API/reportTypeApi.js';
 import { listZones } from '../../API/zoneApi.js';
+import { getErrorMessage } from '../../API/errors.js';
 
 function ReportFormPage({ mode }) {
     const navigate = useNavigate();
@@ -17,6 +19,7 @@ function ReportFormPage({ mode }) {
         longitude: '',
         type_id: '',
         zone_id: '',
+        image_url: '',
     });
     const [types, setTypes] = useState([]);
     const [zones, setZones] = useState([]);
@@ -25,12 +28,12 @@ function ReportFormPage({ mode }) {
     useEffect(() => {
         (async () => {
             try {
-                const typesData = await listReportTypes();
-                setTypes(typesData || []);
-                const zonesData = await listZones();
-                setZones(zonesData || []);
-            } catch (e) {
-                console.error(e);
+                const typesResult = await listReportTypes({ limit: 100 });
+                setTypes(typesResult.data || []);
+                const zonesResult = await listZones({ limit: 100 });
+                setZones(zonesResult.data || []);
+            } catch (err) {
+                setError(getErrorMessage(err));
             }
         })();
 
@@ -39,8 +42,8 @@ function ReportFormPage({ mode }) {
                 try {
                     const report = await getReportById(id);
                     setValues(v => ({ ...v, ...report }));
-                } catch (e) {
-                    setError(e.message);
+                } catch (err) {
+                    setError(getErrorMessage(err));
                 }
             })();
         }
@@ -54,15 +57,30 @@ function ReportFormPage({ mode }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        const payload = {
+            title: values.title,
+            description: values.description,
+            severity: values.severity,
+            type_id: Number(values.type_id),
+            zone_id: values.zone_id ? Number(values.zone_id) : null,
+            latitude: Number(values.latitude),
+            longitude: Number(values.longitude),
+        };
+
+        if (mode === 'create' && values.image_url) {
+            payload.image_url = values.image_url;
+        }
+
         try {
             if (mode === 'edit') {
-                await updateReport(id, values);
+                await updateReport(id, { ...payload, status: values.status });
             } else {
-                await createReport(values);
+                await createReport(payload);
             }
             navigate('/admin/reports');
-        } catch (e) {
-            setError(e.message);
+        } catch (err) {
+            setError(getErrorMessage(err));
         }
     };
 
@@ -79,14 +97,16 @@ function ReportFormPage({ mode }) {
                     Description
                     <textarea name="description" value={values.description} onChange={handleChange} required />
                 </label>
-                <label>
-                    Statut
-                    <select name="status" value={values.status} onChange={handleChange}>
-                        <option value="pending">En attente</option>
-                        <option value="validated">Validé</option>
-                        <option value="resolved">Résolu</option>
-                    </select>
-                </label>
+                {mode === 'edit' && (
+                    <label>
+                        Statut
+                        <select name="status" value={values.status} onChange={handleChange}>
+                            <option value="pending">En attente</option>
+                            <option value="validated">Validé</option>
+                            <option value="resolved">Résolu</option>
+                        </select>
+                    </label>
+                )}
                 <label>
                     Sévérité
                     <select name="severity" value={values.severity} onChange={handleChange}>
@@ -113,6 +133,18 @@ function ReportFormPage({ mode }) {
                         ))}
                     </select>
                 </label>
+                {mode === 'create' && (
+                    <label>
+                        URL de la photo (optionnel)
+                        <input
+                            type="url"
+                            name="image_url"
+                            value={values.image_url}
+                            onChange={handleChange}
+                            placeholder="https://..."
+                        />
+                    </label>
+                )}
                 <div className="form-row">
                     <label>
                         Latitude
@@ -134,5 +166,9 @@ function ReportFormPage({ mode }) {
         </div>
     );
 }
+
+ReportFormPage.propTypes = {
+    mode: PropTypes.oneOf(['create', 'edit']).isRequired,
+};
 
 export default ReportFormPage;

@@ -44,15 +44,45 @@ const router = express.Router();
  *     summary: Récupérer toutes les zones
  *     tags: [Zones]
  *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Recherche insensible à la casse dans le nom et la description
  *     responses:
  *       200:
- *         description: Liste des zones
+ *         description: Liste paginée des zones
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Zone'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Zone'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
  */
 router.get('/', controler.getAllZones);
 

@@ -1,0 +1,26 @@
+SafeWalk - Identifiants de test
+================================
+
+Administrateur
+--------------
+Email    : admin@safewalk.local
+Username : admin
+Password : admin
+
+Administrateur
+--------------
+Email    : emma@mail.com
+Username : emma
+Password : password
+
+Citoyen
+-------
+Email    : florian@mail.com
+Username : florian
+Password : password
+
+Citoyen
+-------
+Email    : aboub@mail.com
+Username : aboub
+Password : password

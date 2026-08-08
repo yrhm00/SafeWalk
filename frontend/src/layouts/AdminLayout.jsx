@@ -1,12 +1,11 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { clearSession } from '../API/session.js';
 
 function AdminLayout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('basic_email');
-    localStorage.removeItem('basic_password');
-    localStorage.removeItem('role');
+    clearSession();
     navigate('/login');
   };
 

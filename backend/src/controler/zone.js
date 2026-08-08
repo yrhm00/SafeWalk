@@ -4,8 +4,21 @@ import { logError } from "../../utils/logger.js";
 
 export const getAllZones = async (req, res) => {
     try {
-        const zones = await zoneModel.readAllZones(pool);
-        res.json(zones);
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = parseInt(req.query.offset) || 0;
+        const search = req.query.search || '';
+
+        const { zones, total } = await zoneModel.readAllZones(pool, limit, offset, search);
+
+        res.json({
+            data: zones,
+            pagination: {
+                total,
+                limit,
+                offset,
+                hasMore: offset + zones.length < total
+            }
+        });
     } catch (error) {
         logError(error);
         res.sendStatus(500);

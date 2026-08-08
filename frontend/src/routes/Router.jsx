@@ -1,17 +1,19 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import LoginPage from '../pages/auth/LoginPage.jsx';
+import PropTypes from 'prop-types';
 import AdminLayout from '../layouts/AdminLayout.jsx';
-import UsersListPage from '../pages/users/UsersListPage.jsx';
-import UserFormPage from '../pages/users/UserFormPage.jsx';
-import ReportsListPage from '../pages/reports/ReportsListPage.jsx';
-import ReportDetailPage from '../pages/reports/ReportDetailPage.jsx';
-import ReportFormPage from '../pages/reports/ReportFormPage.jsx';
-import ReportTypesListPage from '../pages/reportTypes/ReportTypesListPage.jsx';
-import ReportTypeFormPage from '../pages/reportTypes/ReportTypeFormPage.jsx';
-import ZonesListPage from '../pages/zones/ZonesListPage.jsx';
-import ZoneFormPage from '../pages/zones/ZoneFormPage.jsx';
 
-// Helper pour la sécurité
+const LoginPage = lazy(() => import('../pages/auth/LoginPage.jsx'));
+const UsersListPage = lazy(() => import('../pages/users/UsersListPage.jsx'));
+const UserFormPage = lazy(() => import('../pages/users/UserFormPage.jsx'));
+const ReportsListPage = lazy(() => import('../pages/reports/ReportsListPage.jsx'));
+const ReportDetailPage = lazy(() => import('../pages/reports/ReportDetailPage.jsx'));
+const ReportFormPage = lazy(() => import('../pages/reports/ReportFormPage.jsx'));
+const ReportTypesListPage = lazy(() => import('../pages/reportTypes/ReportTypesListPage.jsx'));
+const ReportTypeFormPage = lazy(() => import('../pages/reportTypes/ReportTypeFormPage.jsx'));
+const ZonesListPage = lazy(() => import('../pages/zones/ZonesListPage.jsx'));
+const ZoneFormPage = lazy(() => import('../pages/zones/ZoneFormPage.jsx'));
+
 function isAuthenticatedAdmin() {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
@@ -25,6 +27,16 @@ const RequireAdmin = ({ children }) => {
     return children;
 };
 
+RequireAdmin.propTypes = {
+    children: PropTypes.node.isRequired,
+};
+
+const withSuspense = (element) => (
+    <Suspense fallback={<p>Chargement...</p>}>
+        {element}
+    </Suspense>
+);
+
 const router = createBrowserRouter([
     {
         path: "/",
@@ -32,7 +44,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/login",
-        element: <LoginPage />
+        element: withSuspense(<LoginPage />)
     },
     {
         path: "/admin",
@@ -48,55 +60,55 @@ const router = createBrowserRouter([
             },
             {
                 path: "users",
-                element: <UsersListPage />
+                element: withSuspense(<UsersListPage />)
             },
             {
                 path: "users/new",
-                element: <UserFormPage mode="create" />
+                element: withSuspense(<UserFormPage mode="create" />)
             },
             {
                 path: "users/:id/edit",
-                element: <UserFormPage mode="edit" />
+                element: withSuspense(<UserFormPage mode="edit" />)
             },
             {
                 path: "reports",
-                element: <ReportsListPage />
+                element: withSuspense(<ReportsListPage />)
             },
             {
                 path: "reports/new",
-                element: <ReportFormPage mode="create" />
+                element: withSuspense(<ReportFormPage mode="create" />)
             },
             {
                 path: "reports/:id",
-                element: <ReportDetailPage />
+                element: withSuspense(<ReportDetailPage />)
             },
             {
                 path: "reports/:id/edit",
-                element: <ReportFormPage mode="edit" />
+                element: withSuspense(<ReportFormPage mode="edit" />)
             },
             {
                 path: "report-types",
-                element: <ReportTypesListPage />
+                element: withSuspense(<ReportTypesListPage />)
             },
             {
                 path: "report-types/new",
-                element: <ReportTypeFormPage mode="create" />
+                element: withSuspense(<ReportTypeFormPage mode="create" />)
             },
             {
                 path: "report-types/:id/edit",
-                element: <ReportTypeFormPage mode="edit" />
+                element: withSuspense(<ReportTypeFormPage mode="edit" />)
             },
             {
                 path: "zones",
-                element: <ZonesListPage />
+                element: withSuspense(<ZonesListPage />)
             },
             {
                 path: "zones/new",
-                element: <ZoneFormPage mode="create" />
+                element: withSuspense(<ZoneFormPage mode="create" />)
             },
             {
                 path: "zones/:id/edit",
-                element: <ZoneFormPage mode="edit" />
+                element: withSuspense(<ZoneFormPage mode="edit" />)
             }
         ]
     },

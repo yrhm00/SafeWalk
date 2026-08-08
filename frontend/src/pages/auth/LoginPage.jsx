@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Alert from '../../component/Alert.jsx';
 import { login } from '../../API/authApi.js';
-import { getMyProfile } from '../../API/userApi.js';
+import { getErrorMessage } from '../../API/errors.js';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -20,22 +20,19 @@ function LoginPage() {
     }
 
     try {
-      const { token } = await login({ email: identifier, password });
-      localStorage.setItem('token', token);
+      const { token, refreshToken, user } = await login({ email: identifier, password });
 
-      const me = await getMyProfile();
-
-      if (!me || me.role !== 'admin') {
+      if (!user || user.role !== 'admin') {
         setError('Seuls les administrateurs peuvent accéder au backoffice');
-        localStorage.removeItem('token');
         return;
       }
 
-      localStorage.setItem('role', me.role);
+      localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
+      localStorage.setItem('role', user.role);
       navigate('/admin');
     } catch (err) {
-      console.error('Login error:', err);
-      const message = err.response?.data?.error || err.message || 'Connexion au serveur impossible';
+      const message = getErrorMessage(err) || 'Connexion au serveur impossible';
       setError(message);
     }
   };

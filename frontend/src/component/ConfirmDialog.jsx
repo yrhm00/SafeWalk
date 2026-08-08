@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
   if (!open) return null;
   return (
@@ -13,6 +15,14 @@ function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
     </div>
   );
 }
+
+ConfirmDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+};
 
 export default ConfirmDialog;
 

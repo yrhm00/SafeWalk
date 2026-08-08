@@ -4,10 +4,18 @@ import DataTable from '../../component/DataTable.jsx';
 import ConfirmDialog from '../../component/ConfirmDialog.jsx';
 import Alert from '../../component/Alert.jsx';
 import { listUsers, deleteUser } from '../../API/userApi.js';
+import { getErrorMessage } from '../../API/errors.js';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
+
+const PAGE_SIZE = 20;
 
 function UsersListPage() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [pagination, setPagination] = useState({ total: 0, hasMore: false });
+  const [offset, setOffset] = useState(0);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toDelete, setToDelete] = useState(null);
@@ -16,10 +24,11 @@ function UsersListPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await listUsers();
-      setUsers(Array.isArray(data) ? data : data.rows || []);
-    } catch (e) {
-      setError(e.message);
+      const result = await listUsers({ limit: PAGE_SIZE, offset, search: debouncedSearch });
+      setUsers(result.data || []);
+      setPagination(result.pagination || { total: 0, hasMore: false });
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -27,7 +36,12 @@ function UsersListPage() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [offset, debouncedSearch]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setOffset(0);
+  };
 
   const handleConfirmDelete = async () => {
     if (!toDelete) return;
@@ -35,10 +49,13 @@ function UsersListPage() {
       await deleteUser(toDelete.id);
       setToDelete(null);
       await load();
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
   };
+
+  const handlePrevious = () => setOffset(prev => Math.max(prev - PAGE_SIZE, 0));
+  const handleNext = () => setOffset(prev => prev + PAGE_SIZE);
 
   const columns = [
     { key: 'id', label: 'ID' },
@@ -56,6 +73,14 @@ function UsersListPage() {
         <button onClick={() => navigate('new')}>Nouvel utilisateur</button>
       </div>
 
+      <input
+        type="search"
+        className="search-input"
+        placeholder="Rechercher un utilisateur..."
+        value={search}
+        onChange={handleSearchChange}
+      />
+
       <Alert type="error" message={error} />
       {loading && <p>Chargement...</p>}
 
@@ -65,6 +90,11 @@ function UsersListPage() {
         onEdit={row => navigate(`${row.id}/edit`)}
         onDelete={row => setToDelete(row)}
       />
+
+      <div className="form-actions">
+        <button onClick={handlePrevious} disabled={offset === 0}>Précédent</button>
+        <button onClick={handleNext} disabled={!pagination.hasMore}>Suivant</button>
+      </div>
 
       <ConfirmDialog
         open={!!toDelete}

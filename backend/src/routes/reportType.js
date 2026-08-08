@@ -38,15 +38,45 @@ const router = express.Router();
  *     summary: Récupérer tous les types de signalement
  *     tags: [ReportTypes]
  *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Recherche insensible à la casse dans le libellé
  *     responses:
  *       200:
- *         description: Liste des types de signalement
+ *         description: Liste paginée des types de signalement
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/ReportType'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/ReportType'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
  */
 router.get('/', controler.getAllReportTypes);
 

@@ -1,22 +1,26 @@
 import apiClient from './http.js';
 
-export function listZones() {
-  return apiClient.get('/zones', { params: { t: Date.now() } }).then(res => res.data);
+export async function listZones({ limit = 20, offset = 0, search = '' } = {}) {
+  const response = await apiClient.get('/zones', { params: { limit, offset, search, t: Date.now() } });
+  return response.data;
 }
 
-export function getZoneById(id) {
-  return apiClient.get(`/zones/${id}`, { params: { t: Date.now() } }).then(res => res.data);
+export async function getZoneById(id) {
+  const response = await apiClient.get(`/zones/${id}`, { params: { t: Date.now() } });
+  return response.data;
 }
 
-export function createZone(payload) {
-  return apiClient.post('/zones', payload).then(res => res.data);
+export async function createZone(payload) {
+  const response = await apiClient.post('/zones', payload);
+  return response.data;
 }
 
-export function updateZone(id, payload) {
-  return apiClient.patch(`/zones/${id}`, payload).then(res => res.data);
+export async function updateZone(id, payload) {
+  const response = await apiClient.patch(`/zones/${id}`, payload);
+  return response.data;
 }
 
-export function deleteZone(id) {
-  return apiClient.delete(`/zones/${id}`);
+export async function deleteZone(id) {
+  await apiClient.delete(`/zones/${id}`);
 }
 

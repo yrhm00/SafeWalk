@@ -4,8 +4,21 @@ import { logError } from "../../utils/logger.js";
 
 export const getAllReportTypes = async (req, res) => {
     try {
-        const reportTypes = await reportTypeModel.readAllReportTypes(pool);
-        res.json(reportTypes);
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = parseInt(req.query.offset) || 0;
+        const search = req.query.search || '';
+
+        const { reportTypes, total } = await reportTypeModel.readAllReportTypes(pool, limit, offset, search);
+
+        res.json({
+            data: reportTypes,
+            pagination: {
+                total,
+                limit,
+                offset,
+                hasMore: offset + reportTypes.length < total
+            }
+        });
     } catch (error) {
         logError(error);
         res.sendStatus(500);

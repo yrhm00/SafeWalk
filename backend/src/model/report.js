@@ -23,6 +23,12 @@ export const readAllReports = async (SQLClient, limit = 20, offset = 0, params =
             i++;
         }
 
+        if (params.search) {
+            clauses.push(`(r.title ILIKE $${i} OR r.description ILIKE $${i})`);
+            values.push(`%${params.search}%`);
+            i++;
+        }
+
         return { clauses, values };
     };
 

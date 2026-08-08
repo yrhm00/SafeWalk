@@ -1,7 +1,21 @@
-export const readAllZones = async (SQLClient) => {
-    const query = "SELECT id, name, description, ST_AsGeoJSON(geom) as geom FROM zone ORDER BY id";
-    const { rows } = await SQLClient.query(query);
-    return rows;
+export const readAllZones = async (SQLClient, limit = 20, offset = 0, search = '') => {
+    const searchPattern = `%${search}%`;
+    const query = `
+        SELECT id, name, description, ST_AsGeoJSON(geom) as geom
+        FROM zone
+        WHERE name ILIKE $3 OR description ILIKE $3
+        ORDER BY id
+        LIMIT $1 OFFSET $2
+    `;
+    const { rows } = await SQLClient.query(query, [limit, offset, searchPattern]);
+
+    const countResult = await SQLClient.query(
+        "SELECT COUNT(*) FROM zone WHERE name ILIKE $1 OR description ILIKE $1",
+        [searchPattern]
+    );
+    const total = parseInt(countResult.rows[0].count);
+
+    return { zones: rows, total };
 };
 
 export const readZoneById = async (SQLClient, id) => {
