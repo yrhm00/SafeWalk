@@ -34,4 +34,5 @@ button:hover { background: #1d4ed8; }
 .vote-up { color: #16a34a; font-weight: 700; }
 .vote-down { color: #dc2626; font-weight: 700; }
 .report-photo { max-width: 400px; border-radius: 8px; margin-top: 0.5rem; }
+.search-input { padding: 0.4rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; margin: 0.5rem 0; width: 100%; max-width: 320px; display: block; }
 

@@ -5,6 +5,7 @@ import ConfirmDialog from '../../component/ConfirmDialog.jsx';
 import Alert from '../../component/Alert.jsx';
 import { listUsers, deleteUser } from '../../API/userApi.js';
 import { getErrorMessage } from '../../API/errors.js';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 
 const PAGE_SIZE = 20;
 
@@ -13,6 +14,8 @@ function UsersListPage() {
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, hasMore: false });
   const [offset, setOffset] = useState(0);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toDelete, setToDelete] = useState(null);
@@ -21,7 +24,7 @@ function UsersListPage() {
     setLoading(true);
     setError('');
     try {
-      const result = await listUsers({ limit: PAGE_SIZE, offset });
+      const result = await listUsers({ limit: PAGE_SIZE, offset, search: debouncedSearch });
       setUsers(result.data || []);
       setPagination(result.pagination || { total: 0, hasMore: false });
     } catch (err) {
@@ -33,7 +36,12 @@ function UsersListPage() {
 
   useEffect(() => {
     load();
-  }, [offset]);
+  }, [offset, debouncedSearch]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setOffset(0);
+  };
 
   const handleConfirmDelete = async () => {
     if (!toDelete) return;
@@ -64,6 +72,14 @@ function UsersListPage() {
         <h1>Utilisateurs</h1>
         <button onClick={() => navigate('new')}>Nouvel utilisateur</button>
       </div>
+
+      <input
+        type="search"
+        className="search-input"
+        placeholder="Rechercher un utilisateur..."
+        value={search}
+        onChange={handleSearchChange}
+      />
 
       <Alert type="error" message={error} />
       {loading && <p>Chargement...</p>}

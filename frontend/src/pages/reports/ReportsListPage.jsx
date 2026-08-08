@@ -6,6 +6,7 @@ import Alert from '../../component/Alert.jsx';
 import CommentsDialog from '../../component/CommentsDialog.jsx';
 import { listReports, deleteReport } from '../../API/reportApi.js';
 import { getErrorMessage } from '../../API/errors.js';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 
 const PAGE_SIZE = 20;
 
@@ -14,6 +15,8 @@ function ReportsListPage() {
   const [reports, setReports] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, hasMore: false });
   const [offset, setOffset] = useState(0);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [toDelete, setToDelete] = useState(null);
@@ -23,7 +26,7 @@ function ReportsListPage() {
     setLoading(true);
     setError('');
     try {
-      const result = await listReports({ limit: PAGE_SIZE, offset });
+      const result = await listReports({ limit: PAGE_SIZE, offset, search: debouncedSearch });
       setReports(result.data || []);
       setPagination(result.pagination || { total: 0, hasMore: false });
     } catch (err) {
@@ -35,7 +38,12 @@ function ReportsListPage() {
 
   useEffect(() => {
     load();
-  }, [offset]);
+  }, [offset, debouncedSearch]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setOffset(0);
+  };
 
   const handleConfirmDelete = async () => {
     if (!toDelete) return;
@@ -86,6 +94,13 @@ function ReportsListPage() {
         <h1>Signalements</h1>
         <button onClick={() => navigate('new')}>Nouveau signalement</button>
       </div>
+      <input
+        type="search"
+        className="search-input"
+        placeholder="Rechercher un signalement..."
+        value={search}
+        onChange={handleSearchChange}
+      />
       <Alert type="error" message={error} />
       {loading && <p>Chargement...</p>}
       <DataTable

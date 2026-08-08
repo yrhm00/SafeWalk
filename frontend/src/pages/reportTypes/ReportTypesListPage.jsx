@@ -5,6 +5,7 @@ import ConfirmDialog from '../../component/ConfirmDialog.jsx';
 import Alert from '../../component/Alert.jsx';
 import { listReportTypes, deleteReportType } from '../../API/reportTypeApi.js';
 import { getErrorMessage } from '../../API/errors.js';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 
 const PAGE_SIZE = 20;
 
@@ -13,6 +14,8 @@ function ReportTypesListPage() {
   const [types, setTypes] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, hasMore: false });
   const [offset, setOffset] = useState(0);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [toDelete, setToDelete] = useState(null);
@@ -21,7 +24,7 @@ function ReportTypesListPage() {
     setLoading(true);
     setError('');
     try {
-      const result = await listReportTypes({ limit: PAGE_SIZE, offset });
+      const result = await listReportTypes({ limit: PAGE_SIZE, offset, search: debouncedSearch });
       setTypes(result.data || []);
       setPagination(result.pagination || { total: 0, hasMore: false });
     } catch (err) {
@@ -33,7 +36,12 @@ function ReportTypesListPage() {
 
   useEffect(() => {
     load();
-  }, [offset]);
+  }, [offset, debouncedSearch]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setOffset(0);
+  };
 
   const handleConfirmDelete = async () => {
     if (!toDelete) return;
@@ -60,6 +68,13 @@ function ReportTypesListPage() {
         <h1>Types de signalement</h1>
         <button onClick={() => navigate('new')}>Nouveau type</button>
       </div>
+      <input
+        type="search"
+        className="search-input"
+        placeholder="Rechercher un type..."
+        value={search}
+        onChange={handleSearchChange}
+      />
       <Alert type="error" message={error} />
       {loading && <p>Chargement...</p>}
       <DataTable

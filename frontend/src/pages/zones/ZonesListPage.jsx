@@ -5,6 +5,7 @@ import ConfirmDialog from '../../component/ConfirmDialog.jsx';
 import Alert from '../../component/Alert.jsx';
 import { listZones, deleteZone } from '../../API/zoneApi.js';
 import { getErrorMessage } from '../../API/errors.js';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue.js';
 
 const PAGE_SIZE = 20;
 
@@ -13,6 +14,8 @@ function ZonesListPage() {
   const [zones, setZones] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, hasMore: false });
   const [offset, setOffset] = useState(0);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [toDelete, setToDelete] = useState(null);
@@ -21,7 +24,7 @@ function ZonesListPage() {
     setLoading(true);
     setError('');
     try {
-      const result = await listZones({ limit: PAGE_SIZE, offset });
+      const result = await listZones({ limit: PAGE_SIZE, offset, search: debouncedSearch });
       setZones(result.data || []);
       setPagination(result.pagination || { total: 0, hasMore: false });
     } catch (err) {
@@ -33,7 +36,12 @@ function ZonesListPage() {
 
   useEffect(() => {
     load();
-  }, [offset]);
+  }, [offset, debouncedSearch]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setOffset(0);
+  };
 
   const handleConfirmDelete = async () => {
     if (!toDelete) return;
@@ -61,6 +69,13 @@ function ZonesListPage() {
         <h1>Zones</h1>
         <button onClick={() => navigate('new')}>Nouvelle zone</button>
       </div>
+      <input
+        type="search"
+        className="search-input"
+        placeholder="Rechercher une zone..."
+        value={search}
+        onChange={handleSearchChange}
+      />
       <Alert type="error" message={error} />
       {loading && <p>Chargement...</p>}
       <DataTable

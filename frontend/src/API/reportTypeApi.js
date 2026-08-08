@@ -1,7 +1,7 @@
 import apiClient from './http.js';
 
-export async function listReportTypes({ limit = 20, offset = 0 } = {}) {
-  const response = await apiClient.get('/report-types', { params: { limit, offset, t: Date.now() } });
+export async function listReportTypes({ limit = 20, offset = 0, search = '' } = {}) {
+  const response = await apiClient.get('/report-types', { params: { limit, offset, search, t: Date.now() } });
   return response.data;
 }
 

@@ -1,7 +1,7 @@
 import apiClient from './http.js';
 
-export async function listReports({ limit = 20, offset = 0 } = {}) {
-  const params = new URLSearchParams({ limit, offset });
+export async function listReports({ limit = 20, offset = 0, search = '' } = {}) {
+  const params = new URLSearchParams({ limit, offset, search });
   const response = await apiClient.get(`/reports?${params.toString()}`);
   return response.data;
 }

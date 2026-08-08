@@ -5,8 +5,8 @@ export async function getMyProfile() {
   return response.data;
 }
 
-export async function listUsers({ limit = 20, offset = 0 } = {}) {
-  const params = new URLSearchParams({ limit, offset });
+export async function listUsers({ limit = 20, offset = 0, search = '' } = {}) {
+  const params = new URLSearchParams({ limit, offset, search });
   const response = await apiClient.get(`/users?${params.toString()}`);
   return response.data;
 }

@@ -19,6 +19,7 @@ function ReportFormPage({ mode }) {
         longitude: '',
         type_id: '',
         zone_id: '',
+        image_url: '',
     });
     const [types, setTypes] = useState([]);
     const [zones, setZones] = useState([]);
@@ -66,6 +67,10 @@ function ReportFormPage({ mode }) {
             latitude: Number(values.latitude),
             longitude: Number(values.longitude),
         };
+
+        if (mode === 'create' && values.image_url) {
+            payload.image_url = values.image_url;
+        }
 
         try {
             if (mode === 'edit') {
@@ -128,6 +133,18 @@ function ReportFormPage({ mode }) {
                         ))}
                     </select>
                 </label>
+                {mode === 'create' && (
+                    <label>
+                        URL de la photo (optionnel)
+                        <input
+                            type="url"
+                            name="image_url"
+                            value={values.image_url}
+                            onChange={handleChange}
+                            placeholder="https://..."
+                        />
+                    </label>
+                )}
                 <div className="form-row">
                     <label>
                         Latitude
