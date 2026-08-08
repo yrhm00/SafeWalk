@@ -31,4 +31,7 @@ button:hover { background: #1d4ed8; }
 .comment-actions { margin-top: 0.25rem; font-size: 0.8rem; display: flex; gap: 0.5rem; }
 .comment-form, .comment-edit-form { display: flex; gap: 0.5rem; }
 .comment-form input, .comment-edit-form input { flex: 1; padding: 0.4rem 0.5rem; border-radius: 4px; border: 1px solid #d1d5db; }
+.vote-up { color: #16a34a; font-weight: 700; }
+.vote-down { color: #dc2626; font-weight: 700; }
+.report-photo { max-width: 400px; border-radius: 8px; margin-top: 0.5rem; }
 

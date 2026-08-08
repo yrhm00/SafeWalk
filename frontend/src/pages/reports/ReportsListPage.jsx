@@ -5,10 +5,15 @@ import ConfirmDialog from '../../component/ConfirmDialog.jsx';
 import Alert from '../../component/Alert.jsx';
 import CommentsDialog from '../../component/CommentsDialog.jsx';
 import { listReports, deleteReport } from '../../API/reportApi.js';
+import { getErrorMessage } from '../../API/errors.js';
+
+const PAGE_SIZE = 20;
 
 function ReportsListPage() {
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
+  const [pagination, setPagination] = useState({ total: 0, hasMore: false });
+  const [offset, setOffset] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [toDelete, setToDelete] = useState(null);
@@ -18,10 +23,11 @@ function ReportsListPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await listReports();
-      setReports(data.items || data || []);
-    } catch (e) {
-      setError(e.message);
+      const result = await listReports({ limit: PAGE_SIZE, offset });
+      setReports(result.data || []);
+      setPagination(result.pagination || { total: 0, hasMore: false });
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -29,7 +35,7 @@ function ReportsListPage() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [offset]);
 
   const handleConfirmDelete = async () => {
     if (!toDelete) return;
@@ -37,10 +43,13 @@ function ReportsListPage() {
       await deleteReport(toDelete.id);
       setToDelete(null);
       await load();
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
   };
+
+  const handlePrevious = () => setOffset(prev => Math.max(prev - PAGE_SIZE, 0));
+  const handleNext = () => setOffset(prev => prev + PAGE_SIZE);
 
   const columns = [
     { key: 'id', label: 'ID' },
@@ -60,12 +69,12 @@ function ReportsListPage() {
     {
       key: 'upvotes',
       label: 'Votes +',
-      render: (val) => <span style={{ color: 'green', fontWeight: 'bold' }}>+{val}</span>
+      render: (val) => <span className="vote-up">+{val}</span>
     },
     {
       key: 'downvotes',
       label: 'Votes -',
-      render: (val) => <span style={{ color: 'red', fontWeight: 'bold' }}>-{val}</span>
+      render: (val) => <span className="vote-down">-{val}</span>
     },
     { key: 'status', label: 'Statut' },
     { key: 'severity', label: 'Sévérité' },
@@ -82,9 +91,14 @@ function ReportsListPage() {
       <DataTable
         columns={columns}
         data={reports}
+        onView={row => navigate(`${row.id}`)}
         onEdit={row => navigate(`${row.id}/edit`)}
         onDelete={row => setToDelete(row)}
       />
+      <div className="form-actions">
+        <button onClick={handlePrevious} disabled={offset === 0}>Précédent</button>
+        <button onClick={handleNext} disabled={!pagination.hasMore}>Suivant</button>
+      </div>
       {selectedReport && (
         <CommentsDialog
           report={selectedReport}

@@ -1,7 +1,7 @@
 import apiClient from './http.js';
 
-export async function listZones() {
-  const response = await apiClient.get('/zones', { params: { t: Date.now() } });
+export async function listZones({ limit = 20, offset = 0 } = {}) {
+  const response = await apiClient.get('/zones', { params: { limit, offset, t: Date.now() } });
   return response.data;
 }
 

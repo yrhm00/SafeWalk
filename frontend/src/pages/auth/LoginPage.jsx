@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Alert from '../../component/Alert.jsx';
 import { login } from '../../API/authApi.js';
+import { getErrorMessage } from '../../API/errors.js';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ function LoginPage() {
       localStorage.setItem('role', user.role);
       navigate('/admin');
     } catch (err) {
-      const message = err.response?.data?.error || err.message || 'Connexion au serveur impossible';
+      const message = getErrorMessage(err) || 'Connexion au serveur impossible';
       setError(message);
     }
   };

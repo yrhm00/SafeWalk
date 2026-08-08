@@ -4,6 +4,7 @@ import DataTable from '../../component/DataTable.jsx';
 import ConfirmDialog from '../../component/ConfirmDialog.jsx';
 import Alert from '../../component/Alert.jsx';
 import { listUsers, deleteUser } from '../../API/userApi.js';
+import { getErrorMessage } from '../../API/errors.js';
 
 const PAGE_SIZE = 20;
 
@@ -24,7 +25,7 @@ function UsersListPage() {
       setUsers(result.data || []);
       setPagination(result.pagination || { total: 0, hasMore: false });
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -41,7 +42,7 @@ function UsersListPage() {
       setToDelete(null);
       await load();
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      setError(getErrorMessage(err));
     }
   };
 

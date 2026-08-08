@@ -4,10 +4,15 @@ import DataTable from '../../component/DataTable.jsx';
 import ConfirmDialog from '../../component/ConfirmDialog.jsx';
 import Alert from '../../component/Alert.jsx';
 import { listReportTypes, deleteReportType } from '../../API/reportTypeApi.js';
+import { getErrorMessage } from '../../API/errors.js';
+
+const PAGE_SIZE = 20;
 
 function ReportTypesListPage() {
   const navigate = useNavigate();
   const [types, setTypes] = useState([]);
+  const [pagination, setPagination] = useState({ total: 0, hasMore: false });
+  const [offset, setOffset] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [toDelete, setToDelete] = useState(null);
@@ -16,10 +21,11 @@ function ReportTypesListPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await listReportTypes();
-      setTypes(data);
+      const result = await listReportTypes({ limit: PAGE_SIZE, offset });
+      setTypes(result.data || []);
+      setPagination(result.pagination || { total: 0, hasMore: false });
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -27,7 +33,7 @@ function ReportTypesListPage() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [offset]);
 
   const handleConfirmDelete = async () => {
     if (!toDelete) return;
@@ -36,9 +42,12 @@ function ReportTypesListPage() {
       setToDelete(null);
       await load();
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      setError(getErrorMessage(err));
     }
   };
+
+  const handlePrevious = () => setOffset(prev => Math.max(prev - PAGE_SIZE, 0));
+  const handleNext = () => setOffset(prev => prev + PAGE_SIZE);
 
   const columns = [
     { key: 'id', label: 'ID' },
@@ -59,6 +68,10 @@ function ReportTypesListPage() {
         onEdit={row => navigate(`${row.id}/edit`)}
         onDelete={row => setToDelete(row)}
       />
+      <div className="form-actions">
+        <button onClick={handlePrevious} disabled={offset === 0}>Précédent</button>
+        <button onClick={handleNext} disabled={!pagination.hasMore}>Suivant</button>
+      </div>
       <ConfirmDialog
         open={!!toDelete}
         title="Supprimer le type"

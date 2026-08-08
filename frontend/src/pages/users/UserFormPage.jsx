@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Alert from '../../component/Alert.jsx';
 import { createUser, getUserById, updateUser } from '../../API/userApi.js';
+import { getErrorMessage } from '../../API/errors.js';
 
 function UserFormPage({ mode }) {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ function UserFormPage({ mode }) {
           const user = await getUserById(id);
           setValues(v => ({ ...v, ...user, password: '' }));
         } catch (err) {
-          setError(err.response?.data?.error || err.message);
+          setError(getErrorMessage(err));
         }
       })();
     }
@@ -50,7 +51,7 @@ function UserFormPage({ mode }) {
       }
       navigate('/admin/users');
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      setError(getErrorMessage(err));
     }
   };
 

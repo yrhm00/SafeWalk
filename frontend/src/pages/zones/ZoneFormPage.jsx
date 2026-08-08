@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import Alert from '../../component/Alert.jsx';
 import { createZone, getZoneById, updateZone } from '../../API/zoneApi.js';
+import { getErrorMessage } from '../../API/errors.js';
 
 function ZoneFormPage({ mode }) {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [values, setValues] = useState({ id: undefined, name: '', description: '', geom: '' });
+  const [values, setValues] = useState({ name: '', description: '', geom: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -15,8 +17,8 @@ function ZoneFormPage({ mode }) {
         try {
           const zone = await getZoneById(id);
           setValues(zone);
-        } catch (e) {
-          setError(e.message);
+        } catch (err) {
+          setError(getErrorMessage(err));
         }
       })();
     }
@@ -30,15 +32,29 @@ function ZoneFormPage({ mode }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (values.geom) {
+      try {
+        JSON.parse(values.geom);
+      } catch (parseError) {
+        setError('Le champ Geom doit être un GeoJSON valide');
+        return;
+      }
+    }
+
+    const payload = { name: values.name };
+    if (values.description) payload.description = values.description;
+    if (values.geom) payload.geom = values.geom;
+
     try {
       if (mode === 'create') {
-        await createZone(values);
+        await createZone(payload);
       } else {
-        await updateZone(values.id, values);
+        await updateZone(id, payload);
       }
       navigate('/admin/zones');
-    } catch (e) {
-      setError(e.message);
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
   };
 
@@ -56,8 +72,13 @@ function ZoneFormPage({ mode }) {
           <textarea name="description" value={values.description} onChange={handleChange} />
         </label>
         <label>
-          Geom (JSON/WKT)
-          <textarea name="geom" value={values.geom} onChange={handleChange} />
+          Zone géographique (GeoJSON, optionnel)
+          <textarea
+            name="geom"
+            value={values.geom}
+            onChange={handleChange}
+            placeholder='{"type":"Polygon","coordinates":[[[2.35,48.85],[2.36,48.85],[2.36,48.86],[2.35,48.86],[2.35,48.85]]]}'
+          />
         </label>
         <div className="form-actions">
           <button type="button" onClick={() => navigate('/admin/zones')}>
@@ -69,6 +90,10 @@ function ZoneFormPage({ mode }) {
     </div>
   );
 }
+
+ZoneFormPage.propTypes = {
+  mode: PropTypes.oneOf(['create', 'edit']).isRequired,
+};
 
 export default ZoneFormPage;
 

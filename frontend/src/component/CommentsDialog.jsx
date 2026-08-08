@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { listComments, createComment, updateComment, deleteComment } from '../API/commentApi.js';
+import { getErrorMessage } from '../API/errors.js';
 import Alert from './Alert.jsx';
 import ConfirmDialog from './ConfirmDialog.jsx';
 
@@ -20,8 +21,8 @@ function CommentsDialog({ report, onClose }) {
 
     const loadComments = async () => {
         try {
-            const data = await listComments(report.id);
-            setComments(data);
+            const result = await listComments(report.id);
+            setComments(result.data || []);
         } catch (err) {
             setError('Impossible de charger les commentaires');
         }
@@ -36,7 +37,7 @@ function CommentsDialog({ report, onClose }) {
             setNewComment('');
             loadComments();
         } catch (err) {
-            setError("Erreur lors de l'ajout du commentaire");
+            setError(getErrorMessage(err));
         }
     };
 

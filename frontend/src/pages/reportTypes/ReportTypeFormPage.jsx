@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Alert from '../../component/Alert.jsx';
 import { createReportType, getReportTypeById, updateReportType } from '../../API/reportTypeApi.js';
+import { getErrorMessage } from '../../API/errors.js';
 
 function ReportTypeFormPage({ mode }) {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function ReportTypeFormPage({ mode }) {
           const type = await getReportTypeById(id);
           setValues(type);
         } catch (err) {
-          setError(err.response?.data?.error || err.message);
+          setError(getErrorMessage(err));
         }
       })();
     }
@@ -39,7 +40,7 @@ function ReportTypeFormPage({ mode }) {
       }
       navigate('/admin/report-types');
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      setError(getErrorMessage(err));
     }
   };
 
