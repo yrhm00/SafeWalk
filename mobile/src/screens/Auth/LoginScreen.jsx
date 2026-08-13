@@ -1,64 +1,93 @@
+import { useState } from "react";
 import {
   View,
   Text,
+  Image,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Image, // Importation nécessaire pour le logo
   StyleSheet,
 } from "react-native";
-import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import api from "../../services/api";
+import { getErrorMessage } from "../../services/errors";
+import { saveToken, saveRefreshToken } from "../../services/secureStore";
+import { setCredentials } from "../../store/authSlice";
 import TextField from "../../components/ui/TextField";
 import PrimaryButton from "../../components/ui/PrimaryButton";
-import { globalStyles, typography, spacing, colors } from "../../styles";
-import { useNavigation } from "@react-navigation/native";
-import { useDispatch, useSelector } from "react-redux";
-import { loginThunk } from "../../store/authSlice";
 import Card from "../../components/ui/Card";
+import { globalStyles, typography, spacing, colors } from "../../styles";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const authError = useSelector((state) => state.auth.error);
 
   const handleLogin = async () => {
-    dispatch(loginThunk({ email, password }));
-  };
+    if (submitting) {
+      return;
+    }
 
-  /**
-   * ✅ Affiche l'erreur sans faire planter l'application
-   * si le serveur renvoie un objet au lieu d'une chaîne.
-   */
-  const renderErrorMessage = () => {
-    if (!authError) return null;
-    const message = typeof authError === "string" 
-      ? authError 
-      : (authError.error || authError.message || "Login failed");
-    return <Text style={styles.errorText}>{message}</Text>;
+    if (email.trim() === "" || password === "") {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setError("The email address is not valid.");
+      return;
+    }
+
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const response = await api.post("/users/login", {
+        email: email.trim(),
+        password,
+      });
+      const { token, refreshToken } = response.data;
+      await saveToken(token);
+      await saveRefreshToken(refreshToken);
+
+      const profileResponse = await api.get("/users/me");
+      dispatch(setCredentials({ token, user: profileResponse.data }));
+    } catch (requestError) {
+      if (requestError.response && requestError.response.status === 404) {
+        setError("Incorrect email or password.");
+      } else {
+        setError(getErrorMessage(requestError));
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <View style={globalStyles.screen}>
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.keyboard}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.container}>
           <View style={styles.header}>
-            {/* ✅ AJOUT DU LOGO (Mockup) */}
-            <Image 
-              source={require("../../../assets/logo.png")} 
-              style={styles.logo} 
+            <Image
+              source={require("../../../assets/logo.png")}
+              style={styles.logo}
               resizeMode="contain"
             />
             <Text style={typography.h1}>SafeWalk</Text>
             <Text style={typography.caption}>Your safety companion</Text>
           </View>
 
-          <Card style={{ gap: spacing.md }}>
-            {renderErrorMessage()}
+          <Card style={styles.card}>
+            {error !== "" && <Text style={styles.errorText}>{error}</Text>}
             <TextField
               placeholder="Email"
               value={email}
@@ -71,7 +100,11 @@ export default function LoginScreen() {
               secure
               onChangeText={setPassword}
             />
-            <PrimaryButton title="Sign In" onPress={handleLogin} />
+            <PrimaryButton
+              title={submitting ? "Signing in..." : "Sign In"}
+              onPress={handleLogin}
+              disabled={submitting}
+            />
             <View style={styles.footer}>
               <Text style={typography.small}>No account yet?</Text>
               <TouchableOpacity onPress={() => navigation.navigate("Register")}>
@@ -86,14 +119,11 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  keyboard: { flex: 1 },
   container: { flex: 1, justifyContent: "center", padding: spacing.lg },
   header: { alignItems: "center", marginBottom: spacing.xl },
-  // ✅ Style pour le logo circulaire
-  logo: {
-    width: 150,
-    height: 150,
-    marginBottom: spacing.md,
-  },
+  logo: { width: 150, height: 150, marginBottom: spacing.md },
+  card: { gap: spacing.md },
   footer: { marginTop: spacing.md, alignItems: "center" },
   link: { marginTop: 4, color: colors.primary, fontWeight: "600" },
   errorText: {

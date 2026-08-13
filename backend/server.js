@@ -6,6 +6,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import router from "./src/routes/index.js";
 import { accessLogStream, logError } from "./utils/logger.js";
+import { uploadDirectory } from "./middleware/upload/multer.js";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -51,6 +52,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/uploads', express.static(uploadDirectory));
 
 app.get('/', (req, res) => {
     res.json({

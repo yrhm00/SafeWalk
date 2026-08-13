@@ -1,207 +1,237 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
-  StyleSheet,
-  Alert,
+  Image,
+  FlatList,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Image
+  ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
-
-import { globalStyles, colors, spacing, typography } from "../../styles";
+import api from "../../services/api";
+import { getErrorMessage } from "../../services/errors";
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import Card from "../../components/ui/Card";
 import TextField from "../../components/ui/TextField";
-import api from "../../services/api";
+import { globalStyles, colors, spacing, typography } from "../../styles";
 
 export default function DangerDetailsScreen() {
   const { params } = useRoute();
   const reportId = params?.reportId;
-  const token = useSelector((state) => state.auth.token);
 
-  const report = useSelector((state) =>
-    state.reports.list.find((r) => String(r.id) === String(reportId))
+  const storedReport = useSelector((state) =>
+    state.reports.list.find((item) => String(item.id) === String(reportId))
   );
 
+  const [report, setReport] = useState(storedReport || null);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
   const [voteStats, setVoteStats] = useState({ up: 0, down: 0 });
+  const [newComment, setNewComment] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const loadReport = async () => {
+    try {
+      const response = await api.get(`/reports/${reportId}`);
+      setReport(response.data);
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    }
+  };
+
+  const loadComments = async () => {
+    try {
+      const response = await api.get(`/comments/report/${reportId}`);
+      setComments(response.data.data);
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    }
+  };
+
+  const loadVotes = async () => {
+    try {
+      const response = await api.get(`/votes/report/${reportId}`);
+      setVoteStats({
+        up: Number(response.data.summary.upvotes),
+        down: Number(response.data.summary.downvotes),
+      });
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    }
+  };
 
   useEffect(() => {
-    if (reportId) {
-      fetchSocialData();
-    }
-  }, [reportId]);
+    const loadDetails = async () => {
+      setLoading(true);
+      await loadReport();
+      await loadComments();
+      await loadVotes();
+      setLoading(false);
+    };
 
-  const fetchSocialData = async () => {
-    try {
-      const [commentsRes, votesRes] = await Promise.all([
-        api.get(`/api/v1/comments/report/${reportId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        api.get(`/api/v1/votes/report/${reportId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      setComments(commentsRes.data);
-      
-      const summary = votesRes.data.summary;
-      setVoteStats({
-        up: Number(summary.upvotes),
-        down: Number(summary.downvotes),
-      });
-    } catch (err) {
-      console.log("Erreur chargement données sociales", err);
-    }
-  };
+    loadDetails();
+  }, []);
 
   const handleVote = async (value) => {
+    setError("");
     try {
-      await api.post(
-        `/api/v1/votes`,
-        { report_id: reportId, value },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      Alert.alert("Succès", "Votre vote a été enregistré.");
-      fetchSocialData();
-    } catch (e) {
-      Alert.alert("Erreur", "Impossible de voter pour le moment.");
+      await api.post("/votes", { report_id: Number(reportId), value });
+      await loadVotes();
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
     }
   };
 
-  const postComment = async () => {
-    if (!newComment.trim()) return;
+  const handlePostComment = async () => {
+    if (newComment.trim() === "") {
+      return;
+    }
+
+    setError("");
     try {
-      await api.post(
-        `/api/v1/comments`,
-        { report_id: reportId, content: newComment },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await api.post("/comments", {
+        report_id: Number(reportId),
+        content: newComment.trim(),
+      });
       setNewComment("");
-      fetchSocialData();
-    } catch (e) {
-      Alert.alert("Erreur", "L'envoi du commentaire a échoué.");
+      await loadComments();
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
     }
   };
 
-  if (!report) return <View style={globalStyles.screen}><Text>Signalement introuvable</Text></View>;
+  if (loading) {
+    return (
+      <View style={globalStyles.screen}>
+        <SafeWalkHeader title="Incident details" showBack />
+        <ActivityIndicator color={colors.primary} style={styles.loader} />
+      </View>
+    );
+  }
 
-  // Sécurisation de l'URL image (évite le crash si string vide "")
-  const hasImage = report.image_url && report.image_url.length > 0;
+  if (!report) {
+    return (
+      <View style={globalStyles.screen}>
+        <SafeWalkHeader title="Incident details" showBack />
+        <Text style={styles.emptyText}>
+          {error !== "" ? error : "Report not found."}
+        </Text>
+      </View>
+    );
+  }
+
+  const renderComment = ({ item }) => (
+    <View style={styles.commentItem}>
+      <Text style={typography.caption}>{item.user_name || item.username}</Text>
+      <Text style={typography.body}>{item.content}</Text>
+    </View>
+  );
+
+  const listHeader = (
+    <View>
+      {report.image_url ? (
+        <Image
+          source={{ uri: report.image_url }}
+          style={styles.reportImage}
+          resizeMode="cover"
+        />
+      ) : null}
+
+      <Card style={styles.mainCard}>
+        <Text style={typography.h1}>{report.title}</Text>
+        <Text style={[typography.body, styles.description]}>
+          {report.description}
+        </Text>
+        <Text style={typography.small}>Status: {report.status}</Text>
+        <Text style={typography.small}>Severity: {report.severity}</Text>
+      </Card>
+
+      <Text style={[typography.h3, styles.sectionTitle]}>Reliability</Text>
+      <View style={styles.voteContainer}>
+        <TouchableOpacity
+          style={[styles.voteButton, styles.confirmButton]}
+          onPress={() => handleVote(true)}
+        >
+          <Ionicons name="thumbs-up" size={24} color={colors.white} />
+          <Text style={styles.voteText}>Confirm ({voteStats.up})</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.voteButton, styles.denyButton]}
+          onPress={() => handleVote(false)}
+        >
+          <Ionicons name="thumbs-down" size={24} color={colors.white} />
+          <Text style={styles.voteText}>Deny ({voteStats.down})</Text>
+        </TouchableOpacity>
+      </View>
+
+      {error !== "" && <Text style={styles.errorText}>{error}</Text>}
+
+      <Text style={[typography.h3, styles.sectionTitle]}>
+        Comments ({comments.length})
+      </Text>
+    </View>
+  );
+
+  const listFooter = (
+    <View style={styles.inputRow}>
+      <View style={styles.inputField}>
+        <TextField
+          placeholder="Add a comment..."
+          value={newComment}
+          onChangeText={setNewComment}
+        />
+      </View>
+      <TouchableOpacity style={styles.sendIcon} onPress={handlePostComment}>
+        <Ionicons name="send" size={24} color={colors.primary} />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={globalStyles.screen}>
-      <SafeWalkHeader title="Détails de l'incident" showBack />
+      <SafeWalkHeader title="Incident details" showBack />
 
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.keyboard}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          
-          {hasImage ? (
-            <Image
-              source={{ uri: report.image_url }}
-              style={styles.reportImage}
-              resizeMode="cover"
-            />
-          ) : null}
-
-          {/* Infos principales */}
-          <Card style={styles.mainCard}>
-            <Text style={typography.h1}>{report.title}</Text>
-            <Text style={[typography.body, { marginVertical: spacing.sm }]}>
-              {report.description}
-            </Text>
-            <Text style={typography.small}>
-              Statut: {report.status || "En attente"}
-            </Text>
-             <Text style={typography.small}>
-              Gravité: {report.severity}
-            </Text>
-          </Card>
-
-          {/* Section Votes */}
-          <Text style={[typography.h3, styles.sectionTitle]}>
-            Fiabilité du signalement
-          </Text>
-          <View style={styles.voteContainer}>
-            <TouchableOpacity
-              style={[styles.voteButton, { backgroundColor: colors.success }]}
-              onPress={() => handleVote(true)}
-            >
-              <Ionicons name="thumbs-up" size={24} color="white" />
-              <Text style={styles.voteText}>Confirmer ({voteStats.up})</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.voteButton, { backgroundColor: colors.danger }]}
-              onPress={() => handleVote(false)}
-            >
-              <Ionicons name="thumbs-down" size={24} color="white" />
-              <Text style={styles.voteText}>Infirmer ({voteStats.down})</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Section Commentaires */}
-          <Text style={[typography.h3, styles.sectionTitle]}>
-            Commentaires ({comments.length})
-          </Text>
-          <Card>
-            {comments.length > 0 ? (
-              comments.map((item, index) => (
-                <View key={index} style={styles.commentItem}>
-                  <Text style={typography.caption}>Utilisateur #{item.user_id}</Text>
-                  <Text style={typography.body}>{item.content}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={[typography.small, { fontStyle: "italic", marginBottom: 10 }]}>
-                Aucun commentaire pour le moment.
-              </Text>
-            )}
-
-            <View style={styles.inputRow}>
-              <View style={{ flex: 1 }}>
-                <TextField
-                  placeholder="Ajouter un commentaire..."
-                  value={newComment}
-                  onChangeText={setNewComment}
-                />
-              </View>
-              <TouchableOpacity style={styles.sendIcon} onPress={postComment}>
-                <Ionicons name="send" size={24} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
-          </Card>
-        </ScrollView>
+        <FlatList
+          data={comments}
+          renderItem={renderComment}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          ListHeaderComponent={listHeader}
+          ListFooterComponent={listFooter}
+          ListEmptyComponent={
+            <Text style={styles.noComment}>No comment yet.</Text>
+          }
+        />
       </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContent: { padding: spacing.md },
+  keyboard: { flex: 1 },
+  listContent: { padding: spacing.md },
+  loader: { marginTop: 50 },
   reportImage: {
     width: "100%",
     height: 200,
     borderRadius: 12,
     marginBottom: spacing.md,
-    backgroundColor: "#e1e1e1",
+    backgroundColor: colors.border,
   },
   mainCard: { borderLeftWidth: 5, borderLeftColor: colors.primary },
+  description: { marginVertical: spacing.sm },
   sectionTitle: { marginBottom: spacing.sm, marginTop: spacing.md },
   voteContainer: {
     flexDirection: "row",
@@ -211,22 +241,45 @@ const styles = StyleSheet.create({
   voteButton: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     padding: spacing.md,
     borderRadius: 12,
     width: "48%",
-    justifyContent: "center",
   },
-  voteText: { color: "white", fontWeight: "bold", marginLeft: spacing.sm },
+  confirmButton: { backgroundColor: colors.success },
+  denyButton: { backgroundColor: colors.danger },
+  voteText: {
+    color: colors.white,
+    fontWeight: "bold",
+    marginLeft: spacing.sm,
+  },
   commentItem: {
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    marginBottom: spacing.xs,
+  },
+  noComment: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  emptyText: {
+    textAlign: "center",
+    marginTop: 40,
+    color: colors.textSecondary,
+    paddingHorizontal: spacing.md,
+  },
+  errorText: {
+    color: colors.danger,
+    textAlign: "center",
+    marginBottom: spacing.sm,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: spacing.md,
   },
+  inputField: { flex: 1 },
   sendIcon: { marginLeft: spacing.sm, padding: spacing.sm },
 });

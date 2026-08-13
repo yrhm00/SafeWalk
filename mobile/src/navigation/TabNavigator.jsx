@@ -1,11 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 import CustomTabBar from "./CustomTabBar";
-
-import HomeNavigator from "./HomeNavigator";
+import HomeScreen from "../screens/Home/HomeScreen";
+import IncidentsScreen from "../screens/Tab/IncidentsScreen";
 import CreateReportScreen from "../screens/Tab/CreateReportScreen";
-import AlertsScreen from "../screens/Tab/AlertsScreen";
-import ProfileScreen from "../screens/Profile/ProfileScreen";
-import IncidentsNavigator from "./IncidentsNavigator";
+import MyReportsScreen from "../screens/Tab/MyReportsScreen";
 import ProfileNavigator from "./ProfileNavigator";
 
 const Tab = createBottomTabNavigator();
@@ -18,34 +17,34 @@ export default function TabNavigator() {
     >
       <Tab.Screen
         name="Map"
-        component={HomeNavigator}
+        component={HomeScreen}
         options={{
-          tabBarIcon: () => "map",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="map" size={size} color={color} />
+          ),
         }}
       />
 
       <Tab.Screen
         name="Incidents"
-        component={IncidentsNavigator}
+        component={IncidentsScreen}
         options={{
-          tabBarIcon: () => "alert-circle",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="alert-circle" size={size} color={color} />
+          ),
         }}
       />
 
-      {/* TAB CENTRALE */}
-      <Tab.Screen
-        name="CreateReport"
-        component={CreateReportScreen}
-        options={{
-          tabBarIcon: () => null,
-        }}
-      />
+      <Tab.Screen name="CreateReport" component={CreateReportScreen} />
 
       <Tab.Screen
-        name="Alerts"
-        component={AlertsScreen}
+        name="MyReports"
+        component={MyReportsScreen}
         options={{
-          tabBarIcon: () => "notifications",
+          tabBarLabel: "Reports",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-text" size={size} color={color} />
+          ),
         }}
       />
 
@@ -53,7 +52,9 @@ export default function TabNavigator() {
         name="Profile"
         component={ProfileNavigator}
         options={{
-          tabBarIcon: () => "person",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
         }}
       />
     </Tab.Navigator>

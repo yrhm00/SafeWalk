@@ -25,7 +25,20 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SafeWalk needs access to your photos so you can attach an image to an incident report.",
+          "cameraPermission": "SafeWalk needs access to your camera so you can photograph an incident."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "SafeWalk uses your location to show nearby incidents and to position the one you report."
+        }
+      ]
     ]
   }
 }

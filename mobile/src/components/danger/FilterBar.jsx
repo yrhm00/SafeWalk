@@ -1,42 +1,44 @@
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { colors, spacing, typography, markerColors } from "../../styles";
 
-// 1. On définit les filtres de sévérité par défaut ici
-const severityFilters = [
+const SEVERITY_FILTERS = [
   { key: "all", label: "All" },
   { key: "low", label: "Low" },
   { key: "medium", label: "Medium" },
   { key: "high", label: "High" },
 ];
 
-export default function FilterBar({ options = severityFilters, active, onChange, style }) {
+export default function FilterBar({
+  options = SEVERITY_FILTERS,
+  active,
+  onChange,
+  style,
+}) {
   return (
     <View style={[styles.container, style]}>
-      {options.map((f) => {
-        const isActive = active === f.key;
-
-        // Choix de la couleur : markerColors pour la sévérité, sinon primary
+      {options.map((option) => {
+        const isActive = active === option.key;
         const activeColor =
-          f.key === "all"
+          option.key === "all"
             ? colors.primary
-            : markerColors[f.key] || colors.primary;
+            : markerColors[option.key] || colors.primary;
 
         return (
           <TouchableOpacity
-            key={f.key}
-            style={[
-              styles.chip,
-              isActive && { backgroundColor: activeColor },
-            ]}
-            onPress={() => onChange(f.key)}
+            key={option.key}
+            style={[styles.chip, isActive && { backgroundColor: activeColor }]}
+            onPress={() => onChange(option.key)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isActive }}
+            accessibilityLabel={option.label}
           >
             <Text
               style={[
                 typography.caption,
-                isActive ? styles.activeText : { color: colors.textSecondary },
+                isActive ? styles.activeText : styles.inactiveText,
               ]}
             >
-              {f.label}
+              {option.label}
             </Text>
           </TouchableOpacity>
         );
@@ -62,5 +64,8 @@ const styles = StyleSheet.create({
   activeText: {
     color: colors.white,
     fontWeight: "600",
+  },
+  inactiveText: {
+    color: colors.textSecondary,
   },
 });
