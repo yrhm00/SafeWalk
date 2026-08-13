@@ -63,11 +63,6 @@ export default function ProfileScreen() {
           onPress={() => navigation.navigate("EditProfile")}
         />
         <ProfileItem
-          icon="document-text-outline"
-          label="My reports"
-          onPress={() => navigation.navigate("MyReports")}
-        />
-        <ProfileItem
           icon="shield-checkmark-outline"
           label="Privacy Settings"
           onPress={() => navigation.navigate("PrivacySettings")}
