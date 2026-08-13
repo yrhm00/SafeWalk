@@ -1,90 +1,71 @@
-import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
-
 import { useNavigation } from "@react-navigation/native";
-
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import Card from "../../components/ui/Card";
-import PrimaryButton from "../../components/ui/PrimaryButton";
-
+import { clearSession } from "../../services/secureStore";
+import { logout } from "../../store/authSlice";
 import { globalStyles, colors, spacing, typography } from "../../styles";
-import { logoutThunk } from "../../store/authSlice";
+
+function ProfileItem({ icon, label, onPress }) {
+  return (
+    <Card>
+      <TouchableOpacity onPress={onPress} style={styles.itemRow}>
+        <View style={styles.itemLeft}>
+          <View style={styles.itemIcon}>
+            <Ionicons name={icon} size={20} color={colors.primary} />
+          </View>
+          <Text style={typography.body}>{label}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      </TouchableOpacity>
+    </Card>
+  );
+}
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
 
-  const handleLogout = () => {
-    dispatch(logoutThunk());
+  const handleLogout = async () => {
+    await clearSession();
+    dispatch(logout());
   };
 
   return (
     <View style={globalStyles.screen}>
       <SafeWalkHeader title="Profile" />
 
-      {/* ===== HEADER PROFILE ===== */}
-      <View
-        style={{
-          backgroundColor: colors.primary,
-          paddingVertical: spacing.xl,
-          alignItems: "center",
-        }}
-      >
-        {/* Avatar */}
-        <View style={{ position: "relative" }}>
-          {user?.avatar ? (
-            // Si l'utilisateur a une photo, on affiche l'image
-            <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
-          ) : (
-            // Sinon, on affiche un cercle avec une icône "person"
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={50} color={colors.white} />
-            </View>
-          )}
-
-          {/* Bouton Camera pour éditer */}
-          <TouchableOpacity
-            style={styles.editBadge}
-            onPress={() => navigation.navigate("EditProfile")}
-          >
-            <Ionicons name="camera" size={16} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Name */}
-        <Text
-          style={[
-            typography.h2,
-            { color: colors.white, marginTop: spacing.sm },
-          ]}
-        >
-          {user?.name || "User"}
+      <View style={styles.header}>
+        <Text style={[typography.h2, styles.headerName]}>
+          {user?.name || user?.username || "User"}
         </Text>
-
-        {/* Email */}
-        <Text
-          style={[typography.caption, { color: colors.white, opacity: 0.9 }]}
-        >
+        <Text style={[typography.caption, styles.headerEmail]}>
           {user?.email}
         </Text>
       </View>
 
-      {/* ===== OPTIONS ===== */}
       <ScrollView
-        contentContainerStyle={{ paddingBottom: spacing.xl }}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <ProfileItem
           icon="person-outline"
           label="Edit Profile"
-          onPress={() => navigation.navigate("EditProfile")} // Ajoutez cette ligne
+          onPress={() => navigation.navigate("EditProfile")}
         />
         <ProfileItem
-          icon="notifications-outline"
-          label="Notifications"
-          onPress={() => navigation.navigate("Alerts")}
+          icon="document-text-outline"
+          label="My reports"
+          onPress={() => navigation.navigate("MyReports")}
         />
         <ProfileItem
           icon="shield-checkmark-outline"
@@ -97,34 +78,10 @@ export default function ProfileScreen() {
           onPress={() => navigation.navigate("HelpSupport")}
         />
 
-        {/* ===== LOGOUT ===== */}
-        <Card
-          style={{
-            marginTop: spacing.lg,
-            borderWidth: 1,
-            borderColor: colors.danger,
-            backgroundColor: "#FFF5F5",
-          }}
-        >
-          <TouchableOpacity
-            onPress={handleLogout}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              paddingVertical: spacing.md,
-            }}
-          >
+        <Card style={styles.logoutCard}>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Ionicons name="log-out-outline" size={20} color={colors.danger} />
-            <Text
-              style={{
-                color: colors.danger,
-                fontWeight: "600",
-                marginLeft: spacing.sm,
-              }}
-            >
-              Logout
-            </Text>
+            <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
         </Card>
       </ScrollView>
@@ -132,68 +89,42 @@ export default function ProfileScreen() {
   );
 }
 
-/* ===== ITEM COMPONENT ===== */
-function ProfileItem({ icon, label, onPress }) {
-  return (
-    <Card>
-      <TouchableOpacity
-        onPress={onPress}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              padding: spacing.sm,
-              borderRadius: 10,
-              marginRight: spacing.md,
-            }}
-          >
-            <Ionicons name={icon} size={20} color={colors.primary} />
-          </View>
-          <Text style={typography.body}>{label}</Text>
-        </View>
-
-        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-      </TouchableOpacity>
-    </Card>
-  );
-}
-
 const styles = StyleSheet.create({
-  
-  avatarImage: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    borderWidth: 3,
-    borderColor: colors.white,
-  },
-  avatarPlaceholder: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.border, // Ou une couleur grise/neutre
-    justifyContent: "center",
+  header: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.xl,
     alignItems: "center",
-    borderWidth: 3,
-    borderColor: colors.white,
   },
-  editBadge: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 6,
-    elevation: 4, // Ombre pour Android
-    shadowColor: "#000", // Ombre pour iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+  headerName: { color: colors.white },
+  headerEmail: { color: colors.white, opacity: 0.9 },
+  scrollContent: { paddingBottom: spacing.xl },
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  itemLeft: { flexDirection: "row", alignItems: "center" },
+  itemIcon: {
+    backgroundColor: colors.surface,
+    padding: spacing.sm,
+    borderRadius: 10,
+    marginRight: spacing.md,
+  },
+  logoutCard: {
+    marginTop: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    backgroundColor: colors.surface,
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.md,
+  },
+  logoutText: {
+    color: colors.danger,
+    fontWeight: "600",
+    marginLeft: spacing.sm,
   },
 });

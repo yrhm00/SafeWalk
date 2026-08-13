@@ -1,51 +1,74 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./src/store/store";
 import Navigation from "./src/navigation";
-
-// Imports pour la gestion de la session et du SplashScreen
-import { restoreSession } from "./src/store/authSlice";
 import SplashScreen from "./src/components/layout/SplashScreen";
+import OfflineBanner from "./src/components/layout/OfflineBanner";
+import api from "./src/services/api";
+import { getToken, clearSession } from "./src/services/secureStore";
+import { setCredentials, logout } from "./src/store/authSlice";
 
-/**
- * Composant principal contenant la logique de chargement.
- * On utilise un composant séparé pour pouvoir accéder au store Redux via useSelector.
- */
-function MainApp() {
+const MainApp = () => {
   const dispatch = useDispatch();
-
-  // On récupère l'état 'loading' défini dans le authSlice
-  const { loading } = useSelector((state) => state.auth);
-
-  // Etat pour gérer le temps minimum d'affichage
+  const loading = useSelector((state) => state.auth.loading);
   const [minimumTimeElapsed, setMinimumTimeElapsed] = useState(false);
 
   useEffect(() => {
-    // 1. Lancer la restauration de session
-    dispatch(restoreSession());
+    const restoreSession = async () => {
+      let token = null;
+      try {
+        token = await getToken();
+        if (!token) {
+          dispatch(logout());
+          return;
+        }
+        const response = await api.get("/users/me");
+        dispatch(setCredentials({ token, user: response.data }));
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          await clearSession();
+          dispatch(logout());
+        } else {
+          dispatch(setCredentials({ token, user: null }));
+        }
+      }
+    };
 
-    // 2. Lancer un minuteur de 3 secondes
+    restoreSession();
+
     const timer = setTimeout(() => {
       setMinimumTimeElapsed(true);
-    }, 3000); // 3000ms = 3 secondes
+    }, 3000);
 
     return () => clearTimeout(timer);
-  }, [dispatch]);
+  }, []);
 
-  // Si l'application est en train de charger (vérification du token), on affiche l'animation
-  //On ne cache le Splash que si l'API a fini ET que les 3 secondes sont passées
   if (loading || !minimumTimeElapsed) {
     return <SplashScreen />;
   }
 
-  // Une fois le chargement terminé, on affiche la navigation principale
-  return <Navigation />;
-}
+  return (
+    <View style={styles.app}>
+      <OfflineBanner />
+      <Navigation />
+    </View>
+  );
+};
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <MainApp />
-    </Provider>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <MainApp />
+      </Provider>
+    </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  app: {
+    flex: 1,
+  },
+});

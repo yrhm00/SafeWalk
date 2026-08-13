@@ -1,4 +1,4 @@
-import { TextInput, View } from "react-native";
+import { View, TextInput, StyleSheet } from "react-native";
 import { colors, spacing, typography } from "../../styles";
 
 export default function TextField({
@@ -6,7 +6,11 @@ export default function TextField({
   onChangeText,
   placeholder,
   secure = false,
-  keyboardType = "default"
+  keyboardType = "default",
+  autoCapitalize = "sentences",
+  returnKeyType = "done",
+  onSubmitEditing,
+  multiline = false,
 }) {
   return (
     <View style={styles.container}>
@@ -16,14 +20,18 @@ export default function TextField({
         placeholder={placeholder}
         placeholderTextColor={colors.textMuted}
         secureTextEntry={secure}
-        style={styles.input}
+        style={[styles.input, multiline && styles.multilineInput]}
         keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        returnKeyType={returnKeyType}
+        onSubmitEditing={onSubmitEditing}
+        multiline={multiline}
       />
     </View>
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     width: "100%",
   },
@@ -37,4 +45,8 @@ const styles = {
     fontSize: typography.body.fontSize,
     color: colors.textPrimary,
   },
-};
+  multilineInput: {
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+});

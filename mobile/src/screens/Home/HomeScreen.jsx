@@ -1,15 +1,23 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-// Ajout de TouchableOpacity dans l'import react-native
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native"; 
-import { Marker, Callout } from "react-native-maps";
-import MapView from "react-native-map-clustering";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  Linking,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import MapView, { Marker, Callout } from "react-native-maps";
 import * as Location from "expo-location";
-import { Ionicons } from "@expo/vector-icons"; // Import pour l'icône de recentrage
-
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
+import api from "../../services/api";
+import { getErrorMessage } from "../../services/errors";
+import { setLoading, setReports, REPORTS_LIMIT } from "../../store/reportSlice";
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import FilterBar from "../../components/danger/FilterBar";
-
 import {
   colors,
   spacing,
@@ -18,90 +26,127 @@ import {
   markerColors,
   typography,
 } from "../../styles";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useDispatch, useSelector } from "react-redux";
-import { fetchReports } from "../../store/reportSlice";
+const HEADER_HEIGHT = 56;
+const REGION_DELTA = 0.02;
+
+const FALLBACK_REGION = {
+  latitude: 50.4674,
+  longitude: 4.8718,
+  latitudeDelta: 0.05,
+  longitudeDelta: 0.05,
+};
 
 export default function HomeScreen({ navigation }) {
   const dispatch = useDispatch();
   const reports = useSelector((state) => state.reports.list);
-
-  useFocusEffect(
-    useCallback(() => {
-      dispatch(fetchReports());
-    }, [dispatch])
-  );
-
   const insets = useSafeAreaInsets();
-  const headerOffset = insets.top + HEADER_HEIGHT;
-  const searchTop = headerOffset + spacing.sm;
-  const filtersTop = searchTop + SEARCH_HEIGHT + spacing.sm;
+  const mapRef = useRef(null);
 
   const [filter, setFilter] = useState("all");
-  const filteredReports =
-    filter === "all" ? reports : reports.filter((r) => r.severity === filter);
+  const [error, setError] = useState("");
+  const [initialRegion, setInitialRegion] = useState(null);
 
-  const mapRef = useRef(null);
-  const [userLocation, setUserLocation] = useState(null);
-
-  // Fonction pour recentrer la carte sur l'utilisateur
-  const recenterMap = async () => {
+  const loadReports = async () => {
+    setError("");
+    dispatch(setLoading(true));
     try {
+      const response = await api.get("/reports", {
+        params: { limit: REPORTS_LIMIT, offset: 0 },
+      });
+      dispatch(
+        setReports({
+          reports: response.data.data,
+          hasMore: response.data.pagination.hasMore,
+        })
+      );
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+      dispatch(setLoading(false));
+    }
+  };
+
+  const loadInitialRegion = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        setError("Location access denied. Showing the default area.");
+        setInitialRegion(FALLBACK_REGION);
+        return;
+      }
+
       const location = await Location.getCurrentPositionAsync({});
-      const coords = {
+      setInitialRegion({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
-
-      setUserLocation(location.coords);
-      mapRef.current?.animateToRegion(coords, 1000); // Animation fluide
-    } catch (error) {
-      Alert.alert("Error", "Could not fetch your current location.");
+        latitudeDelta: REGION_DELTA,
+        longitudeDelta: REGION_DELTA,
+      });
+    } catch (locationError) {
+      setError("Could not get your location. Showing the default area.");
+      setInitialRegion(FALLBACK_REGION);
     }
   };
 
   useEffect(() => {
-    (async () => {
+    if (reports.length === 0) {
+      loadReports();
+    }
+    loadInitialRegion();
+  }, []);
+
+  const centerOnUser = async () => {
+    try {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
         Alert.alert(
           "Permission required",
-          "Location access is needed to show nearby dangers."
+          "SafeWalk needs location access to show your position on the map.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open settings", onPress: () => Linking.openSettings() },
+          ]
         );
         return;
       }
 
       const location = await Location.getCurrentPositionAsync({});
-      setUserLocation(location.coords);
-
       mapRef.current?.animateToRegion({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
+        latitudeDelta: REGION_DELTA,
+        longitudeDelta: REGION_DELTA,
       });
-    })();
-  }, []);
+    } catch (locationError) {
+      Alert.alert("Location error", "Could not get your current location.");
+    }
+  };
+
+  const filteredReports =
+    filter === "all"
+      ? reports
+      : reports.filter((report) => report.severity === filter);
+
+  const filtersTop = insets.top + HEADER_HEIGHT + spacing.sm;
+
+  if (!initialRegion) {
+    return (
+      <View style={globalStyles.screen}>
+        <SafeWalkHeader />
+        <ActivityIndicator color={colors.primary} style={styles.loader} />
+      </View>
+    );
+  }
 
   return (
     <View style={globalStyles.container}>
       <MapView
-        style={StyleSheet.absoluteFillObject}
         ref={mapRef}
+        style={StyleSheet.absoluteFillObject}
+        initialRegion={initialRegion}
         showsUserLocation
-        initialRegion={{
-          latitude: 50.4674,
-          longitude: 4.8718,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
-        radius={40}
-        extent={512}
-        animationEnabled={false}
       >
         {filteredReports.map((report) => (
           <Marker
@@ -110,15 +155,13 @@ export default function HomeScreen({ navigation }) {
               latitude: report.latitude,
               longitude: report.longitude,
             }}
-            pinColor={markerColors[report.severity]}
+            pinColor={markerColors[report.severity] || colors.textMuted}
             tracksViewChanges={false}
           >
             <Callout
               tooltip
               onPress={() =>
-                navigation.navigate("DangerDetails", {
-                  reportId: report.id,
-                })
+                navigation.navigate("DangerDetails", { reportId: report.id })
               }
             >
               <View style={styles.callout}>
@@ -136,20 +179,23 @@ export default function HomeScreen({ navigation }) {
         <SafeWalkHeader />
       </View>
 
-      <View style={[styles.search, { top: searchTop }]}>
-        <Text style={styles.searchPlaceholder}>🔍 Search location...</Text>
-      </View>
-
       <FilterBar
         active={filter}
         onChange={setFilter}
-        style={{ top: filtersTop }}
+        style={[styles.filters, { top: filtersTop }]}
       />
 
-      {/* BOUTON RECENTER */}
-      <TouchableOpacity 
-        style={[styles.recenterButton, { bottom: spacing.lg + 20 }]} 
-        onPress={recenterMap}
+      {error !== "" && (
+        <View style={[styles.errorBanner, { top: filtersTop + 60 }]}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      <TouchableOpacity
+        style={styles.recenterButton}
+        onPress={centerOnUser}
+        accessibilityRole="button"
+        accessibilityLabel="Center the map on my position"
       >
         <Ionicons name="locate" size={26} color={colors.primary} />
       </TouchableOpacity>
@@ -157,42 +203,43 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-const HEADER_HEIGHT = 56;
-const SEARCH_HEIGHT = 44;
-
-const styles = {
+const styles = StyleSheet.create({
+  loader: { marginTop: 50 },
   header: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
   },
-  search: {
+  filters: {
     position: "absolute",
     left: spacing.md,
     right: spacing.md,
-    height: SEARCH_HEIGHT,
-    backgroundColor: colors.white,
-    paddingVertical: 12,
-    paddingHorizontal: spacing.md,
-    borderRadius: 14,
-    ...shadows.card,
-    justifyContent: "center",
-  },
-  searchPlaceholder: {
-    color: colors.textMuted,
-    fontSize: 15,
   },
   callout: {
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     padding: 10,
     borderRadius: 10,
     minWidth: 140,
   },
-  // Style pour le bouton de recentrage
+  errorBanner: {
+    position: "absolute",
+    left: spacing.md,
+    right: spacing.md,
+    backgroundColor: colors.white,
+    padding: spacing.sm,
+    borderRadius: 10,
+    ...shadows.card,
+  },
+  errorText: {
+    color: colors.danger,
+    textAlign: "center",
+    fontSize: 13,
+  },
   recenterButton: {
     position: "absolute",
     right: spacing.md,
+    bottom: spacing.lg + 20,
     backgroundColor: colors.white,
     width: 50,
     height: 50,
@@ -202,4 +249,4 @@ const styles = {
     ...shadows.card,
     elevation: 5,
   },
-};
+});

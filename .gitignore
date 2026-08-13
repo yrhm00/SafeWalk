@@ -11,6 +11,10 @@ backend/.env
 frontend/.env
 mobile/.env
 
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

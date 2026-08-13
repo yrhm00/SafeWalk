@@ -1,32 +1,14 @@
-import { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
-import { restoreSession } from "../store/authSlice";
-import AuthNavigator from "./AuthNavigator";
-import TabNavigator from "./TabNavigator";
+import { useSelector } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
+import AuthNavigator from "./AuthNavigator";
+import RootNavigator from "./RootNavigator";
 
 export default function Navigation() {
-  const dispatch = useDispatch();
-  const { token, loading } = useSelector((state) => state.auth);
-
-  useEffect(() => {
-    dispatch(restoreSession());
-  }, [dispatch]);
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  const isAuthenticated = !!token;
+  const token = useSelector((state) => state.auth.token);
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? <TabNavigator /> : <AuthNavigator />}
+      {token ? <RootNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 }

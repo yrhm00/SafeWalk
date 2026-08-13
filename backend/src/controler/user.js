@@ -1,7 +1,7 @@
 import { pool } from "../../database/database.js";
 import * as userModel from "../model/user.js";
 import * as personModel from "../model/person.js";
-import { hashPassword } from "../../utils/password.js";
+import { hashPassword, verifyPassword } from "../../utils/password.js";
 import { generateToken, generateRefreshToken, verifyRefreshToken } from "../../utils/jwt.js";
 import { logError } from "../../utils/logger.js";
 
@@ -141,6 +141,25 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
     try {
         let updateData = { ...req.body };
+        const currentPassword = updateData.currentPassword;
+        delete updateData.currentPassword;
+
+        const isSensitiveChange = updateData.email || updateData.password;
+
+        if (isSensitiveChange) {
+            if (!currentPassword) {
+                return res.status(400).json({
+                    error: "Current password is required to change your email or password."
+                });
+            }
+
+            const passwordHash = await userModel.readPasswordHashById(pool, req.session.id);
+            const isCurrentPasswordValid = await verifyPassword(passwordHash, currentPassword);
+
+            if (!isCurrentPasswordValid) {
+                return res.status(400).json({ error: "Current password is incorrect." });
+            }
+        }
 
         if (updateData.password) {
             updateData.password_hash = await hashPassword(updateData.password);
@@ -156,7 +175,11 @@ export const updateUser = async (req, res) => {
         }
     } catch (error) {
         logError(error);
-        res.sendStatus(500);
+        if (error.code === '23505') {
+            res.status(409).json({ error: "Email or username already exists" });
+        } else {
+            res.sendStatus(500);
+        }
     }
 };
 

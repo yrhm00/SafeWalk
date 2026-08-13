@@ -1,13 +1,22 @@
 import axios from "axios";
+import { getToken } from "./secureStore";
 
-const API_URL = "https://meningeal-overemotionally-remedios.ngrok-free.dev/"; // <-- change avec "ton ipv4 local" + :3001 
+const API_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/v1`;
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 5000,
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+api.interceptors.request.use(async (config) => {
+  const token = await getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export default api;
