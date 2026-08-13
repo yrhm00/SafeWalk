@@ -1,60 +1,101 @@
-import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { globalStyles, colors, spacing, typography } from "../../styles";
+import {
+  View,
+  Text,
+  ScrollView,
+  Linking,
+  Alert,
+  StyleSheet,
+} from "react-native";
 import SafeWalkHeader from "../../components/layout/SafeWalkHeader";
 import Card from "../../components/ui/Card";
 import PrimaryButton from "../../components/ui/PrimaryButton";
+import { SUPPORT_EMAIL, APP_VERSION } from "../../utils/constants";
+import { globalStyles, colors, spacing, typography } from "../../styles";
+
+const FAQ = [
+  {
+    question: "How do I report an incident?",
+    answer:
+      "Tap the '+' button in the center of the navigation bar, pick an incident type, describe the situation and submit.",
+  },
+  {
+    question: "Who validates the reports?",
+    answer:
+      "Other users confirm or deny a report with the vote buttons, and an administrator sets its final status.",
+  },
+  {
+    question: "What data does SafeWalk use?",
+    answer:
+      "Your location is used to position the reports you create, and the photos you attach are stored on our server. See Privacy Settings for details.",
+  },
+];
+
+function FAQItem({ question, answer }) {
+  return (
+    <Card style={styles.faqCard}>
+      <Text style={[typography.body, styles.question]}>{question}</Text>
+      <Text style={[typography.body, styles.answer]}>{answer}</Text>
+    </Card>
+  );
+}
 
 export default function HelpSupportScreen() {
-  const handleContact = () => {
-    Linking.openURL("mailto:support@safewalk.com");
+  const handleContact = async () => {
+    try {
+      await Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
+    } catch (error) {
+      Alert.alert("No email app found", `You can reach us at ${SUPPORT_EMAIL}.`);
+    }
   };
 
   return (
     <View style={globalStyles.screen}>
       <SafeWalkHeader title="Help & Support" showBack />
-      
-      <ScrollView contentContainerStyle={{ padding: spacing.md }}>
-        <Text style={[typography.h1, { marginBottom: spacing.md }]}>How can we help?</Text>
 
-        <Text style={[typography.h3, { marginBottom: spacing.sm }]}>Frequently Asked Questions</Text>
-        
-        <FAQItem 
-          question="How do I report an incident?" 
-          answer="Click the '+' button in the center of the navigation bar and fill out the details."
-        />
-        <FAQItem 
-          question="Who validates the reports?" 
-          answer="Reports are validated by the community through votes and reviewed by our safety moderators."
-        />
-        <FAQItem 
-          question="Is my data secure?" 
-          answer="Yes, all location data is encrypted and only shared with authorities if you explicitly choose to."
-        />
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={[typography.h1, styles.pageTitle]}>How can we help?</Text>
 
-        <View style={{ marginTop: spacing.xl }}>
-          <Text style={[typography.h3, { textAlign: "center", marginBottom: spacing.md }]}>
+        <Text style={[typography.h3, styles.sectionTitle]}>
+          Frequently asked questions
+        </Text>
+
+        {FAQ.map((item) => (
+          <FAQItem
+            key={item.question}
+            question={item.question}
+            answer={item.answer}
+          />
+        ))}
+
+        <View style={styles.contactSection}>
+          <Text style={[typography.h3, styles.contactTitle]}>
             Still need help?
           </Text>
-          <PrimaryButton title="Contact Support via Email" onPress={handleContact} />
+          <PrimaryButton
+            title="Contact support by email"
+            onPress={handleContact}
+          />
         </View>
 
-        <Text style={[typography.small, { textAlign: "center", marginTop: spacing.xl, color: colors.textMuted }]}>
-          App Version 1.0.4 (Build 2026)
-        </Text>
+        <Text style={styles.version}>App version {APP_VERSION}</Text>
       </ScrollView>
     </View>
   );
 }
 
-function FAQItem({ question, answer }) {
-  return (
-    <Card style={{ marginBottom: spacing.sm }}>
-      <Text style={[typography.body, { fontWeight: "700" }]}>{question}</Text>
-      <Text style={[typography.body, { marginTop: spacing.xs, color: colors.textSecondary }]}>
-        {answer}
-      </Text>
-    </Card>
-  );
-}
+const styles = StyleSheet.create({
+  content: { padding: spacing.md, paddingBottom: spacing.xl },
+  pageTitle: { marginBottom: spacing.md },
+  sectionTitle: { marginBottom: spacing.sm },
+  faqCard: { marginBottom: spacing.sm },
+  question: { fontWeight: "700" },
+  answer: { marginTop: spacing.xs, color: colors.textSecondary },
+  contactSection: { marginTop: spacing.xl },
+  contactTitle: { textAlign: "center", marginBottom: spacing.md },
+  version: {
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: spacing.xl,
+    color: colors.textMuted,
+  },
+});

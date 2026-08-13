@@ -1,47 +1,55 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { View, Animated, StyleSheet, Dimensions, Easing } from "react-native";
 import { colors } from "../../styles";
 
 const { width } = Dimensions.get("window");
+const LOGO_SIZE = width * 0.5;
+const ENTRY_DURATION = 1000;
+const PULSE_DURATION = 800;
 
 export default function SplashScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
-    // Animation d'entrée : fondu et agrandissement
-    Animated.parallel([
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.05,
+          duration: PULSE_DURATION,
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: PULSE_DURATION,
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
+        }),
+      ])
+    );
+
+    const entry = Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1000, // Durée d'apparition d'1 seconde
+        duration: ENTRY_DURATION,
         useNativeDriver: true,
         easing: Easing.out(Easing.ease),
       }),
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 1000,
+        duration: ENTRY_DURATION,
         useNativeDriver: true,
         easing: Easing.out(Easing.ease),
       }),
-    ]).start(() => {
-      // Une fois l'entrée terminée, lance une animation de pulsation continue
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(scaleAnim, {
-            toValue: 1.05, // Agrandissement léger
-            duration: 800,
-            useNativeDriver: true,
-            easing: Easing.inOut(Easing.ease),
-          }),
-          Animated.timing(scaleAnim, {
-            toValue: 1, // Retour à la taille normale
-            duration: 800,
-            useNativeDriver: true,
-            easing: Easing.inOut(Easing.ease),
-          }),
-        ])
-      ).start();
-    });
+    ]);
+
+    entry.start(() => pulse.start());
+
+    return () => {
+      entry.stop();
+      pulse.stop();
+    };
   }, []);
 
   return (
@@ -50,10 +58,7 @@ export default function SplashScreen() {
         source={require("../../../assets/logo.png")}
         style={[
           styles.logo,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          },
+          { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
         ]}
         resizeMode="contain"
       />
@@ -64,12 +69,12 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white, // Changement du fond en blanc
+    backgroundColor: colors.white,
     justifyContent: "center",
     alignItems: "center",
   },
   logo: {
-    width: width * 0.5,
-    height: width * 0.5,
+    width: LOGO_SIZE,
+    height: LOGO_SIZE,
   },
 });

@@ -1,5 +1,7 @@
+import { colors } from "./colors";
+
 export const markerColors = {
-  low: "green",
-  medium: "orange",
-  high: "red",
+  low: colors.success,
+  medium: colors.warning,
+  high: colors.danger,
 };

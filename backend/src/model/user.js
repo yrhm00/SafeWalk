@@ -30,6 +30,12 @@ export const readUserById = async (SQLClient, id) => {
     return rows[0];
 };
 
+export const readPasswordHashById = async (SQLClient, id) => {
+    const query = "SELECT password_hash FROM users WHERE id = $1";
+    const { rows } = await SQLClient.query(query, [id]);
+    return rows[0]?.password_hash || null;
+};
+
 export const createUser = async (SQLClient, { name, username, email, password_hash, role = 'citizen' }) => {
     const query = `
         INSERT INTO users (name, username, email, password_hash, role)

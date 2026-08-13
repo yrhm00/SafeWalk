@@ -14,11 +14,12 @@ Le projet est divisé en trois parties principales :
 Avant de commencer, assurez-vous d'avoir installé :
 *   [Node.js](https://nodejs.org/) (version LTS recommandée)
 *   [Git](https://git-scm.com/)
-*   Une base de données PostgreSQL (pour le backend)
+*   [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+*   L'application **Expo Go** sur un téléphone, pour la partie mobile
 
 ---
 
-## 🚀 Installation et Lancement
+## Installation et Lancement
 
 ### 0. Configuration Initiale
 
@@ -55,31 +56,35 @@ Cette commande va créer la base de données, l'initialiser avec les tables néc
 
 ### 3. Mobile (Application iOS/Android)
 
-1.  **Configuration IP** :
-    *   Ouvrez `mobile/src/config.js`.
-    *   Remplacez l'IP par celle de votre machine (ex: `192.168.1.x`). *Ne laissez pas localhost.*
-
-2.  Ouvrez un nouveau terminal et naviguez dans le dossier `mobile` :
+1.  **Configuration de l'API** :
     ```bash
     cd mobile
+    cp .env.example .env
     ```
-3.  Installez les dépendances et lancez Expo :
+    Dans `mobile/.env`, renseignez l'IPv4 de votre machine :
+    ```
+    EXPO_PUBLIC_API_URL=http://192.168.1.x:3001
+    ```
+    *Ne laissez pas `localhost` : le téléphone est une machine distincte de l'ordinateur.*
+
+2.  Installez les dépendances et lancez Expo :
     ```bash
     npm install
-    npx expo start
+    npx expo start -c
     ```
-4.  Lancez l'application :
-    *   **Sur téléphone physique** : Scannez le QR code avec l'application **Expo Go**. (Assurez-vous que le téléphone est sur le même réseau WiFi que votre ordinateur).
-    *   **Sur ordinateur** : Appuyez sur `i` pour lancer le simulateur iOS (Mac uniquement) ou `a` pour l'émulateur Android.
+
+3.  Lancez l'application :
+    *   **Sur téléphone physique** : scannez le QR code avec l'application **Expo Go**. Le téléphone doit être sur le même réseau Wi-Fi que l'ordinateur.
+    *   **Sur ordinateur** : `i` pour le simulateur iOS (macOS uniquement), `a` pour l'émulateur Android.
 
 ---
 
-## 🛠 Technologies Utilisées
+## Technologies Utilisées
 
 *   **Backend** : Node.js, Express, PostgreSQL, Swagger.
 *   **Frontend** : React, Vite.
 *   **Mobile** : React Native, Expo.
 
-## 📝 Auteurs
+## Auteurs
 
 Projet réalisé dans le cadre du cours de développement mobile/web.
